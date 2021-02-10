@@ -9,8 +9,6 @@
 # alpha is the coefficient before each feature listed in f,
 # and also possibly one more for an intercept
 
-transforms <- list("sin", "cos")
-
 createFeature <- function (transform, features, alphas=NULL) {
   # Given no alphas, assume no intercept and unit coefficients
   if (is.null(alphas)) alphas <- c(0, rep(1, length(features)))
@@ -60,7 +58,9 @@ print.feature <- function (feature) {
 
 test <- createFeature(1, 1)
 
+transforms <- list("sin", "cos")
+
 test2 <- createFeature(2, list(test, test3), c(2,1,2))
 test3 <- createFeature(2, list(1,2,3,6))
 
-print(test)
+print(test3)
