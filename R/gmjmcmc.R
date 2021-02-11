@@ -19,6 +19,9 @@ gmjmcmc <- function (data, loglik.pi, T, N, probs) {
   # A list of models that have been visited, refering to the populations
   models <- list()
 
+  # TODO: Initialization of first model
+  start.model <-
+
   # For every population transition
   for (t in 1:T) {
     # Initialize a vector to contain the models visited in this population
@@ -91,10 +94,11 @@ mjmcmc.prop <- function (model.cur, features, probs) {
 
 # Subalgorithm for generating a new population of features
 gmjmcmc.transition <- function (S.t) {
+  # TODO: Filtering
+
   new.feat.count <- 10 # TODO: How to choose this?
   for (i in 1:new.feat.count) {
     proposal <- gen.feature()
-    check.collinearity(S.t, proposal)
   }
   return(proposal)
 }
