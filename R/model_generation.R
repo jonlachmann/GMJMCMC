@@ -36,3 +36,8 @@ uni.add.modelgen <- function () {
 uni.del.modelgen <- function () {
 
 }
+
+# Function to generate a small random jump given a current model
+small.rand <- function (model, indices, type) {
+
+}
