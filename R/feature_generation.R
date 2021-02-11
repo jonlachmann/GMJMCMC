@@ -28,11 +28,21 @@ genProjection <- function (features, transforms, pool.probs, trans.probs) {
   createFeature(transm, feats, alphas)
 }
 
-genFeature <- function (features, transforms, gen.probs, pool.probs, trans.probs) {
-  feat.type <- feat.count <- sample.int(n = 3, size = 1, prob = gen.probs)
-  if (feat.type == 1) feat <- genMultiplication(features, pool.probs)
-  if (feat.type == 2) feat <- genModification(features, transforms, pool.probs, trans.probs)
-  if (feat.type == 3) feat <- genProjection(features, transforms, pool.probs, trans.probs)
-  # TODO: Check for collinearity etc.
+# Select a feature to generate and generate it
+gen.feature <- function (features, transforms, gen.probs, pool.probs, trans.probs) {
+  feat.type <- sample.int(n = 3, size = 1, prob = gen.probs)
+  colinear <- T
+  while (colinear) {
+    if (feat.type == 1) feat <- genMultiplication(features, pool.probs)
+    if (feat.type == 2) feat <- genModification(features, transforms, pool.probs, trans.probs)
+    if (feat.type == 3) feat <- genProjection(features, transforms, pool.probs, trans.probs)
+    # TODO: Check for collinearity etc.
+    colinear <- check.collinearity(features, feat)
+  }
   return(feat)
+}
+
+check.collinearity <- function (features, proposal) {
+  # TODO: How can we do this?
+  return(T)
 }
