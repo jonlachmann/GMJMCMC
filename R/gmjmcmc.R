@@ -3,15 +3,17 @@
 # Created by: jonlachmann
 # Created on: 2021-02-11
 
-### Main algorithm for GMJMCMC
-
-# data is the data to use in the algorithm
-# loglik.pi is the (log) density to explore
-# T is the number of population iterations
-# N is the number of iterations per population (total iterations = T*N)
-# probs is a list of the various probability vectors to use TODO: specification of this
-
-gmjmcmc <- function (data, loglik.pi, T, N, probs) {
+#' Main algorithm for GMJMCMC
+#'
+#' @param data The data to use in the algorithm
+#' @param loglik.pi The (log) density to explore
+#' @param transforms A list of the available nonlinear transformations for feature generation
+#' @param T The number of population iterations
+#' @param N The number of iterations per population (total iterations = T*N)
+#' @param probs A list of the various probability vectors to use TODO: specification of this
+#'
+#' @export gmjmcmc
+gmjmcmc <- function (data, loglik.pi, transforms, T, N, probs) {
   # Acceptance probability
   accept <- 0
   # A list of populations that have been visited
@@ -28,7 +30,7 @@ gmjmcmc <- function (data, loglik.pi, T, N, probs) {
     population.models <- list()
     model.cur <- model # TODO: FIX ME
     for (i in 1:N) {
-      proposal <- mjmcmc.prop(model.cur, S[[t]], probs)
+      proposal <- mjmcmc.prop(loglik.pi, model.cur, S[[t]], probs)
       if (log(runif(1)) <= proposal$alpha) {
         model.cur <- proposal$model
         accept <- accept + 1
@@ -38,29 +40,38 @@ gmjmcmc <- function (data, loglik.pi, T, N, probs) {
     }
     # Add the models visited in the current population to the model list
     append(models, population.models)
+    # Calculate marginal likelihoods for current features
+    marg.probs <- marginal.probs(population.models)
     # Generate a new population of features for the next iteration
-    S[[t+1]] <- gmjmcmc.transition(S[[t]])
+    S[[t+1]] <- gmjmcmc.transition(S[[t]], marg.probs, transforms)
   }
 }
 
-# Subalgorithm for generating a proposal and acceptance probability
-mjmcmc.prop <- function (model.cur, features, probs) {
+#' Subalgorithm for generating a proposal and acceptance probability
+#'
+#' @param data The data to use in the algorithm
+#' @param loglik.pi The the (log) density to explore
+#' @param model.cur The current model to make the proposal respective to
+#' @param features The features available
+#' @param probs A list of the various probability vectors to use TODO: specification of this
+#'
+mjmcmc.prop <- function (data, loglik.pi, model.cur, features, probs) {
   l <- runif(1)
-  if (l > probs$large.prob) {
+  if (l > probs$large) {
     ### Large jump
 
     ### Select kernels to use for the large jump
-    q.l <- sample.int(n = 3, size = 1, prob = probs$largejump.prob) # Select large jump kernel
-    q.o <- sample.int(n = 3, size = 1, prob = probs$localopt.prob) # Select optimizer function
-    q.r <- sample.int(n = 3, size = 1, prob = probs$random.prob) # Select randomization kernel
+    q.l <- sample.int(n = 3, size = 1, prob = probs$largejump) # Select large jump kernel
+    q.o <- sample.int(n = 3, size = 1, prob = probs$localopt) # Select optimizer function
+    q.r <- sample.int(n = 3, size = 1, prob = probs$random) # Select randomization kernel
 
     ### Do large jump and backwards large jump
     large.jump.ind <- large.jump(q.l) # Get the large jump indices to swap TODO: Implement function
     chi.0.star <- xor(model.cur, large.jump.ind) # Swap indices
-    chi.k.star <- local.optim(chi.0.star, features, q.o) # Do local optimization
+    chi.k.star <- local.optim(data, loglik.pi, chi.0.star, features, q.o) # Do local optimization
     gamma.star <- small.rand(chi.k.star, q.r) # Randomize around the mode TODO: Implement function
     chi.0 <- xor(gamma.star, large.jump.ind) # Do a backwards large jump
-    chi.k <- local.optim(chi.0, features, q.o) # Do backwards local optimization
+    chi.k <- local.optim(data, loglik.pi, chi.0, features, q.o) # Do backwards local optimization
     # TODO: We could compare if chi.k is reached by optimising from gamma (model.cur) as "intended"
 
     ### Calculate acceptance probability
@@ -79,7 +90,7 @@ mjmcmc.prop <- function (model.cur, features, probs) {
   prob.gamma.star <- loglik.pi(gamma.star)
 
   ### Calculate acceptance probability
-  if (l > probs$large.prob) {
+  if (l > probs$large) {
     # Calculate acceptance probability for large jump
     alpha <- min(0, (prob.gamma.star + prob.gamma_chi.k) - (prob.cur + prob.gamma.star_chi.k.star))
   } else {
@@ -93,8 +104,12 @@ mjmcmc.prop <- function (model.cur, features, probs) {
 }
 
 # Subalgorithm for generating a new population of features
-gmjmcmc.transition <- function (S.t) {
-  # TODO: Filtering
+gmjmcmc.transition <- function (S.t, marg.probs, transforms, probs) {
+  ### Sample which features to filter
+  # Keep all with marginal inclusion above probs$filter
+  feat.keep <- (marg.probs > probs$filter)
+  # Sample which to keep based on marginal inclusion below probs$filter
+  feat.keep <- sample.int(n = length(marg.probs), size = length(marg.probs), prob = marg.probs/probs$filter)
 
   new.feat.count <- 10 # TODO: How to choose this?
   for (i in 1:new.feat.count) {

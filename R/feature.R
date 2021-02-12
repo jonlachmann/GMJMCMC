@@ -9,7 +9,14 @@
 # alpha is the coefficient before each feature listed in f,
 # and also possibly one more for an intercept
 
-createFeature <- function (transform, features, alphas=NULL) {
+#' Create method for "feature" class
+#'
+#' @param transform A numeric denoting the transform type
+#' @param features A list of features to include
+#' @param transform A numeric vector denoting the alphas to use
+#'
+#' @export create.feature
+create.feature <- function (transform, features, alphas=NULL) {
   # Given no alphas, assume no intercept and unit coefficients
   if (is.null(alphas)) alphas <- c(0, rep(1, length(features)))
   if (length(alphas) != (length(features) + 1)) stop("Invalid alpha/feature count")
@@ -22,7 +29,13 @@ createFeature <- function (transform, features, alphas=NULL) {
   return(feature)
 }
 
-print.feature <- function (feature) {
+#' Print method for "feature" class
+#'
+#' @param x An object of class "feature"
+#'
+#' @method print feature
+#' @export
+print.feature <- function (feature, transforms) {
   fString <- ""
   feat <- feature[[length(feature)]]
   # This is a more complex feature
@@ -43,8 +56,8 @@ print.feature <- function (feature) {
       if (is.na(feat[j,2]) && feat[j,3] != 0) fString <- paste0(fString, feat[j,3], op)
       # Otherwise this is a feature or covariate, do a recursive conversion
       if (!is.na(feat[j,2])) {
-        if (feat[j,3] == 1) fString <- paste0(fString, featureToString(feature[[feat[j,2]]]), op)
-        else fString <- paste0(fString, feat[j,3], "*", featureToString(feature[[feat[j,2]]]), op)
+        if (feat[j,3] == 1) fString <- paste0(fString, print.feature(feature[[feat[j,2]]]), op)
+        else fString <- paste0(fString, feat[j,3], "*", print.feature(feature[[feat[j,2]]]), op)
       }
     }
     fString <- paste0(fString, ")")
@@ -56,11 +69,3 @@ print.feature <- function (feature) {
   return(fString)
 }
 
-test <- createFeature(1, 1)
-
-transforms <- list("sin", "cos")
-
-test2 <- createFeature(2, list(test, test3), c(2,1,2))
-test3 <- createFeature(2, list(1,2,3,6))
-
-print(test3)

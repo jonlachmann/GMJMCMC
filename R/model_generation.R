@@ -46,12 +46,17 @@ uni.add.modelgen <- function (model) {
 }
 
 # Uniform deletion of a covariate (Type 6)
-uni.del.modelgen <- function () {
+uni.del.modelgen <- function (model) {
   active <- which(model)
   return(sample(active, 1))
 }
 
-# Function to generate a small random jump given a current model
+# Function to generate a small random jump given a current model (q.r)
 small.rand <- function (model, indices, type) {
+
+}
+
+# Function for generating a large jump given a current model (q.l)
+large.jump <- function (model, type) {
 
 }
