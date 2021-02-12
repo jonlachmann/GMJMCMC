@@ -17,33 +17,34 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, probs) {
   # Acceptance probability
   accept <- 0
   # A list of populations that have been visited
-  S <- list()
+  S <- vector("list", T+1)
   # A list of models that have been visited, refering to the populations
-  models <- list()
+  models <- vector("list", T+1)
 
   # TODO: Initialization of first model
-  start.model <-
+  F.0 <- gen.covariates(ncol(data)-1)
+  S[[1]] <- F.0[as.logical(rbinom(n = length(F.0), size = 1, prob = 0.5))]
+  model.cur <- as.logical(rbinom(n = length(S[[1]]), size = 1, prob = 0.3))
 
   # For every population transition
   for (t in 1:T) {
     # Initialize a vector to contain the models visited in this population
-    population.models <- list()
-    model.cur <- model # TODO: FIX ME
+    population.models <- vector("list", N)
     for (i in 1:N) {
-      proposal <- mjmcmc.prop(loglik.pi, model.cur, S[[t]], probs)
+      proposal <- mjmcmc.prop(data, loglik.pi, model.cur, S[[t]], probs)
       if (log(runif(1)) <= proposal$alpha) {
         model.cur <- proposal$model
         accept <- accept + 1
       }
       # Add the current model to the list of visited models
-      append(population.models, model.cur)
+      population.models[[i]] <- model.cur
     }
     # Add the models visited in the current population to the model list
-    append(models, population.models)
+    models[[t]] <- population.models
     # Calculate marginal likelihoods for current features
     marg.probs <- marginal.probs(population.models)
     # Generate a new population of features for the next iteration
-    S[[t+1]] <- gmjmcmc.transition(S[[t]], marg.probs, transforms)
+    S[[t+1]] <- gmjmcmc.transition(S[[t]], F.0, marg.probs, transforms)
   }
 }
 
@@ -104,17 +105,16 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, probs) {
 }
 
 # Subalgorithm for generating a new population of features
-gmjmcmc.transition <- function (S.t, marg.probs, transforms, probs) {
-  ### Sample which features to filter
-  # Keep all with marginal inclusion above probs$filter
-  feat.keep <- (marg.probs > probs$filter)
-  # Sample which to keep based on marginal inclusion below probs$filter
-  feat.keep <- sample.int(n = length(marg.probs), size = length(marg.probs), prob = marg.probs/probs$filter)
+gmjmcmc.transition <- function (S.t, F.0, marg.probs, transforms, probs) {
+  # Sample which features to keep based on marginal inclusion below probs$filter
+  feats.keep <- as.logical(rbinom(n = length(marg.probs), size = 1, prob = pmin(marg.probs/probs$filter, 1)))
 
-  new.feat.count <- 10 # TODO: How to choose this?
-  for (i in 1:new.feat.count) {
-    proposal <- gen.feature()
+  # Generate new features to replace the filtered ones
+  feats.replace <- which(!feats.keep)
+
+  for (i in feats.replace) {
+    S.t[[i]] <- gen.feature(c(S.t[!feat.keep], F.0), transforms, probs)
   }
-  return(proposal)
+  return(S.t)
 }
 

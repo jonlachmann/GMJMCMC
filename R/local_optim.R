@@ -11,7 +11,7 @@ greedy.optim <- function () {
 
 }
 
-local.optim <- function (model, features, type) {
+local.optim <- function (data, loglik.pi, model, features, type) {
   if (type == 1) {
     return(simulated.annealing(indices))
   }

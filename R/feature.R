@@ -4,7 +4,7 @@
 # Created on: 2021-02-10
 
 # transform = 0 is a multiplication of the (two) features listed in f
-# transform > 0 is a transform of the type denoted of the features listed in f
+# transform > 0 is a transform of the type denoted by the transform variable
 # f is a list of features involved in the feature
 # alpha is the coefficient before each feature listed in f,
 # and also possibly one more for an intercept
@@ -56,8 +56,8 @@ print.feature <- function (feature, transforms) {
       if (is.na(feat[j,2]) && feat[j,3] != 0) fString <- paste0(fString, feat[j,3], op)
       # Otherwise this is a feature or covariate, do a recursive conversion
       if (!is.na(feat[j,2])) {
-        if (feat[j,3] == 1) fString <- paste0(fString, print.feature(feature[[feat[j,2]]]), op)
-        else fString <- paste0(fString, feat[j,3], "*", print.feature(feature[[feat[j,2]]]), op)
+        if (feat[j,3] == 1) fString <- paste0(fString, print.feature(feature[[feat[j,2]]], transforms), op)
+        else fString <- paste0(fString, feat[j,3], "*", print.feature(feature[[feat[j,2]]], transforms), op)
       }
     }
     fString <- paste0(fString, ")")
@@ -69,3 +69,4 @@ print.feature <- function (feature, transforms) {
   return(fString)
 }
 
+# TODO: Add a way to get depth and width of a feature

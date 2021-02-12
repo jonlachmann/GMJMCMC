@@ -30,6 +30,7 @@ gen.projection <- function (features, transforms, pool.probs, trans.probs) {
 
 # Select a feature to generate and generate it
 gen.feature <- function (features, transforms, probs) {
+  # TODO: Do not generate too advanced features, note max depth and width
   feat.type <- sample.int(n = 3, size = 1, prob = probs$gen)
   colinear <- T
   while (colinear) {
@@ -45,4 +46,14 @@ gen.feature <- function (features, transforms, probs) {
 check.collinearity <- function (features, proposal) {
   # TODO: How can we do this?
   return(T)
+}
+
+# Generate features to represent the covariates, just takes the count needed
+gen.covariates <- function (count) {
+  features <- list()
+  for (i in 1:count) {
+    features <- c(features, i)
+    class(features[[i]]) <- "feature"
+  }
+  return(features)
 }
