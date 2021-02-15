@@ -4,22 +4,16 @@
 # Created on: 2021-02-11
 
 simulated.annealing <- function (model, data, loglik.pi, indices, params) {
-  # TODO: Is forward and backward local optim depending on each other?
-
-  # TODO: All these should be in params
-  # TODO: Further, can any of these be set dynamically based on data?
-  t <- 10 # Initial temperature
-  t.min <- 0.0001 # Final temperature
-  dt <- 3 # Delta temperature
-  M <- 12 # Proposals per temperature
+  # TODO: Can any of these be set dynamically based on data?
+  t <- params$t.init # Initial temperature
 
   # Calculate current likelihood
   model.lik <- loglik.pi(model, data)
-  while (t > t.min) {
+  while (t > params$t.min) {
     # Make M tries at current temperature
-    for (m in 1:M) {
+    for (m in 1:params$M) {
       # Get a modified model as proposal
-      proposal <- small.rand(current, indices, type) # TODO: This does not do anything yet
+      proposal <- small.rand(current, indices, type)
       proposal.lik <- loglik.pi(model, data)
 
       # Calculate move probability (Bolzmann distribution, see Blum and Roli p. 274)
@@ -31,7 +25,7 @@ simulated.annealing <- function (model, data, loglik.pi, indices, params) {
       }
     }
     # Update temperature
-    t <- t * exp(-dt)
+    t <- t * exp(-params$dt)
   }
   return(model)
 }
@@ -40,12 +34,12 @@ greedy.optim <- function () {
 
 }
 
-local.optim <- function (data, loglik.pi, model, features, type) {
+local.optim <- function (model, data, loglik.pi, indices, type, params) {
   if (type == 1) {
-    return(simulated.annealing(model, data, loglik.pi, indices))
+    return(simulated.annealing(model, data, loglik.pi, indices, params$sa))
   }
   if (type == 2) {
-    return(greedy.optim(data, loglik.pi, indices))
+    return(greedy.optim(model, data, loglik.pi, indices, params$greedy))
   }
   if (type == 3) {
     return("not implemented")

@@ -7,56 +7,81 @@
 ### From page 8 in Hubin et. al. 2018
 ### "Mode Jumping MCMC for Bayesian variable selection in GLMM"
 
-# Random change with random size of the neighborhood (Type 1)
-rand.rand.modelgen <- function (model.size, probs, neigh.max, neigh.min) {
-  neigh.size <- sample.int(n = neigh.max - neigh.min, size = 1) + neigh.min - 1
-  rand.fixed.modelgen(probs, model.size, neigh.size)
+# All the functions are made such that they return the indices that should be swapped in the model
+# The idea is then that the function that requested the proposal can just xor the result with the model vector
+# We also specify the possibility to include the probability of this exact outcome
+
+# Random change with random size of the neighborhood (Type 1-4)
+# With neigh.min=neigh.max, we get a fixed neighborhood size (Type 2 and 4)
+# With probs left out, we get a swap instead of a random change (Type 3 and 4)
+# Indices tells the sampler which indices it is allowed to sample from
+model.proposal.1_4 <- function (model.size, neigh.max, neigh.min, indices=NULL, probs=NULL, prob=F) {
+  # If no probs, set all to 1 as we are doing a swap
+  if (is.null(probs)) probs <- rep(1,model.size)
+  # If no indices selected, allow all
+  if (is.null(indices)) indices <- rep(T,model.size)
+  # Set neighborhood size, random or fixed
+  if (neigh.max == neigh.min) neigh.size <- neigh.min
+  else neigh.size <- sample.int(n = neigh.max - neigh.min, size = 1) + neigh.min - 1
+  # Select the negihborhood by sampling from the p covariates
+  neighborhood <- sample(model.size, size = neigh.size, prob = probs)
+
+  # Sample which variables to change based on the probs vector
+  swaps <- as.logical(rbinom(neigh.size, 1, probs[neighborhood]))
+  swaps <- neighborhood[swaps]
+
+  if (prob) {
+    prob <- model.proposal.1_4.prob(swaps, probs, neigh.size, neigh.max, neigh.min)
+    return(list(swap=swaps, prob=prob))
+  }
+  return(swaps)
+}
+# Probability for random change with random size of the neighborhood (Type 1)
+# By setting neigh.max=neigh.min we get nonrandom neighborhood size (Type 2)
+# By setting prob vector to all ones, we get swap instead of random change (Type 3 and 4)
+model.proposal.1_4.prob <- function (swaps, probs, neigh.size, neigh.max, neigh.min) {
+  p <- length(probs) # Get number of variables in model
+  prod(probs[swaps]) / (choose(p,neigh.size)*(neigh.max-neigh.min+1))
 }
 
-# Random change with fixed size of the neighborhood (Type 2)
-rand.fixed.modelgen <- function (probs, model.size, neigh.size) {
-  change <- sample(model.size, size = neigh.size, prob = probs)
-  return(which(change))
+# Uniform addition and deletion of a covariate (Type 5 and 6)
+model.proposal.5_6 <- function (model, addition=T, prob=F) {
+  if (addition) change <- which(!model)
+  else change <- which(model)
+  if (prob) {
+
+  }
+  return(sample(change, 1))
 }
 
-# Swap with random size of the neighborhood (Type 3)
-swap.rand.modelgen <- function (model, neigh.max, neigh.min) {
-  neigh.size <- sample.int(n = neigh.max - neigh.min, size = 1) + neigh.min - 1
-  swap.fixed.modelgen(model, neigh.size)
-}
-
-# Swap with fixed size of the neighborhood (Type 4)
-swap.fixed.modelgen <- function (model, neigh.size) {
-  # Number of currently active features in model
-  n.active <- sum(model)
-  if (neigh.size > n.active | neigh.size > (length(model) - n.active)) stop("Too many swaps for model")
-  # Get active and inactive indices
-  active <- which(model)
-  inactive <- which(!model)
-  # Generate swaps
-  active.swap <- sample(active, neigh.size)
-  inactive.swap <- sample(inactive, neigh.size)
-  return(c(which(active.swap), which(inactive.swap)))
-}
-
-# Uniform addition of a covariate (Type 5)
-uni.add.modelgen <- function (model) {
-  inactive <- which(!model)
-  return(sample(inactive, 1))
-}
-
-# Uniform deletion of a covariate (Type 6)
-uni.del.modelgen <- function (model) {
-  active <- which(model)
-  return(sample(active, 1))
+model.proposal.5_6.prob <- function (model, addition) {
+  # TODO: Get this finished
 }
 
 # Function to generate a small random jump given a current model (q.r)
-small.rand <- function (model, indices, type) {
-
+small.rand <- function (model, indices, type, probs=NULL, params, prob=F) {
+  if (type == 1 || type == 3) {
+    # Load max and min neighborhood sizes from params vector
+    neigh.max <- params$small.max
+    neigh.min <- params$small.min
+  } else if (type == 2 || type == 4) {
+    neigh.min <- params$small
+    neigh.max <- params$small
+  }
+  indices <- model.proposal.1_4(length(model), neigh.min, neigh.max, indices, probs, prob)
+  return(xor(model, indices)) # Return actual model
 }
 
-# Function for generating a large jump given a current model (q.l)
-large.jump <- function (model, type) {
-
+# Function for generating indices for a large jump given a current model (q.l)
+large.jump <- function (model.size, type, probs, params, prob=F) {
+  if (type == 1 || type == 3) {
+    # Load max and min neighborhood sizes from params vector
+    neigh.max <- params$large.max
+    neigh.min <- params$large.min
+  } else if (type == 2 || type == 4) {
+    neigh.min <- params$large
+    neigh.max <- params$large
+  }
+  indices <- model.proposal.1_4(model.size, neigh.min, neigh.max, indices=NULL, probs, prob)
+  return(indices) # Return just the indices to be swapped
 }

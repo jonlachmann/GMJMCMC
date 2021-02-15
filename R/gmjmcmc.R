@@ -11,9 +11,10 @@
 #' @param T The number of population iterations
 #' @param N The number of iterations per population (total iterations = T*N)
 #' @param probs A list of the various probability vectors to use TODO: specification of this
+#' @param params A list of the various parameters for all the parts of the algorithm TODO: specification of this
 #'
 #' @export gmjmcmc
-gmjmcmc <- function (data, loglik.pi, transforms, T, N, probs) {
+gmjmcmc <- function (data, loglik.pi, transforms, T, N, probs, params) {
   # Acceptance probability
   accept <- 0
   # A list of populations that have been visited
@@ -31,7 +32,7 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, probs) {
     # Initialize a vector to contain the models visited in this population
     population.models <- vector("list", N)
     for (i in 1:N) {
-      proposal <- mjmcmc.prop(data, loglik.pi, model.cur, S[[t]], probs)
+      proposal <- mjmcmc.prop(data, loglik.pi, model.cur, S[[t]], probs, params)
       if (log(runif(1)) <= proposal$alpha) {
         model.cur <- proposal$model
         accept <- accept + 1
@@ -45,6 +46,7 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, probs) {
     marg.probs <- marginal.probs(population.models)
     # Generate a new population of features for the next iteration
     S[[t+1]] <- gmjmcmc.transition(S[[t]], F.0, marg.probs, transforms)
+    # TODO: Precalculate the new features and save as numeric values
   }
 }
 
@@ -55,22 +57,23 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, probs) {
 #' @param model.cur The current model to make the proposal respective to
 #' @param features The features available
 #' @param probs A list of the various probability vectors to use TODO: specification of this
+#' @param params A list of the various parameters for all the parts of the algorithm TODO: specification of this
 #'
-mjmcmc.prop <- function (data, loglik.pi, model.cur, features, probs) {
+mjmcmc.prop <- function (data, loglik.pi, model.cur, features, probs, params) {
   l <- runif(1)
   if (l > probs$large) {
     ### Large jump
 
     ### Select kernels to use for the large jump
-    q.l <- sample.int(n = 3, size = 1, prob = probs$largejump) # Select large jump kernel
-    q.o <- sample.int(n = 3, size = 1, prob = probs$localopt) # Select optimizer function
-    q.r <- sample.int(n = 3, size = 1, prob = probs$random) # Select randomization kernel
+    q.l <- sample.int(n = 4, size = 1, prob = probs$largejump) # Select large jump kernel
+    q.o <- sample.int(n = 2, size = 1, prob = probs$localopt) # Select optimizer function
+    q.r <- sample.int(n = 6, size = 1, prob = probs$random) # Select randomization kernel
 
     ### Do large jump and backwards large jump
-    large.jump.ind <- large.jump(q.l) # Get the large jump indices to swap TODO: Implement function
+    large.jump.ind <- large.jump(length(model.cur), q.l, marg.probs, params$jump) # Get the large jump indices to swap
     chi.0.star <- xor(model.cur, large.jump.ind) # Swap indices
     chi.k.star <- local.optim(data, loglik.pi, chi.0.star, features, q.o) # Do local optimization
-    gamma.star <- small.rand(chi.k.star, q.r) # Randomize around the mode TODO: Implement function
+    gamma.star <- small.rand(chi.k.star, q.r) # Randomize around the mode
     chi.0 <- xor(gamma.star, large.jump.ind) # Do a backwards large jump
     chi.k <- local.optim(data, loglik.pi, chi.0, features, q.o) # Do backwards local optimization
     # TODO: We could compare if chi.k is reached by optimising from gamma (model.cur) as "intended"
