@@ -45,16 +45,27 @@ con <- dbConnect(drv=RSQLite::SQLite(), dbname= "../scraper/dalen.db")
 tables <- dbListTables(con)
 sales <- dbGetQuery(conn=con, statement=paste0("SELECT * FROM sales"))
 
-sales2 <- cbind(sales[,3:8], sales[,4:8])
+sales2 <- sales[,3:8]
+sales2$x4 <- sales[,4]
+sales2$x5 <- sales[,5]
+sales2$x6 <- sales[,6]
+sales2$x7 <- sales[,7]
+sales2$x8 <- sales[,8]
+
+
 trans <- c("sin", "cos")
 
-loglik.test <- function (data) {
-  linmod <- lm(data)
-  AIC(linmod)
+loglik.test <- function (data, model, formula) {
+  linmod <- lm(formula = formula, data=data)
+  print(-AIC(linmod))
+  -AIC(linmod)
 }
 
 options(warn=2)
-gmjmcmc(sales2, loglik.test, trans, 1, 100, probs, params)
+result <- gmjmcmc(sales2, loglik.test, transforms, 10, 100, probs, params)
+
+limo <- lm(sales2)
+AIC(limo)
 
 
 

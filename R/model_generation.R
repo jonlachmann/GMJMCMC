@@ -53,12 +53,11 @@ model.proposal.5_6 <- function (model, addition=T, probs=NULL, prob=F) {
   if (addition) change <- which(!model)
   else change <- which(model)
 
-  if (sum(change)==0) stop("No variables to change")
-
   if (prob) {
 
   }
-  swap <- ind.to.log(sample(change, 1), length(model))
+  if (sum(change)==0) swap <- rep(F, length(model)) # Model is full or empty, no change
+  else swap <- ind.to.log(sample(change, 1), length(model))
   return(list(swap=swap, S=1))
 }
 
@@ -106,35 +105,6 @@ prob.proposal <- function (proposal, current, type, params, probs=NULL) {
     prob <- model.proposal.5_6.prob(model, addition=T, prob)
   }
   return(prob)
-}
-
-# Function to generate a small random jump given a current model (q.r)
-small.rand <- function (model, indices, type, probs=NULL, params, prob=F) {
-  if (type == 1 || type == 3) {
-    # Load max and min neighborhood sizes from params vector
-    neigh.max <- params$small.max
-    neigh.min <- params$small.min
-  } else if (type == 2 || type == 4) {
-    neigh.min <- params$small
-    neigh.max <- params$small
-  }
-  proposal <- model.proposal.1_4(length(model), neigh.min, neigh.max, indices, probs, prob)
-  if (prob) return(list(model=xor(proposal$swap, model), prob=proposal$prob)) # Return actual model and probability
-  else return(xor(model, proposal)) # Return actual model
-}
-
-# Function for generating indices for a large jump given a current model (q.l)
-large.jump <- function (model.size, type, probs, params, prob=F) {
-  if (type == 1 || type == 3) {
-    # Load max and min neighborhood sizes from params vector
-    neigh.max <- params$large.max
-    neigh.min <- params$large.min
-  } else if (type == 2 || type == 4) {
-    neigh.min <- params$large
-    neigh.max <- params$large
-  }
-  indices <- model.proposal.1_4(model.size, neigh.min, neigh.max, indices=NULL, probs, prob)
-  return(indices) # Return just the indices to be swapped
 }
 
 # Convert a vector of TRUE indices to a logical vector of specified length

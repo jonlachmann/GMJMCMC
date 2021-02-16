@@ -24,7 +24,7 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, probs, params) {
 
   # TODO: Initialization of first model
   F.0 <- gen.covariates(ncol(data)-1)
-  S[[1]] <- F.0[as.logical(rbinom(n = length(F.0), size = 1, prob = 0.9))]
+  S[[1]] <- F.0[as.logical(rbinom(n = length(F.0), size = 1, prob = 1))] # TODO: How should this be done propely?
   model.cur <- as.logical(rbinom(n = length(S[[1]]), size = 1, prob = 0.6))
 
   ### Main algorithm loop - Iterate over T different populations
@@ -47,13 +47,16 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, probs, params) {
       # Add the current model to the list of visited models
       population.models[[i]] <- model.cur
     }
+    # Set the marginal probabilities for the bare covariates if this is the first run
+    if (t == 1) cov.probs <- marginal.probs(population.models)
     # Add the models visited in the current population to the model list
     models[[t]] <- population.models
     # Calculate marginal likelihoods for current features
     marg.probs <- marginal.probs(population.models)
     # Generate a new population of features for the next iteration
-    S[[t+1]] <- gmjmcmc.transition(S[[t]], F.0, marg.probs, transforms)
+    S[[t+1]] <- gmjmcmc.transition(S[[t]], F.0, cov.probs, marg.probs, transforms, probs)
   }
+  return(list(models=models, populations=S))
 }
 
 #' Subalgorithm for generating a proposal and acceptance probability
@@ -125,7 +128,7 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, marg.probs, probs
 }
 
 # Subalgorithm for generating a new population of features
-gmjmcmc.transition <- function (S.t, F.0, marg.probs, transforms, probs) {
+gmjmcmc.transition <- function (S.t, F.0, cov.probs, marg.probs, transforms, probs) {
   # Sample which features to keep based on marginal inclusion below probs$filter
   feats.keep <- as.logical(rbinom(n = length(marg.probs), size = 1, prob = pmin(marg.probs/probs$filter, 1)))
 
@@ -133,7 +136,10 @@ gmjmcmc.transition <- function (S.t, F.0, marg.probs, transforms, probs) {
   feats.replace <- which(!feats.keep)
 
   for (i in feats.replace) {
-    S.t[[i]] <- gen.feature(c(S.t[!feat.keep], F.0), transforms, probs)
+    if (length(c(F.0, S.t[feats.keep])) != length(c(cov.probs, marg.probs[feats.keep]))) {
+      print("Uh-oh!")
+    }
+    S.t[[i]] <- gen.feature(c(F.0, S.t[feats.keep]), transforms, c(cov.probs, marg.probs[feats.keep]), probs)
   }
   return(S.t)
 }

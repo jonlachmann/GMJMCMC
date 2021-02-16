@@ -27,10 +27,10 @@ precalc.features <- function (data, features, transforms) {
 
 # Function to call the model function
 loglik.pre <- function (loglik.pi, model, data) {
-  # Sanity check to see that we actually have some covariates TODO: Maybe return -Inf?
-  if (sum(model)==0) return(-.Machine$integer.max)  # stop("No covariates selected in the model")
-  # Add an indicator to include y in the data sent to the estimator
-  model <- c(T,model)
-  # Call the model estimator on the subset of the data
-  return(loglik.pi(data[,model]))
+  # Create a formula with only an intercept
+  formula <- paste0(colnames(data)[1], " ~ 1 ")
+  # Add covariates to formula if we have any
+  if (sum(model) != 0) formula <- paste0(formula, "+ ", paste(colnames(data)[c(F,model)], collapse=" + "))
+  # Call the model estimator with the subset of the data
+  return(loglik.pi(data, model, as.formula(formula)))
 }
