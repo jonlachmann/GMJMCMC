@@ -13,8 +13,8 @@ simulated.annealing <- function (model, data, loglik.pi, indices, params) {
     # Make M tries at current temperature
     for (m in 1:params$M) {
       # Get a modified model as proposal
-      proposal <- small.rand(current, indices, type)
-      proposal.lik <- loglik.pi(model, data)
+      proposal <- xor(model, gen.proposal(current, indices, type)$swap)
+      proposal.lik <- loglik.pi(proposal, data)
 
       # Calculate move probability (Bolzmann distribution, see Blum and Roli p. 274)
       alpha <- min(1, exp((model.lik - proposal.lik)/t))

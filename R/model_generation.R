@@ -15,10 +15,10 @@
 # With neigh.min=neigh.max, we get a fixed neighborhood size (Type 2 and 4)
 # With probs left out, we get a swap instead of a random change (Type 3 and 4)
 # Indices tells the sampler which indices it is allowed to sample from
-model.proposal.1_4 <- function (model.size, neigh.max, neigh.min, indices=NULL, probs=NULL, prob=F) {
+model.proposal.1_4 <- function (model.size, neigh.min, neigh.max, indices=NULL, probs=NULL, prob=F) {
   # If no probs, set all to 1 as we are doing a swap
   if (is.null(probs)) probs <- rep(1,model.size)
-  # If no indices selected, allow all
+  # If no indices are selected, allow all
   if (is.null(indices)) indices <- rep(T,model.size)
   # Set neighborhood size, random or fixed
   if (neigh.max == neigh.min) neigh.size <- neigh.min
@@ -31,10 +31,10 @@ model.proposal.1_4 <- function (model.size, neigh.max, neigh.min, indices=NULL, 
   swaps <- neighborhood[swaps]
 
   if (prob) {
-    prob <- model.proposal.1_4.prob(swaps, probs, neigh.size, neigh.max, neigh.min)
-    return(list(swap=swaps, prob=prob))
+    prob <- model.proposal.1_4.prob(swaps, probs, neigh.size, neigh.min, neigh.max)
+    return(list(swap=swaps, S=neigh.size, prob=prob))
   }
-  return(swaps)
+  return(list(swap=swaps, S=neigh.size))
 }
 # Probability for random change with random size of the neighborhood (Type 1)
 # By setting neigh.max=neigh.min we get nonrandom neighborhood size (Type 2)
@@ -45,17 +45,40 @@ model.proposal.1_4.prob <- function (swaps, probs, neigh.size, neigh.max, neigh.
 }
 
 # Uniform addition and deletion of a covariate (Type 5 and 6)
-model.proposal.5_6 <- function (model, addition=T, prob=F) {
+model.proposal.5_6 <- function (model, addition=T, probs=NULL, prob=F) {
+  # If no probs, set all to 1
+  if (is.null(probs)) probs <- rep(1,length(model))
+
   if (addition) change <- which(!model)
   else change <- which(model)
   if (prob) {
 
   }
-  return(sample(change, 1))
+  swap <- sample(change, 1)
+  return()
 }
 
 model.proposal.5_6.prob <- function (model, addition) {
   # TODO: Get this finished
+}
+
+# Function to generate a proposed model given a current one
+gen.proposal <- function (model, params, type, indices=NULL, probs=NULL, prob=F) {
+  if (type < 5) {
+    # Generate a proposal of type 1, 2, 3 or 4
+    if (type == 2 || type == 4) {
+      params$neigh.min <- params$neigh.size
+      params$neigh.max <- params$neigh.size
+    }
+    proposal <- model.proposal.1_4(length(model), params$neigh.min, params$neigh.max, indices, probs, prob)
+  } else if (type == 5) {
+    # Generate a proposal of type 5 (addition of a covariate)
+    proposal <- model.proposal.5_6(model, addition=T, prob)
+  } else if (type == 6) {
+    # Generate a proposal of type 6 (subtraction of a covariate)
+    proposal <- model.proposal.5_6(model, addition=F, prob)
+  }
+  return(proposal)
 }
 
 # Function to generate a small random jump given a current model (q.r)
@@ -68,8 +91,9 @@ small.rand <- function (model, indices, type, probs=NULL, params, prob=F) {
     neigh.min <- params$small
     neigh.max <- params$small
   }
-  indices <- model.proposal.1_4(length(model), neigh.min, neigh.max, indices, probs, prob)
-  return(xor(model, indices)) # Return actual model
+  proposal <- model.proposal.1_4(length(model), neigh.min, neigh.max, indices, probs, prob)
+  if (prob) return(list(model=xor(proposal$swap, model), prob=proposal$prob)) # Return actual model and probability
+  else return(xor(model, proposal)) # Return actual model
 }
 
 # Function for generating indices for a large jump given a current model (q.l)

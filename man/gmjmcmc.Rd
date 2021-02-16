@@ -4,18 +4,22 @@
 \alias{gmjmcmc}
 \title{Main algorithm for GMJMCMC}
 \usage{
-gmjmcmc(data, loglik.pi, T, N, probs)
+gmjmcmc(data, loglik.pi, transforms, T, N, probs, params)
 }
 \arguments{
 \item{data}{The data to use in the algorithm}
 
-\item{loglik.pi}{The the (log) density to explore}
+\item{loglik.pi}{The (log) density to explore}
+
+\item{transforms}{A list of the available nonlinear transformations for feature generation}
 
 \item{T}{The number of population iterations}
 
 \item{N}{The number of iterations per population (total iterations = T*N)}
 
 \item{probs}{A list of the various probability vectors to use TODO: specification of this}
+
+\item{params}{A list of the various parameters for all the parts of the algorithm TODO: specification of this}
 }
 \description{
 Main algorithm for GMJMCMC

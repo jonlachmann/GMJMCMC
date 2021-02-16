@@ -13,3 +13,13 @@ marginal.probs <- function (models) {
   probs <- probs / mod.count
   return(probs)
 }
+
+# Function for precalculating features for a new feature population
+precalc.features <- function (data, features, transforms) {
+  precalc <- data.frame(matrix(NA, nrow(data), length(features)))
+  for (f in 1:length(features)) {
+    feature_string <- print.feature(features[[f]], transforms, dataset=T)
+    precalc[,f] <- eval(parse(text=feature_string))
+  }
+  return(precalc)
+}

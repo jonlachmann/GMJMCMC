@@ -25,14 +25,17 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, probs, params) {
   # TODO: Initialization of first model
   F.0 <- gen.covariates(ncol(data)-1)
   S[[1]] <- F.0[as.logical(rbinom(n = length(F.0), size = 1, prob = 0.5))]
-  model.cur <- as.logical(rbinom(n = length(S[[1]]), size = 1, prob = 0.3))
+  model.cur <- as.logical(rbinom(n = length(S[[1]]), size = 1, prob = 0.6))
+  marg.probs <- rep(0.5, length(S[[1]]))
 
   # For every population transition
   for (t in 1:T) {
+    # Load a precalculated covariates in data.t
+    data.t <- precalc.features(data, S[[t]], transforms)
     # Initialize a vector to contain the models visited in this population
     population.models <- vector("list", N)
     for (i in 1:N) {
-      proposal <- mjmcmc.prop(data, loglik.pi, model.cur, S[[t]], probs, params)
+      proposal <- mjmcmc.prop(data.t, loglik.pi, model.cur, S[[t]], probs, params)
       if (log(runif(1)) <= proposal$alpha) {
         model.cur <- proposal$model
         accept <- accept + 1
@@ -46,7 +49,6 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, probs, params) {
     marg.probs <- marginal.probs(population.models)
     # Generate a new population of features for the next iteration
     S[[t+1]] <- gmjmcmc.transition(S[[t]], F.0, marg.probs, transforms)
-    # TODO: Precalculate the new features and save as numeric values
   }
 }
 
@@ -67,31 +69,42 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, probs, params) {
     ### Select kernels to use for the large jump
     q.l <- sample.int(n = 4, size = 1, prob = probs$largejump) # Select large jump kernel
     q.o <- sample.int(n = 2, size = 1, prob = probs$localopt) # Select optimizer function
-    q.r <- sample.int(n = 6, size = 1, prob = probs$random) # Select randomization kernel
+    q.r <- sample.int(n = 4, size = 1, prob = probs$random) # Select randomization kernel
 
-    ### Do large jump and backwards large jump
-    large.jump.ind <- large.jump(length(model.cur), q.l, marg.probs, params$jump) # Get the large jump indices to swap
-    chi.0.star <- xor(model.cur, large.jump.ind) # Swap indices
-    chi.k.star <- local.optim(data, loglik.pi, chi.0.star, features, q.o) # Do local optimization
-    gamma.star <- small.rand(chi.k.star, q.r) # Randomize around the mode
-    chi.0 <- xor(gamma.star, large.jump.ind) # Do a backwards large jump
-    chi.k <- local.optim(data, loglik.pi, chi.0, features, q.o) # Do backwards local optimization
+    # Generate and do large jump
+    large.jump <- gen.proposal(model.cur, params$large, q.l) # Get the large jump
+    chi.0.star <- xor(model.cur, large.jump$swap) # Swap large jump indices
+
+    # Optimize to find a mode
+    chi.k.star <- local.optim(chi.0.star, data, loglik.pi, !large.jump$swap, q.o, params) # Do local optimization
+
+    # Randomize around the mode
+    proposal <- gen.proposal(chi.k.star, params$random, q.r, large.jump.ind, marg.probs, prob=T)
+    prop.model <- xor(chi.k.star, proposal$swap)
+
+    # Do a backwards large jump
+    chi.0 <- xor(prop.model, large.jump$swap)
+
+    # Do a backwards local optimization
+    chi.k <- local.optim(data, loglik.pi, chi.0, features, q.o)
     # TODO: We could compare if chi.k is reached by optimising from gamma (model.cur) as "intended"
 
     ### Calculate acceptance probability
-    # TODO: Implement functions
-    # Calculate small.rand probabilties
-    prob.gamma_chi.k <- p.small.rand(gamma, chi.k) # Probability of gamma given chi.k
-    prob.gamma.star_chi.k.star <- p.small.rand(gamma.star, chi.k.star) # Probability of gamma.star given chi.k.star
+    # Calculate probaility of current model given chi.k
+    swaps <- xor(mode.cur, chi.k)
+
+    prob.gamma_chi.k <- model.proposal.1_4.prob(swaps, marg.probs, proposal$S, params$random$min, params$random$max) # Probability of gamma given chi.k
+    prob.gamma.star_chi.k.star <- proposal$prob # Probability of gamma.star given chi.k.star
   } else {
     ### Regular MH step
-
+    # Select MH kernel
+    q.g <- sample.int(n = 6, size = 1, prob = probs$mh)
     # Small randomization around current model
-    gamma.star <- small.rand(cur.mod) # Randomize around the mode
+    proposal <- gen.proposal(model.cur, params$mh, q.g, probs=marg.probs, prob=T)
   }
   # Calculate log likelihoods for models
-  prob.cur <- loglik.pi(model.cur)
-  prob.gamma.star <- loglik.pi(gamma.star)
+  prob.cur <- loglik.pi(model.cur, data)
+  prob.gamma.star <- loglik.pi(gamma.star, data)
 
   ### Calculate acceptance probability
   if (l > probs$large) {

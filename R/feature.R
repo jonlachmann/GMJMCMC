@@ -31,11 +31,13 @@ create.feature <- function (transform, features, alphas=NULL) {
 
 #' Print method for "feature" class
 #'
-#' @param x An object of class "feature"
+#' @param feature An object of class "feature"
+#' @param transforms The list of transforms to use
+#' @param dataset Set the regular covariates as columns in a dataset
 #'
 #' @method print feature
 #' @export
-print.feature <- function (feature, transforms) {
+print.feature <- function (feature, transforms, dataset=F) {
   fString <- ""
   feat <- feature[[length(feature)]]
   # This is a more complex feature
@@ -56,15 +58,16 @@ print.feature <- function (feature, transforms) {
       if (is.na(feat[j,2]) && feat[j,3] != 0) fString <- paste0(fString, feat[j,3], op)
       # Otherwise this is a feature or covariate, do a recursive conversion
       if (!is.na(feat[j,2])) {
-        if (feat[j,3] == 1) fString <- paste0(fString, print.feature(feature[[feat[j,2]]], transforms), op)
-        else fString <- paste0(fString, feat[j,3], "*", print.feature(feature[[feat[j,2]]], transforms), op)
+        if (feat[j,3] == 1) fString <- paste0(fString, print.feature(feature[[feat[j,2]]], transforms, dataset), op)
+        else fString <- paste0(fString, feat[j,3], "*", print.feature(feature[[feat[j,2]]], transforms, dataset), op)
       }
     }
     fString <- paste0(fString, ")")
   }
   # This is a plain covariate
   else if (is.numeric(feat)) {
-    fString <- paste0("x", feat)
+    if (dataset) fString <- paste0("data[,", feat, "]")
+    else fString <- paste0("x", feat)
   } else stop("Invalid feature structure")
   return(fString)
 }
