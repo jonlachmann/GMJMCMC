@@ -79,7 +79,7 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, probs, params) {
     chi.k.star <- local.optim(chi.0.star, data, loglik.pi, !large.jump$swap, q.o, params) # Do local optimization
 
     # Randomize around the mode
-    proposal <- gen.proposal(chi.k.star, params$random, q.r, large.jump.ind, marg.probs, prob=T)
+    proposal <- gen.proposal(chi.k.star, params$random, q.r, large.jump$swap, prob=T)
     prop.model <- xor(chi.k.star, proposal$swap)
 
     # Do a backwards large jump
@@ -91,9 +91,9 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, probs, params) {
 
     ### Calculate acceptance probability
     # Calculate probaility of current model given chi.k
-    swaps <- xor(mode.cur, chi.k)
+    swaps <- xor(model.cur, chi.k)
 
-    prob.gamma_chi.k <- model.proposal.1_4.prob(swaps, marg.probs, proposal$S, params$random$min, params$random$max) # Probability of gamma given chi.k
+    prob.gamma_chi.k <- model.proposal.1_4.prob(swaps, probs, proposal$S, params$random$min, params$random$max) # Probability of gamma given chi.k
     prob.gamma.star_chi.k.star <- proposal$prob # Probability of gamma.star given chi.k.star
   } else {
     ### Regular MH step

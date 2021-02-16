@@ -36,11 +36,12 @@ model.proposal.1_4 <- function (model.size, neigh.min, neigh.max, indices=NULL, 
   }
   return(list(swap=swaps, S=neigh.size))
 }
+
 # Probability for random change with random size of the neighborhood (Type 1)
 # By setting neigh.max=neigh.min we get nonrandom neighborhood size (Type 2)
 # By setting prob vector to all ones, we get swap instead of random change (Type 3 and 4)
 model.proposal.1_4.prob <- function (swaps, probs, neigh.size, neigh.max, neigh.min) {
-  p <- length(probs) # Get number of variables in model
+  p <- length(probs) # Get number of available covariates
   prod(probs[swaps]) / (choose(p,neigh.size)*(neigh.max-neigh.min+1))
 }
 

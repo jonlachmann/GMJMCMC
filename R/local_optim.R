@@ -4,6 +4,8 @@
 # Created on: 2021-02-11
 
 simulated.annealing <- function (model, data, loglik.pi, indices, params) {
+  # Select which kernel to use for the random steps
+  kernel <- sample.int(n = 6, size = 1, prob = params$kern$probs)
   # TODO: Can any of these be set dynamically based on data?
   t <- params$t.init # Initial temperature
 
@@ -12,8 +14,8 @@ simulated.annealing <- function (model, data, loglik.pi, indices, params) {
   while (t > params$t.min) {
     # Make M tries at current temperature
     for (m in 1:params$M) {
-      # Get a modified model as proposal
-      proposal <- xor(model, gen.proposal(current, indices, type)$swap)
+      # Get a modified model as proposal and calculate its likelihood
+      proposal <- xor(model, gen.proposal(model, params$kern, kernel, indices)$swap)
       proposal.lik <- loglik.pi(proposal, data)
 
       # Calculate move probability (Bolzmann distribution, see Blum and Roli p. 274)
@@ -30,8 +32,8 @@ simulated.annealing <- function (model, data, loglik.pi, indices, params) {
   return(model)
 }
 
-greedy.optim <- function () {
-
+greedy.optim <- function (model, data, loglik.pi, indices, params) {
+ return(model)
 }
 
 local.optim <- function (model, data, loglik.pi, indices, type, params) {
