@@ -52,9 +52,8 @@ loglik.test <- function (data) {
   AIC(linmod)
 }
 
+options(warn=2)
 gmjmcmc(sales2, loglik.test, trans, 1, 100, probs, params)
-
-
 
 
 

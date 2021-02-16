@@ -82,8 +82,6 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, marg.probs, probs
 
     # Randomize around the mode
     proposal <- gen.proposal(chi.k.star, params$random, q.r, large.jump$swap, prob=T)
-    print("prop: ")
-    print(proposal)
     model.prop <- xor(chi.k.star, proposal$swap)
 
     # Do a backwards large jump
@@ -103,7 +101,7 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, marg.probs, probs
     # Select MH kernel
     q.g <- sample.int(n = 6, size = 1, prob = probs$mh)
     # Small randomization around current model
-    model.prop <- xor(gen.proposal(model.cur, params$mh, q.g, probs=marg.probs, prob=T), model.cur)
+    model.prop <- xor(gen.proposal(model.cur, params$mh, q.g, probs=marg.probs, prob=T)$swap, model.cur)
   }
   # Calculate log likelihoods for models
   prob.cur <- loglik.pre(loglik.pi, model.cur, data)

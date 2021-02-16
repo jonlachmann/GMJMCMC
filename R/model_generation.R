@@ -28,7 +28,7 @@ model.proposal.1_4 <- function (model.size, neigh.min, neigh.max, indices=NULL, 
 
   # Sample which variables to change based on the probs vector
   swaps <- as.logical(rbinom(neigh.size, 1, probs[neighborhood]))
-  swaps <- neighborhood[swaps]
+  swaps <- ind.to.log(neighborhood[swaps], model.size)
 
   if (prob) {
     prob <- model.proposal.1_4.prob(swaps, probs, neigh.size, neigh.min, neigh.max)
@@ -42,6 +42,7 @@ model.proposal.1_4 <- function (model.size, neigh.min, neigh.max, indices=NULL, 
 # By setting prob vector to all ones, we get swap instead of random change (Type 3 and 4)
 model.proposal.1_4.prob <- function (swaps, probs, neigh.size, neigh.max, neigh.min) {
   p <- length(probs) # Get number of available covariates
+  print(neigh.size)
   prod(probs[swaps]) / (choose(p, neigh.size)*(neigh.max-neigh.min+1))
 }
 
@@ -52,10 +53,13 @@ model.proposal.5_6 <- function (model, addition=T, probs=NULL, prob=F) {
 
   if (addition) change <- which(!model)
   else change <- which(model)
+
+  if (sum(change)==0) stop("No variables to change")
+
   if (prob) {
 
   }
-  swap <- sample(change, 1)
+  swap <- ind.to.log(sample(change, 1), length(model))
   return(list(swap=swap, S=1))
 }
 
@@ -132,4 +136,10 @@ large.jump <- function (model.size, type, probs, params, prob=F) {
   }
   indices <- model.proposal.1_4(model.size, neigh.min, neigh.max, indices=NULL, probs, prob)
   return(indices) # Return just the indices to be swapped
+}
+
+ind.to.log <- function (ind, length) {
+  log <- rep(F,length)
+  log[ind] <- T
+  return(log)
 }
