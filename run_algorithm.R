@@ -53,7 +53,7 @@ sales2$x7 <- sales[,7]
 sales2$x8 <- sales[,8]
 
 
-trans <- c("sin", "cos")
+transforms <- c("sin", "cos")
 
 loglik.test <- function (data, model, formula) {
   linmod <- lm(formula = formula, data=data)

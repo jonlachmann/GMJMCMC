@@ -53,17 +53,26 @@ model.proposal.5_6 <- function (model, addition=T, probs=NULL, prob=F) {
   if (addition) change <- which(!model)
   else change <- which(model)
 
-  if (prob) {
-
-  }
   if (sum(change)==0) swap <- rep(F, length(model)) # Model is full or empty, no change
   else swap <- ind.to.log(sample(change, 1), length(model))
+  if (prob) {
+    prob <- model.proposal.5_6.prob(model, addition)
+    return(list(swap=swap, S=1, prob=prob))
+  }
   return(list(swap=swap, S=1))
 }
 
+# Probability for addition or subtraction of a parameter
 model.proposal.5_6.prob <- function (model, addition) {
-  # TODO: Get this finished
-  return(0.1)
+  p <- length(model)
+  modsum <- sum(model)
+  if (addition) {
+    if (modsum==p) return(0)
+    else return(1/(p-modsum))
+  } else {
+    if (modsum==0) return(0)
+    else return(1/modsum)
+  }
 }
 
 # Function to generate a proposed model given a current one
@@ -99,17 +108,10 @@ prob.proposal <- function (proposal, current, type, params, probs=NULL) {
     prob <- model.proposal.1_4.prob(swaps, probs, params$neigh.size, params$neigh.min, params$neigh.max)
   } else if (type == 5) {
     # Generate a proposal of type 5 (addition of a covariate)
-    prob <- model.proposal.5_6.prob(model, addition=T, prob)
+    prob <- model.proposal.5_6.prob(model, addition=T)
   } else if (type == 6) {
     # Generate a proposal of type 6 (subtraction of a covariate)
-    prob <- model.proposal.5_6.prob(model, addition=T, prob)
+    prob <- model.proposal.5_6.prob(model, addition=T)
   }
   return(prob)
-}
-
-# Convert a vector of TRUE indices to a logical vector of specified length
-ind.to.log <- function (ind, length) {
-  log <- rep(F,length)
-  log[ind] <- T
-  return(log)
 }
