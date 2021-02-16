@@ -1,4 +1,4 @@
-# Title     : MJMCMC Model Generator
+# Title     : MJMCMC Proposal Generator
 # Objective : Generate models for proposals in MJMCMC
 # Created by: jonlachmann
 # Created on: 2021-02-11
@@ -42,7 +42,6 @@ model.proposal.1_4 <- function (model.size, neigh.min, neigh.max, indices=NULL, 
 # By setting prob vector to all ones, we get swap instead of random change (Type 3 and 4)
 model.proposal.1_4.prob <- function (swaps, probs, neigh.size, neigh.max, neigh.min) {
   p <- length(probs) # Get number of available covariates
-  print(neigh.size)
   prod(probs[swaps]) / (choose(p, neigh.size)*(neigh.max-neigh.min+1))
 }
 
@@ -138,6 +137,7 @@ large.jump <- function (model.size, type, probs, params, prob=F) {
   return(indices) # Return just the indices to be swapped
 }
 
+# Convert a vector of TRUE indices to a logical vector of specified length
 ind.to.log <- function (ind, length) {
   log <- rep(F,length)
   log[ind] <- T

@@ -35,7 +35,8 @@ random_params <- list(neigh.size=1, neigh.min=1, neigh.max=2) # Small random jum
 mh_params <- list(neigh.size=1, neigh.min=1, neigh.max=2) # Regular MH parameters
 jump_params <- list(large=0.5, large.max=0.6, large.min=0.4, small=0.2, small.max=0.3, small.min=0.1) # Neighborhood size parameters
 
-params <- list(mh=mh_params, sa=sa_params, greedy=greedy_params, large=large_params, random=random_params)
+params <- list(mh=mh_params, large=large_params, random=random_params,
+               sa=sa_params, greedy=greedy_params)
 
 # install.packages("RSQLite")
 library(RSQLite)
@@ -44,7 +45,7 @@ con <- dbConnect(drv=RSQLite::SQLite(), dbname= "../scraper/dalen.db")
 tables <- dbListTables(con)
 sales <- dbGetQuery(conn=con, statement=paste0("SELECT * FROM sales"))
 
-sales2 <- sales[,3:8]
+sales2 <- cbind(sales[,3:8], sales[,4:8])
 trans <- c("sin", "cos")
 
 loglik.test <- function (data) {

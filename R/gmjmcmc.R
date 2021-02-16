@@ -37,8 +37,10 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, probs, params) {
     # Initialize a vector to contain the models visited in this population
     population.models <- vector("list", N)
     for (i in 1:N) {
+      print("Generating proposal")
       proposal <- mjmcmc.prop(data.t, loglik.pi, model.cur, S[[t]], marg.probs, probs, params)
       if (log(runif(1)) <= proposal$alpha) {
+        print(paste("Accepted move with alpha ", proposal$alpha))
         model.cur <- proposal$model
         accept <- accept + 1
       }
@@ -65,8 +67,9 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, probs, params) {
 #'
 mjmcmc.prop <- function (data, loglik.pi, model.cur, features, marg.probs, probs, params) {
   l <- runif(1)
-  if (l > probs$large) {
+  if (l < probs$large) {
     ### Large jump
+    print("Large jump!")
 
     ### Select kernels to use for the large jump
     q.l <- sample.int(n = 4, size = 1, prob = probs$largejump) # Select large jump kernel
@@ -108,10 +111,8 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, marg.probs, probs
   prob.gamma.star <- loglik.pre(loglik.pi, model.prop, data)
 
   ### Calculate acceptance probability
-  if (l > probs$large) {
+  if (l < probs$large) {
     # Calculate acceptance probability for large jump
-    print((prob.gamma.star + prob.gamma_chi.k))
-    print((prob.cur + prob.gamma.star_chi.k.star))
     alpha <- min(0, (prob.gamma.star + prob.gamma_chi.k) - (prob.cur + prob.gamma.star_chi.k.star))
   } else {
     # Calculate regular acceptance probability (assuming small rand to be symmetric here)
@@ -120,7 +121,6 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, marg.probs, probs
 
   ### Format results and return them
   proposal <- list(model=model.prop, alpha=alpha)
-  print(proposal)
   return(proposal)
 }
 
