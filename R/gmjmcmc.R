@@ -14,18 +14,20 @@
 #' @param params A list of the various parameters for all the parts of the algorithm TODO: specification of this
 #'
 #' @export gmjmcmc
-gmjmcmc <- function (data, loglik.pi, transforms, T, N, probs, params) {
+gmjmcmc <- function (data, loglik.pi, transforms, T, N, N.final, probs, params) {
   # Acceptance probability
   accept <- 0
   # A list of populations that have been visited
   S <- vector("list", T+1)
   # A list of models that have been visited, refering to the populations
   models <- vector("list", T+1)
+  crits <- array(NA, T*N)
+  crit.cur <- 0
 
   # TODO: Initialization of first model
   F.0 <- gen.covariates(ncol(data)-1)
   S[[1]] <- F.0[as.logical(rbinom(n = length(F.0), size = 1, prob = 1))] # TODO: How should this be done propely?
-  model.cur <- as.logical(rbinom(n = length(S[[1]]), size = 1, prob = 0.6))
+  model.cur <- as.logical(rbinom(n = length(S[[1]]), size = 1, prob = 0.9))
 
   ### Main algorithm loop - Iterate over T different populations
   for (t in 1:T) {
@@ -36,17 +38,20 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, probs, params) {
     data.t <- precalc.features(data, S[[t]], transforms)
     # Initialize a vector to contain the models visited in this population
     population.models <- vector("list", N)
+
+    if (t==T) N <- N.final
     for (i in 1:N) {
-      print("Generating proposal")
       proposal <- mjmcmc.prop(data.t, loglik.pi, model.cur, S[[t]], marg.probs, probs, params)
       if (log(runif(1)) <= proposal$alpha) {
-        print(paste("Accepted move with alpha ", proposal$alpha))
         model.cur <- proposal$model
         accept <- accept + 1
+        crit.cur <- proposal$crit
       }
       # Add the current model to the list of visited models
       population.models[[i]] <- model.cur
+      crits[(t-1)*N+i] <- crit.cur
     }
+    print(paste("Population", t, "done."))
     # Set the marginal probabilities for the bare covariates if this is the first run
     if (t == 1) cov.probs <- marginal.probs(population.models)
     # Add the models visited in the current population to the model list
@@ -56,7 +61,10 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, probs, params) {
     # Generate a new population of features for the next iteration
     S[[t+1]] <- gmjmcmc.transition(S[[t]], F.0, cov.probs, marg.probs, transforms, probs)
   }
-  return(list(models=models, populations=S))
+  # Calculate acceptance rate
+  accept <- accept / (N*T)
+  # Return formatted results
+  return(list(models=models, populations=S, accept=accept, crit=crits))
 }
 
 #' Subalgorithm for generating a proposal and acceptance probability
@@ -72,7 +80,6 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, marg.probs, probs
   l <- runif(1)
   if (l < probs$large) {
     ### Large jump
-    print("Large jump!")
 
     ### Select kernels to use for the large jump
     q.l <- sample.int(n = 4, size = 1, prob = probs$largejump) # Select large jump kernel
@@ -123,7 +130,7 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, marg.probs, probs
   }
 
   ### Format results and return them
-  proposal <- list(model=model.prop, alpha=alpha)
+  proposal <- list(model=model.prop, alpha=alpha, crit=prob.gamma.star)
   return(proposal)
 }
 

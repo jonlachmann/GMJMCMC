@@ -57,17 +57,37 @@ trans <- c("sin", "cos")
 
 loglik.test <- function (data, model, formula) {
   linmod <- lm(formula = formula, data=data)
-  print(-AIC(linmod))
-  -AIC(linmod)
+  ret <- -AIC(linmod)
+  if (ret > 0) {
+    print(formula)
+    print(ret)
+  }
+  return(ret)
 }
 
-options(warn=2)
-result <- gmjmcmc(sales2, loglik.test, transforms, 10, 100, probs, params)
+result <- gmjmcmc(sales2, loglik.test, transforms, 30, 70, 500, probs, params)
 
-limo <- lm(sales2)
-AIC(limo)
+result$accept
 
+### Visualization experiments below
 
+hist(result$crit, breaks=100)
+
+# Give each variable its own angle
+var.angles <- seq(0, 0.5*pi, length.out=10+1)[-1]
+x.positions <- cos(var.angles)
+y.positions <- sin(var.angles)
+
+# Calculate aggregated angle based measures for each model
+mods <- matrix(as.numeric(unlist(result$models[[30]])), ncol=10)
+x.pos <- rowSums(mods*x.positions)
+y.pos <- rowSums(mods*y.positions)
+
+dff <- as.data.frame(cbind(x.pos, y.pos))
+
+# Create a plot
+ggplot(dff, aes(x=x.pos, y=y.pos)) +
+  stat_density2d(aes(fill=..level..), geom = "polygon", colour="white", show.legend=F)
 
 
 
