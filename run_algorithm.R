@@ -30,30 +30,29 @@ probs <- list(large=large, largejump=largejump, localopt=localopt,
 sa_kern <- list(probs=c(0.1, 0.05, 0.2, 0.3, 0.2, 0.15), neigh.size=1, neigh.min=1, neigh.max=2) # Simulated annealing proposal kernel parameters
 sa_params <- list(t.init=10, t.min=0.0001, dt=3, M=12, kern=sa_kern) # Simulated annealing parameters
 greedy_params <- list() # Greedy algorithm parameters
-large_params <- list(neigh.size=2)
-random_params <- list(neigh.size=1)
+large_params <- list(neigh.size=2, neigh.min=1, neigh.max=2) # Large jump parameters
+random_params <- list(neigh.size=1, neigh.min=1, neigh.max=2) # Small random jump parameters
+mh_params <- list(neigh.size=1, neigh.min=1, neigh.max=2) # Regular MH parameters
 jump_params <- list(large=0.5, large.max=0.6, large.min=0.4, small=0.2, small.max=0.3, small.min=0.1) # Neighborhood size parameters
 
-params <- list(sa=sa_params, greedy=greedy_params, large=large_params, random=random_params)
+params <- list(mh=mh_params, sa=sa_params, greedy=greedy_params, large=large_params, random=random_params)
 
 # install.packages("RSQLite")
 library(RSQLite)
 
 con <- dbConnect(drv=RSQLite::SQLite(), dbname= "../scraper/dalen.db")
 tables <- dbListTables(con)
-sales <- dbGetQuery(conn=con, statement=paste("SELECT * FROM sales", sep=""))
+sales <- dbGetQuery(conn=con, statement=paste0("SELECT * FROM sales"))
 
 sales2 <- sales[,3:8]
 trans <- c("sin", "cos")
 
-loglik.test <- function (model, data) {
-  print(str(model))
-  linmod <- lm(data[,1] ~ data[,model])
+loglik.test <- function (data) {
+  linmod <- lm(data)
   AIC(linmod)
 }
 
 gmjmcmc(sales2, loglik.test, trans, 1, 100, probs, params)
-
 
 
 

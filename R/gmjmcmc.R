@@ -24,18 +24,20 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, probs, params) {
 
   # TODO: Initialization of first model
   F.0 <- gen.covariates(ncol(data)-1)
-  S[[1]] <- F.0[as.logical(rbinom(n = length(F.0), size = 1, prob = 0.5))]
+  S[[1]] <- F.0[as.logical(rbinom(n = length(F.0), size = 1, prob = 0.9))]
   model.cur <- as.logical(rbinom(n = length(S[[1]]), size = 1, prob = 0.6))
-  marg.probs <- rep(0.5, length(S[[1]]))
 
-  # For every population transition
+  ### Main algorithm loop - Iterate over T different populations
   for (t in 1:T) {
-    # Load a precalculated covariates in data.t
+    # TODO: Temporary marginal prob calculator - Look into what Aliaksandr mentioned
+    marg.probs <- rep(0.5, length(S[[t]]))
+
+    # Precalculate covariates and put them in data.t
     data.t <- precalc.features(data, S[[t]], transforms)
     # Initialize a vector to contain the models visited in this population
     population.models <- vector("list", N)
     for (i in 1:N) {
-      proposal <- mjmcmc.prop(data.t, loglik.pi, model.cur, S[[t]], probs, params)
+      proposal <- mjmcmc.prop(data.t, loglik.pi, model.cur, S[[t]], marg.probs, probs, params)
       if (log(runif(1)) <= proposal$alpha) {
         model.cur <- proposal$model
         accept <- accept + 1
@@ -61,7 +63,7 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, probs, params) {
 #' @param probs A list of the various probability vectors to use TODO: specification of this
 #' @param params A list of the various parameters for all the parts of the algorithm TODO: specification of this
 #'
-mjmcmc.prop <- function (data, loglik.pi, model.cur, features, probs, params) {
+mjmcmc.prop <- function (data, loglik.pi, model.cur, features, marg.probs, probs, params) {
   l <- runif(1)
   if (l > probs$large) {
     ### Large jump
@@ -80,35 +82,38 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, probs, params) {
 
     # Randomize around the mode
     proposal <- gen.proposal(chi.k.star, params$random, q.r, large.jump$swap, prob=T)
-    prop.model <- xor(chi.k.star, proposal$swap)
+    print("prop: ")
+    print(proposal)
+    model.prop <- xor(chi.k.star, proposal$swap)
 
     # Do a backwards large jump
-    chi.0 <- xor(prop.model, large.jump$swap)
+    chi.0 <- xor(model.prop, large.jump$swap)
 
     # Do a backwards local optimization
-    chi.k <- local.optim(data, loglik.pi, chi.0, features, q.o)
+    chi.k <- local.optim(chi.0, data, loglik.pi, features, q.o, params)
     # TODO: We could compare if chi.k is reached by optimising from gamma (model.cur) as "intended"
 
     ### Calculate acceptance probability
-    # Calculate probaility of current model given chi.k
-    swaps <- xor(model.cur, chi.k)
-
-    prob.gamma_chi.k <- model.proposal.1_4.prob(swaps, probs, proposal$S, params$random$min, params$random$max) # Probability of gamma given chi.k
+    # Set up the parameters that were used to generate the proposal
+    prop.params <- list(neigh.min=params$random$min, neigh.max=params$random$max, neigh.size=proposal$S)
+    prob.gamma_chi.k <- prob.proposal(model.prop, chi.k, q.r, prop.params, marg.probs) # Get probability of gamma given chi.k
     prob.gamma.star_chi.k.star <- proposal$prob # Probability of gamma.star given chi.k.star
   } else {
     ### Regular MH step
     # Select MH kernel
     q.g <- sample.int(n = 6, size = 1, prob = probs$mh)
     # Small randomization around current model
-    proposal <- gen.proposal(model.cur, params$mh, q.g, probs=marg.probs, prob=T)
+    model.prop <- xor(gen.proposal(model.cur, params$mh, q.g, probs=marg.probs, prob=T), model.cur)
   }
   # Calculate log likelihoods for models
-  prob.cur <- loglik.pi(model.cur, data)
-  prob.gamma.star <- loglik.pi(gamma.star, data)
+  prob.cur <- loglik.pre(loglik.pi, model.cur, data)
+  prob.gamma.star <- loglik.pre(loglik.pi, model.prop, data)
 
   ### Calculate acceptance probability
   if (l > probs$large) {
     # Calculate acceptance probability for large jump
+    print((prob.gamma.star + prob.gamma_chi.k))
+    print((prob.cur + prob.gamma.star_chi.k.star))
     alpha <- min(0, (prob.gamma.star + prob.gamma_chi.k) - (prob.cur + prob.gamma.star_chi.k.star))
   } else {
     # Calculate regular acceptance probability (assuming small rand to be symmetric here)
@@ -116,7 +121,8 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, probs, params) {
   }
 
   ### Format results and return them
-  proposal <- list(model=gamma.star, alpha=alpha)
+  proposal <- list(model=model.prop, alpha=alpha)
+  print(proposal)
   return(proposal)
 }
 

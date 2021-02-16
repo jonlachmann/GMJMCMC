@@ -42,7 +42,7 @@ model.proposal.1_4 <- function (model.size, neigh.min, neigh.max, indices=NULL, 
 # By setting prob vector to all ones, we get swap instead of random change (Type 3 and 4)
 model.proposal.1_4.prob <- function (swaps, probs, neigh.size, neigh.max, neigh.min) {
   p <- length(probs) # Get number of available covariates
-  prod(probs[swaps]) / (choose(p,neigh.size)*(neigh.max-neigh.min+1))
+  prod(probs[swaps]) / (choose(p, neigh.size)*(neigh.max-neigh.min+1))
 }
 
 # Uniform addition and deletion of a covariate (Type 5 and 6)
@@ -56,11 +56,12 @@ model.proposal.5_6 <- function (model, addition=T, probs=NULL, prob=F) {
 
   }
   swap <- sample(change, 1)
-  return()
+  return(list(swap=swap, S=1))
 }
 
 model.proposal.5_6.prob <- function (model, addition) {
   # TODO: Get this finished
+  return(0.1)
 }
 
 # Function to generate a proposed model given a current one
@@ -80,6 +81,28 @@ gen.proposal <- function (model, params, type, indices=NULL, probs=NULL, prob=F)
     proposal <- model.proposal.5_6(model, addition=F, prob)
   }
   return(proposal)
+}
+
+# Calculate the probaility of getting a specified proposal given the current model (i.e. a pdf function)
+prob.proposal <- function (proposal, current, type, params, probs=NULL) {
+  # Get the difference between the two models
+  swaps <- xor(proposal, current)
+  if (type < 5) {
+    # Prepare parameters for probability calculation
+    if (is.null(probs)) probs <- rep(1, length(proposal))
+    if (type == 2 || type == 4) {
+      params$neigh.min <- params$neigh.size
+      params$neigh.max <- params$neigh.size
+    }
+    prob <- model.proposal.1_4.prob(swaps, probs, params$neigh.size, params$neigh.min, params$neigh.max)
+  } else if (type == 5) {
+    # Generate a proposal of type 5 (addition of a covariate)
+    prob <- model.proposal.5_6.prob(model, addition=T, prob)
+  } else if (type == 6) {
+    # Generate a proposal of type 6 (subtraction of a covariate)
+    prob <- model.proposal.5_6.prob(model, addition=T, prob)
+  }
+  return(prob)
 }
 
 # Function to generate a small random jump given a current model (q.r)
