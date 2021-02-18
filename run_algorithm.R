@@ -34,9 +34,10 @@ large_params <- list(neigh.size=2, neigh.min=1, neigh.max=2) # Large jump parame
 random_params <- list(neigh.size=1, neigh.min=1, neigh.max=2) # Small random jump parameters
 mh_params <- list(neigh.size=1, neigh.min=1, neigh.max=2) # Regular MH parameters
 jump_params <- list(large=0.5, large.max=0.6, large.min=0.4, small=0.2, small.max=0.3, small.min=0.1) # Neighborhood size parameters
+feat_params <- list(D=5, L=15)
 
 params <- list(mh=mh_params, large=large_params, random=random_params,
-               sa=sa_params, greedy=greedy_params)
+               sa=sa_params, greedy=greedy_params, feat=feat_params)
 
 # install.packages("RSQLite")
 library(RSQLite)
@@ -65,6 +66,8 @@ loglik.test <- function (data, model, formula) {
   return(ret)
 }
 
+for(i in 1:10) sales2[,i] <- as.numeric(sales2[,i])
+
 result <- gmjmcmc(sales2, loglik.test, transforms, 30, 70, 500, probs, params)
 
 result$accept
@@ -73,7 +76,7 @@ result$accept
 
 resmat <- matrix(unlist(result$models), ncol=12, byrow=T)
 
-hist(resmat[,11], breaks=100)
+hist(resmat[,12], breaks=100)
 
 # Give each variable its own angle
 var.angles <- seq(0, 1*pi, length.out=10+2)[2:11]
@@ -81,13 +84,14 @@ x.positions <- cos(var.angles)
 y.positions <- sin(var.angles)
 
 # Calculate aggregated angle based measures for each model
-mods <- matrix(as.numeric(unlist(result$models[[30]])), ncol=10)
+mods <- matrix(as.numeric(unlist(resmat[2031:2530,1:10])), ncol=10)
 x.pos <- rowSums(mods*x.positions)
 y.pos <- rowSums(mods*y.positions)
 
 dff <- as.data.frame(cbind(x.pos, y.pos))
 
 plot(dff)
+library(ggplot2)
 
 # Create a plot
 ggplot(dff, aes(x=x.pos, y=y.pos)) +

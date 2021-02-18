@@ -56,7 +56,7 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, N.final, probs, params) 
     # Calculate marginal likelihoods for current features
     marg.probs <- marginal.probs(population.models)
     # Generate a new population of features for the next iteration (if this is not the last)
-    if (t != T) S[[t+1]] <- gmjmcmc.transition(S[[t]], F.0, cov.probs, marg.probs, transforms, probs)
+    if (t != T) S[[t+1]] <- gmjmcmc.transition(S[[t]], F.0, marg.probs, transforms, probs, params)
   }
   # Calculate acceptance rate
   accept <- accept / (N*T)
@@ -131,7 +131,7 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, marg.probs, probs
 }
 
 # Subalgorithm for generating a new population of features
-gmjmcmc.transition <- function (S.t, F.0, cov.probs, marg.probs, transforms, probs) {
+gmjmcmc.transition <- function (S.t, F.0, marg.probs, transforms, probs, params) {
   # Sample which features to keep based on marginal inclusion below probs$filter
   feats.keep <- as.logical(rbinom(n = length(marg.probs), size = 1, prob = pmin(marg.probs/probs$filter, 1)))
 
@@ -139,7 +139,7 @@ gmjmcmc.transition <- function (S.t, F.0, cov.probs, marg.probs, transforms, pro
   feats.replace <- which(!feats.keep)
 
   for (i in feats.replace) {
-    S.t[[i]] <- gen.feature(c(F.0, S.t[feats.keep]), transforms, probs, length(F.0))
+    S.t[[i]] <- gen.feature(c(F.0, S.t[feats.keep]), transforms, probs, length(F.0), params$feat)
   }
   return(S.t)
 }

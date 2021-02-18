@@ -9,6 +9,13 @@
 # alpha is the coefficient before each feature listed in f,
 # and also possibly one more for an intercept
 
+# A feature matrix has the structure
+# | TRANSFORM   WIDTH ALPHA0 |
+# | DEPTH       FEAT1 ALPHA1 |
+# | NA          FEAT2 ALPHA2 |
+# | NA          FEAT3 ALPHA3 |
+# ...
+
 #' Create method for "feature" class
 #'
 #' @param transform A numeric denoting the transform type
@@ -20,10 +27,26 @@ create.feature <- function (transform, features, alphas=NULL) {
   # Given no alphas, assume no intercept and unit coefficients
   if (is.null(alphas)) alphas <- c(0, rep(1, length(features)))
   if (length(alphas) != (length(features) + 1)) stop("Invalid alpha/feature count")
+  # Calculate the depth and of the new feature
+  if (transform == 0) {
+    depth <- 1 + depth.feature(features[[1]]) + depth.feature(features[[2]])
+    width <- 2 + width.feature(features[[1]]) + width.feature(features[[2]])
+  }
+  else {
+    depth <- 0
+    width <- length(features)
+    for (i in 1:(length(features))) {
+      locdepth <- depth.feature(features[[i]])
+      locwidth <- width.feature(features[[i]])
+      width <- width + locwidth
+      if (locdepth > depth) depth <- locdepth
+    }
+    depth <- depth + 1
+  }
 
   # Generate the new feature matrix
-  newFeature <- list(matrix(c(transform, rep(NA,length(alphas)-1),
-                      NA, 1:(length(features)), alphas), length(alphas)))
+  newFeature <- list(matrix(c(transform, depth, rep(NA,length(alphas)-2),
+                      width, 1:(length(features)), alphas), length(alphas)))
   feature <- append(newFeature, features, 0)
   class(feature) <- "feature"
   return(feature)
@@ -55,9 +78,9 @@ print.feature <- function (feature, transforms, dataset=F) {
       # No plus or multiplication sign on the last one
       if (j == nrow(feat)) op <- ""
       # If this is an intercept just add it in
-      if (is.na(feat[j,2]) && feat[j,3] != 0) fString <- paste0(fString, feat[j,3], op)
+      if (j == 1 && feat[j,3] != 0) fString <- paste0(fString, feat[j,3], op)
       # Otherwise this is a feature or covariate, do a recursive conversion
-      if (!is.na(feat[j,2])) {
+      if (j != 1) {
         if (feat[j,3] == 1) fString <- paste0(fString, print.feature(feature[[feat[j,2]]], transforms, dataset), op)
         else fString <- paste0(fString, feat[j,3], "*", print.feature(feature[[feat[j,2]]], transforms, dataset), op)
       }
@@ -73,3 +96,18 @@ print.feature <- function (feature, transforms, dataset=F) {
 }
 
 # TODO: Add a way to get depth and width of a feature
+# A function to get the depth of a feature
+depth.feature <- function (feature) {
+  feat <- feature[[length(feature)]]
+  if (is.matrix(feat)) return(feat[2,1])
+  else if (is.numeric(feat)) return(0)
+  else stop("Invalid feature structure")
+}
+
+# A function to get the width of a feature
+width.feature <- function (feature) {
+  feat <- feature[[length(feature)]]
+  if (is.matrix(feat)) return(feat[1,2])
+  else if (is.numeric(feat)) return(1)
+  else stop("Invalid feature structure")
+}
