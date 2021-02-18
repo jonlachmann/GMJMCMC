@@ -3,14 +3,43 @@
 # Created by: jonlachmann
 # Created on: 2021-02-11
 
-# Function for calculating marginal probabilities of features given a list of models
+# Function to verify inputs and help the user find if they did anything wrong
+verify.inputs <- function (data, loglik.pi, transforms, T, N, N.final, probs, params) {
+  # Get information about the data
+  n.cov <- ncol(data)-1
+  n.obs <- nrow(data)
+
+  # Get information about the transforms
+  n.trans <- length(transforms)
+
+  # Verify that the probability list is formatted as it should be
+  if (length(probs$large) != 1) error <- c(error, "Too many large jump probabilities (should be 1).")
+  else if (probs$large > 1 | probs$large < 0) error <- c(error, "Large jump probability must be in [0,1].")
+  if (length(probs$large.kern) != 4) error <- c(error, "There should be 4 large jump kernel probabilities.")
+  if (sum(probs$large.kern > 1 | probs$large.kern < 0) != 0) error <- c(error, "Large jump kernel probabilities must be in [0,1].")
+}
+
+# Function for calculating marginal inclusion probabilities of features given a list of models
 marginal.probs <- function (models) {
   mod.count <- length(models)
-  probs <- rep(0, length=length(models[[1]]))
+  probs <- rep(0, length=length(models[[1]]$model))
   for (i in 1:mod.count) {
-    probs <- probs + models[[i]]
+    probs <- probs + models[[i]]$model
   }
   probs <- probs / mod.count
+  return(probs)
+}
+
+# Function for calculating feature importance through renormalized model estimates
+marginal.probs.renorm <- function (models) {
+  mod.count <- length(models)
+  probs <- rep(0, length=length(models[[1]]$model))
+  crit.sum <- 0
+  for (i in 1:mod.count) {
+    probs <- probs + models[[i]]$model * model[[i]]$crit
+    crit.sum <- crit.sum + model[[i]]$crit
+  }
+  probs <- probs / crit.sum
   return(probs)
 }
 
@@ -31,6 +60,6 @@ loglik.pre <- function (loglik.pi, model, data) {
   formula <- paste0(colnames(data)[1], " ~ 1 ")
   # Add covariates to formula if we have any
   if (sum(model) != 0) formula <- paste0(formula, "+ ", paste(colnames(data)[c(F,model)], collapse=" + "))
-  # Call the model estimator with the subset of the data
+  # Call the model estimator with the data and the formula
   return(loglik.pi(data, model, as.formula(formula)))
 }

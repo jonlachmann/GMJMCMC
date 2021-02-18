@@ -13,17 +13,17 @@ library(GMJMCMC)
 
 # Create probability list for algorithm
 large <- 0.05 # probability of a large jump
-largejump <- c(0, 0, 0, 1) # probability for type of large jump, only allow type 1-4
-localopt <- c(0.5, 0.5) # probability for each localopt algorithm
-random <- c(0.3, 0.3, 0.2, 0.2) # probability for random jump kernels
+large.kern <- c(0, 0, 0, 1) # probability for type of large jump, only allow type 1-4
+localopt.kern <- c(0.5, 0.5) # probability for each localopt algorithm
+random.kern <- c(0.3, 0.3, 0.2, 0.2) # probability for random jump kernels
 mh <- c(0.2, 0.2, 0.2, 0.2, 0.1, 0.1) # probability for regular mh kernels
 
 filter <- 0.3 # filtration threshold
-gen <- c(1/3, 1/3, 1/3) # probability for different feature generation methods
+gen <- c(1/4, 1/4, 1/4, 1/4) # probability for different feature generation methods
 trans <- c(0.5, 0.5) # probability for each different nonlinear transformation
 
-probs <- list(large=large, largejump=largejump, localopt=localopt,
-              random=random, filter=filter, gen=gen,
+probs <- list(large=large, large.kern=large.kern, localopt.kern=localopt.kern,
+              random.kern=random.kern, filter=filter, gen=gen,
               trans=trans)
 
 # Create the list of parameters
@@ -71,10 +71,12 @@ result$accept
 
 ### Visualization experiments below
 
-hist(result$crit, breaks=100)
+resmat <- matrix(unlist(result$models), ncol=12, byrow=T)
+
+hist(resmat[,11], breaks=100)
 
 # Give each variable its own angle
-var.angles <- seq(0, 0.5*pi, length.out=10+1)[-1]
+var.angles <- seq(0, 1*pi, length.out=10+2)[2:11]
 x.positions <- cos(var.angles)
 y.positions <- sin(var.angles)
 
@@ -85,9 +87,14 @@ y.pos <- rowSums(mods*y.positions)
 
 dff <- as.data.frame(cbind(x.pos, y.pos))
 
+plot(dff)
+
 # Create a plot
 ggplot(dff, aes(x=x.pos, y=y.pos)) +
   stat_density2d(aes(fill=..level..), geom = "polygon", colour="white", show.legend=F)
 
+library(gnlm)
 
+attach(sales2)
 
+gnlr(y=price, mu=~cos(b0+b1*size+b2*room_count), pmu=rnorm(3, 0, 0.0001), pshape=1)

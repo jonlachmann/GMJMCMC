@@ -4,39 +4,46 @@
 # Created on: 2021-02-10
 
 # Generate a multiplication feature
-gen.multiplication <- function (features, marg.probs) {
+gen.multiplication <- function (features) {
   # generate two features to be multiplied
-  feats <- sample.int(n = length(features), size = 2, prob = marg.probs)
+  feats <- sample.int(n = length(features), size = 2)
   create.feature(0, features[feats])
 }
 
 # Generate a modification feature
-gen.modification <- function (features, transforms, marg.probs, trans.probs) {
-  feat <- sample.int(n = length(features), size = 1, prob = marg.probs)
+gen.modification <- function (features, transforms, trans.probs) {
+  feat <- sample.int(n = length(features), size = 1)
   trans <- sample.int(n = length(transforms), size = 1, prob = trans.probs)
   create.feature(trans, features[feat])
 }
 
 # Generate a projection feature
 # TODO: This is not working according to spec yet
-gen.projection <- function (features, transforms, marg.probs, trans.probs) {
+gen.projection <- function (features, transforms, trans.probs) {
   feat.count <- sample.int(n = length(features), size = 1) # TODO: Should be a specific distribution?
-  feats <- sample.int(n = length(features), size = feat.count, prob = marg.probs)
+  feats <- sample.int(n = length(features), size = feat.count)
   trans <- sample.int(n = length(transforms), size = 1, prob = trans.probs)
   # TODO: Generate alphas properly using various methods
   alphas <- rep(1, length(feats)+1)
   create.feature(trans, features[feats], alphas)
 }
 
+# Generate a new features from the initial covariates
+gen.new <- function (features, F.0.size) {
+  covariate <- sample.int(n = F.0.size, size = 1)
+  return(features[[covariate]])
+}
+
 # Select a feature to generate and generate it
-gen.feature <- function (features, transforms, marg.probs, probs) {
+gen.feature <- function (features, transforms, probs, F.0.size) {
   # TODO: Do not generate too advanced features, note max depth and width
-  feat.type <- sample.int(n = 3, size = 1, prob = probs$gen)
+  feat.type <- sample.int(n = 4, size = 1, prob = probs$gen)
   colinear <- T
   while (colinear) {
-    if (feat.type == 1) feat <- gen.multiplication(features, marg.probs)
-    if (feat.type == 2) feat <- gen.modification(features, transforms, marg.probs, probs$trans)
-    if (feat.type == 3) feat <- gen.projection(features, transforms, marg.probs, probs$trans)
+    if (feat.type == 1) feat <- gen.multiplication(features)
+    if (feat.type == 2) feat <- gen.modification(features, transforms, probs$trans)
+    if (feat.type == 3) feat <- gen.projection(features, transforms, probs$trans)
+    if (feat.type == 4) feat <- gen.new(features, F.0.size)
     # TODO: Check for collinearity etc.
     colinear <- check.collinearity(features, feat)
   }
