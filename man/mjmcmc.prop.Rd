@@ -4,7 +4,7 @@
 \alias{mjmcmc.prop}
 \title{Subalgorithm for generating a proposal and acceptance probability}
 \usage{
-mjmcmc.prop(data, loglik.pi, model.cur, features, probs, params)
+mjmcmc.prop(data, loglik.pi, model.cur, features, marg.probs, probs, params)
 }
 \arguments{
 \item{data}{The data to use in the algorithm}

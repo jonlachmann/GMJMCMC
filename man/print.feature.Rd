@@ -4,10 +4,14 @@
 \alias{print.feature}
 \title{Print method for "feature" class}
 \usage{
-\method{print}{feature}(feature, transforms)
+\method{print}{feature}(feature, transforms, dataset = F)
 }
 \arguments{
-\item{x}{An object of class "feature"}
+\item{feature}{An object of class "feature"}
+
+\item{transforms}{The list of transforms to use}
+
+\item{dataset}{Set the regular covariates as columns in a dataset}
 }
 \description{
 Print method for "feature" class
