@@ -36,8 +36,8 @@ marginal.probs.renorm <- function (models) {
   probs <- rep(0, length=length(models[[1]]$model))
   crit.sum <- 0
   for (i in 1:mod.count) {
-    probs <- probs + models[[i]]$model * model[[i]]$crit
-    crit.sum <- crit.sum + model[[i]]$crit
+    probs <- probs + models[[i]]$model * models[[i]]$crit
+    crit.sum <- crit.sum + models[[i]]$crit
   }
   probs <- probs / crit.sum
   return(probs)
@@ -62,4 +62,25 @@ loglik.pre <- function (loglik.pi, model, data) {
   if (sum(model) != 0) formula <- paste0(formula, "+ ", paste(colnames(data)[c(F,model)], collapse=" + "))
   # Call the model estimator with the data and the formula
   return(loglik.pi(data, model, as.formula(formula)))
+}
+
+# Function to summarize results
+summary.gmjresult <- function (results, population="last") {
+  if (population=="last") pops <- length(results$models)
+  feature_strings <- vector("list", length(result$populations[[pops]]))
+  for (i in 1:length(feature_strings)) {
+    feature_strings[[i]] <- print.feature(result$populations[[pops]][[i]], transforms)
+  }
+  feature_importance <- marginal.probs.renorm(results$models[[pops]])
+  return(list(features=feature_strings, importance=feature_importance))
+}
+
+# Function to print all features in a model
+print.model <- function (model, features, transforms) {
+  # Create a list to store the features in
+  model_print <- vector("list", sum(model$model))
+  for (i in 1:length(model$model)) {
+    if (model$model[i]) model_print[[i]] <- print.feature(features[[i]], transforms)
+  }
+  return(model_print)
 }

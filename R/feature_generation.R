@@ -36,7 +36,6 @@ gen.new <- function (features, F.0.size) {
 
 # Select a feature to generate and generate it
 gen.feature <- function (features, transforms, probs, F.0.size, params) {
-  # TODO: Do not generate too advanced features, note max depth and width
   feat.type <- sample.int(n = 4, size = 1, prob = probs$gen)
   colinear <- T
   too.large <- T
@@ -47,16 +46,27 @@ gen.feature <- function (features, transforms, probs, F.0.size, params) {
     if (feat.type == 4) feat <- gen.new(features, F.0.size)
     # Check that the feature is not too wide or deep
     if (depth.feature(feat) <= params$D && width.feature(feat) <= params$L) too.large <- F
-    # TODO: Check for collinearity etc.
-    colinear <- check.collinearity(features, feat)
+    # Check for linear dependence of new the feature
+    if (!too.large) {
+      colinear <- check.collinearity(feat, features[(F.0.size+1):length(features)], transforms, F.0.size)
+    }
   }
   print(paste("New feature:", print.feature(feat, transforms), "depth:", depth.feature(feat), "width:", width.feature(feat)))
   return(feat)
 }
 
-check.collinearity <- function (features, proposal) {
-  # TODO: How can we do this?
-  return(F)
+check.collinearity <- function (proposal, features, transforms, F.0.size) {
+  # Add the proposal to the feature list for evaluation
+  features[[length(features)+1]] <- proposal
+  # Generate mock data to test with (avoiding too costly computations)
+  mock.data <- matrix(runif((F.0.size*2)*(F.0.size+1), -1, 1), F.0.size*2, F.0.size+1)
+  # Use the mock data to precalc the features
+  mock.data.precalc <- precalc.features(mock.data, features, transforms)
+  # Fit a linear model with the mock data precalculated features
+  linearmod <- lm(mock.data.precalc)
+  # Check if all coefficients were possible to calculate
+  if (sum(is.na(linearmod$coefficients)) == 0) return(F)
+  else return(T)
 }
 
 # Generate features to represent the covariates, just takes the count needed

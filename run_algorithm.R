@@ -18,7 +18,7 @@ localopt.kern <- c(0.5, 0.5) # probability for each localopt algorithm
 random.kern <- c(0.3, 0.3, 0.2, 0.2) # probability for random jump kernels
 mh <- c(0.2, 0.2, 0.2, 0.2, 0.1, 0.1) # probability for regular mh kernels
 
-filter <- 0.3 # filtration threshold
+filter <- 0.6 # filtration threshold
 gen <- c(1/4, 1/4, 1/4, 1/4) # probability for different feature generation methods
 trans <- c(0.5, 0.5) # probability for each different nonlinear transformation
 
@@ -53,8 +53,11 @@ sales2$x6 <- sales[,6]
 sales2$x7 <- sales[,7]
 sales2$x8 <- sales[,8]
 
+covmat <- cor(sales2)
 
-transforms <- c("sin", "cos")
+logg <- function (x) log(abs(x)+.Machine$double.eps)
+
+transforms <- c("logg", "logg")
 
 loglik.test <- function (data, model, formula) {
   linmod <- lm(formula = formula, data=data)
@@ -68,9 +71,20 @@ loglik.test <- function (data, model, formula) {
 
 for(i in 1:10) sales2[,i] <- as.numeric(sales2[,i])
 
-result <- gmjmcmc(sales2, loglik.test, transforms, 30, 70, 500, probs, params)
+result <- gmjmcmc(sales2, loglik.test, transforms, 100, 200, 500, probs, params)
 
 result$accept
+
+print.model(result$models[[30]][[1]], result$populations[[30]], transforms)
+
+summ <- summary.gmjresult(result)
+barplot(summ$importance)
+
+importance <- as.data.frame(summ$importance)
+rownames(importance) <- summ$features
+
+importance
+
 
 ### Visualization experiments below
 

@@ -18,9 +18,9 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, N.final, probs, params) 
   # Acceptance probability
   accept <- 0
   # A list of populations that have been visited
-  S <- vector("list", T+1)
+  S <- vector("list", T)
   # A list of models that have been visited, refering to the populations
-  models <- vector("list", T+1)
+  models <- vector("list", T)
 
   # TODO: Initialization of first model
   F.0 <- gen.covariates(ncol(data)-1)
@@ -140,6 +140,7 @@ gmjmcmc.transition <- function (S.t, F.0, marg.probs, transforms, probs, params)
 
   for (i in feats.replace) {
     S.t[[i]] <- gen.feature(c(F.0, S.t[feats.keep]), transforms, probs, length(F.0), params$feat)
+    feats.keep[i] <- T
   }
   return(S.t)
 }
