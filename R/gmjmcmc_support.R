@@ -64,7 +64,12 @@ loglik.pre <- function (loglik.pi, model, data) {
   return(loglik.pi(data, model, as.formula(formula)))
 }
 
-# Function to summarize results
+#' Summarize results from GMJMCMC
+#'
+#' @param results The results from GMJMCMC
+#' @param populations A list of the populations to include in the summary, defaults to the last one
+#'
+#' @export summary.gmjresult
 summary.gmjresult <- function (results, population="last") {
   if (population=="last") pops <- length(results$models)
   feature_strings <- vector("list", length(result$populations[[pops]]))

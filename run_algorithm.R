@@ -55,6 +55,7 @@ sales2$x8 <- sales[,8]
 
 covmat <- cor(sales2)
 
+sigmoid<-function(x)exp(-x)
 logg <- function (x) log(abs(x)+.Machine$double.eps)
 
 transforms <- c("logg", "logg")

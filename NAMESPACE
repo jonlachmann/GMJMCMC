@@ -3,3 +3,4 @@
 S3method(print,feature)
 export(create.feature)
 export(gmjmcmc)
+export(summary.gmjresult)
