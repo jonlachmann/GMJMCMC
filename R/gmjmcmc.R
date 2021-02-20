@@ -25,12 +25,13 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, N.final, probs, params) 
   # TODO: Initialization of first model
   F.0 <- gen.covariates(ncol(data)-1)
   S[[1]] <- F.0
+  complex <- complex.features(S[[1]])
   model.cur <- as.logical(rbinom(n = length(S[[1]]), size = 1, prob = 0.9))
-  model.cur <- list(model=model.cur, crit=loglik.pre(loglik.pi, model.cur, data))
+  model.cur <- list(model=model.cur, crit=loglik.pre(loglik.pi, model.cur, complex, data))
 
   ### Main algorithm loop - Iterate over T different populations
   for (t in 1:T) {
-    # TODO: Temporary marginal prob calculator - Look into what Aliaksandr mentioned
+    # TODO: This is using the frequency, maybe switch to renormalized?
     marg.probs <- rep(0.5, length(S[[t]]))
 
     # Precalculate covariates and put them in data.t
@@ -40,7 +41,7 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, N.final, probs, params) 
 
     if (t==T) N <- N.final
     for (i in 1:N) {
-      proposal <- mjmcmc.prop(data.t, loglik.pi, model.cur, S[[t]], marg.probs, probs, params)
+      proposal <- mjmcmc.prop(data.t, loglik.pi, model.cur, S[[t]], complex, marg.probs, probs, params)
       if (log(runif(1)) <= proposal$alpha) {
         model.cur <- proposal
         accept <- accept + 1
@@ -56,7 +57,10 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, N.final, probs, params) 
     # Calculate marginal likelihoods for current features
     marg.probs <- marginal.probs(population.models)
     # Generate a new population of features for the next iteration (if this is not the last)
-    if (t != T) S[[t+1]] <- gmjmcmc.transition(S[[t]], F.0, marg.probs, transforms, probs, params)
+    if (t != T) {
+      S[[t+1]] <- gmjmcmc.transition(S[[t]], F.0, marg.probs, transforms, probs, params)
+      complex <- complex.features(S[[t+1]])
+    }
   }
   # Calculate acceptance rate
   accept <- accept / (N*T)
@@ -73,7 +77,7 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, N.final, probs, params) 
 #' @param probs A list of the various probability vectors to use TODO: specification of this
 #' @param params A list of the various parameters for all the parts of the algorithm TODO: specification of this
 #'
-mjmcmc.prop <- function (data, loglik.pi, model.cur, features, marg.probs, probs, params) {
+mjmcmc.prop <- function (data, loglik.pi, model.cur, features, complex, marg.probs, probs, params) {
   l <- runif(1)
   if (l < probs$large) {
     ### Large jump
@@ -88,7 +92,7 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, marg.probs, probs
     chi.0.star <- xor(model.cur$model, large.jump$swap) # Swap large jump indices
 
     # Optimize to find a mode
-    chi.k.star <- local.optim(chi.0.star, data, loglik.pi, !large.jump$swap, q.o, params) # Do local optimization
+    chi.k.star <- local.optim(chi.0.star, data, loglik.pi, !large.jump$swap, complex, q.o, params) # Do local optimization
 
     # Randomize around the mode
     proposal <- gen.proposal(chi.k.star, params$random, q.r, large.jump$swap, prob=T)
@@ -98,7 +102,7 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, marg.probs, probs
     chi.0 <- xor(model.prop, large.jump$swap)
 
     # Do a backwards local optimization
-    chi.k <- local.optim(chi.0, data, loglik.pi, features, q.o, params)
+    chi.k <- local.optim(chi.0, data, loglik.pi, !large.jump$swap, complex, q.o, params)
     # TODO: We could compare if chi.k is reached by optimising from gamma (model.cur) as "intended"
 
     ### Calculate acceptance probability
@@ -114,7 +118,7 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, marg.probs, probs
     model.prop <- xor(gen.proposal(model.cur$model, params$mh, q.g, probs=marg.probs, prob=T)$swap, model.cur$model)
   }
   # Calculate log likelihoods for the proposed model
-  prob.gamma.star <- loglik.pre(loglik.pi, model.prop, data)
+  prob.gamma.star <- loglik.pre(loglik.pi, model.prop, complex, data)
 
   ### Calculate acceptance probability
   if (l < probs$large) {

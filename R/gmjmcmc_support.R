@@ -55,13 +55,13 @@ precalc.features <- function (data, features, transforms) {
 }
 
 # Function to call the model function
-loglik.pre <- function (loglik.pi, model, data) {
+loglik.pre <- function (loglik.pi, model, complex, data) {
   # Create a formula with only an intercept
   formula <- paste0(colnames(data)[1], " ~ 1 ")
   # Add covariates to formula if we have any
   if (sum(model) != 0) formula <- paste0(formula, "+ ", paste(colnames(data)[c(F,model)], collapse=" + "))
   # Call the model estimator with the data and the formula
-  return(loglik.pi(data, model, as.formula(formula)))
+  return(loglik.pi(data, model, as.formula(formula), complex[model]))
 }
 
 #' Summarize results from GMJMCMC

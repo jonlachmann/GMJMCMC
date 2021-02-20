@@ -111,3 +111,15 @@ width.feature <- function (feature) {
   else if (is.numeric(feat)) return(1)
   else stop("Invalid feature structure")
 }
+
+# A function to get the complexity of a list of features
+complex.features <- function (features) {
+  featcount <- length(features)
+  width <- rep(NA, featcount)
+  depth <- rep(NA, featcount)
+  for (i in 1:featcount) {
+    width[i] <- width.feature(features[[i]])
+    depth[i] <- depth.feature(features[[i]])
+  }
+  return(list(width=width, depth=depth))
+}

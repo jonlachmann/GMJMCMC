@@ -36,7 +36,7 @@ transforms <- c("logg", "logg")
 probs <- gen.probs.list(transforms)
 params <- gen.params.list()
 
-loglik.test <- function (data, model, formula) {
+loglik.test <- function (data, model, formula, complex) {
   linmod <- lm(formula = formula, data=data)
   ret <- -AIC(linmod)
   if (ret > 0) {
