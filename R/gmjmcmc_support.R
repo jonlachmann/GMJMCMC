@@ -60,8 +60,10 @@ loglik.pre <- function (loglik.pi, model, complex, data) {
   formula <- paste0(colnames(data)[1], " ~ 1 ")
   # Add covariates to formula if we have any
   if (sum(model) != 0) formula <- paste0(formula, "+ ", paste(colnames(data)[c(F,model)], collapse=" + "))
+  # Get the complexity measures for just this model
+  complex <- list(width=complex$width[model], depth=complex$depth[model])
   # Call the model estimator with the data and the formula
-  return(loglik.pi(data, model, as.formula(formula), complex[model]))
+  return(loglik.pi(data, model, as.formula(formula), complex))
 }
 
 #' Summarize results from GMJMCMC
