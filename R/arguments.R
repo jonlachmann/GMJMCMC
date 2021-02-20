@@ -22,7 +22,7 @@ gen.probs.list <- function (transforms) {
   transcount <- length(transforms)
   filter <- 0.6                         # filtration threshold
   gen <- rep(1/4, 4)                    # probability for different feature generation methods
-  trans <- c(1/transcount, transcount)  # probability for each different nonlinear transformation
+  trans <- rep(1/transcount, transcount)  # probability for each different nonlinear transformation
 
   ## Compile the list and return
   probs <- list(large=large, large.kern=large.kern, localopt.kern=localopt.kern,
