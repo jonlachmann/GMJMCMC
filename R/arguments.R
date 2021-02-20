@@ -33,7 +33,7 @@ gen.probs.list <- function (transforms) {
 
 #' Generate a parameter list for GMJMCMC
 #'
-#' @export gen.probs.list
+#' @export gen.params.list
 gen.params.list <- function () {
   ### Create a list of parameters for the algorithm
 

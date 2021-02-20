@@ -2,5 +2,7 @@
 
 S3method(print,feature)
 export(create.feature)
+export(gen.params.list)
+export(gen.probs.list)
 export(gmjmcmc)
 export(summary.gmjresult)
