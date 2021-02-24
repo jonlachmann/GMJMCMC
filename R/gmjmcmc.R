@@ -96,10 +96,10 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, complex, marg.pro
 
     # Randomize around the mode
     proposal <- gen.proposal(chi.k.star, params$random, q.r, large.jump$swap, prob=T)
-    model.prop <- xor(chi.k.star, proposal$swap)
+    proposal$model <- xor(chi.k.star, proposal$swap)
 
     # Do a backwards large jump
-    chi.0 <- xor(model.prop, large.jump$swap)
+    chi.0 <- xor(proposal$model, large.jump$swap)
 
     # Do a backwards local optimization
     chi.k <- local.optim(chi.0, data, loglik.pi, !large.jump$swap, complex, q.o, params)
@@ -108,29 +108,28 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, complex, marg.pro
     ### Calculate acceptance probability
     # Set up the parameters that were used to generate the proposal
     prop.params <- list(neigh.min=params$random$min, neigh.max=params$random$max, neigh.size=proposal$S)
-    prob.gamma_chi.k <- prob.proposal(model.prop, chi.k, q.r, prop.params, marg.probs) # Get probability of gamma given chi.k
-    prob.gamma.star_chi.k.star <- proposal$prob # Probability of gamma.star given chi.k.star
+
+    # Calculate current model probability given proposal
+    model.cur$prob <- prob.proposal(proposal$model, chi.k, q.r, prop.params) # Get probability of gamma given chi.k
   } else {
     ### Regular MH step
     # Select MH kernel
     q.g <- sample.int(n = 6, size = 1, prob = probs$mh)
-    # Small randomization around current model
-    model.prop <- xor(gen.proposal(model.cur$model, params$mh, q.g, probs=marg.probs, prob=T)$swap, model.cur$model)
+    # Generate the proposal
+    proposal <- gen.proposal(model.cur$model, params$mh, q.g, prob=T)
+    proposal$model <- xor(proposal$swap, model.cur$model)
+
+    # Calculate current model probability given proposal
+    model.cur$prob <- prob.proposal(proposal$model, model.cur$model, q.g, params$mh)
   }
   # Calculate log likelihoods for the proposed model
-  prob.gamma.star <- loglik.pre(loglik.pi, model.prop, complex, data)
+  proposal$crit <- loglik.pre(loglik.pi, proposal$model, complex, data)
 
-  ### Calculate acceptance probability
-  if (l < probs$large) {
-    # Calculate acceptance probability for large jump
-    alpha <- min(0, (prob.gamma.star + prob.gamma_chi.k) - (model.cur$crit + prob.gamma.star_chi.k.star))
-  } else {
-    # Calculate regular acceptance probability (assuming small rand to be symmetric here)
-    alpha <- min(0, (prob.gamma.star - model.cur$crit))
-  }
+  # Calculate acceptance probability for proposed model
+  proposal$alpha <- min(0, (proposal$crit + model.cur$prob) - (model.cur$crit + proposal$prob))
 
   ### Format results and return them
-  proposal <- list(model=model.prop, alpha=alpha, crit=prob.gamma.star)
+  proposal$swap <- NULL; proposal$S <- NULL
   return(proposal)
 }
 

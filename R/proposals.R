@@ -40,7 +40,7 @@ model.proposal.1_4 <- function (model.size, neigh.min, neigh.max, indices=NULL, 
 # Probability for random change with random size of the neighborhood (Type 1)
 # By setting neigh.max=neigh.min we get nonrandom neighborhood size (Type 2)
 # By setting prob vector to all ones, we get swap instead of random change (Type 3 and 4)
-model.proposal.1_4.prob <- function (swaps, probs, neigh.size, neigh.max, neigh.min) {
+model.proposal.1_4.prob <- function (swaps, probs, neigh.size, neigh.min, neigh.max) {
   p <- length(probs) # Get number of available covariates
   prod(probs[swaps]) / (choose(p, neigh.size)*(neigh.max-neigh.min+1))
 }
@@ -86,10 +86,10 @@ gen.proposal <- function (model, params, type, indices=NULL, probs=NULL, prob=F)
     proposal <- model.proposal.1_4(length(model), params$neigh.min, params$neigh.max, indices, probs, prob)
   } else if (type == 5) {
     # Generate a proposal of type 5 (addition of a covariate)
-    proposal <- model.proposal.5_6(model, addition=T, prob)
+    proposal <- model.proposal.5_6(model, addition=T, probs, prob)
   } else if (type == 6) {
     # Generate a proposal of type 6 (subtraction of a covariate)
-    proposal <- model.proposal.5_6(model, addition=F, prob)
+    proposal <- model.proposal.5_6(model, addition=F, probs, prob)
   }
   return(proposal)
 }
@@ -108,10 +108,10 @@ prob.proposal <- function (proposal, current, type, params, probs=NULL) {
     prob <- model.proposal.1_4.prob(swaps, probs, params$neigh.size, params$neigh.min, params$neigh.max)
   } else if (type == 5) {
     # Generate a proposal of type 5 (addition of a covariate)
-    prob <- model.proposal.5_6.prob(model, addition=T)
+    prob <- model.proposal.5_6.prob(current, addition=T)
   } else if (type == 6) {
     # Generate a proposal of type 6 (subtraction of a covariate)
-    prob <- model.proposal.5_6.prob(model, addition=T)
+    prob <- model.proposal.5_6.prob(current, addition=F)
   }
   return(prob)
 }
