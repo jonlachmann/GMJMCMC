@@ -68,7 +68,7 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, N.final, probs, params) 
   return(list(models=models, populations=S, accept=accept))
 }
 
-#' Subalgorithm for generating a proposal and acceptance probability
+#' Subalgorithm for generating a proposal and acceptance probability in (G)MJMCMC
 #'
 #' @param data The data to use in the algorithm
 #' @param loglik.pi The the (log) density to explore

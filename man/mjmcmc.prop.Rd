@@ -2,7 +2,7 @@
 % Please edit documentation in R/gmjmcmc.R
 \name{mjmcmc.prop}
 \alias{mjmcmc.prop}
-\title{Subalgorithm for generating a proposal and acceptance probability}
+\title{Subalgorithm for generating a proposal and acceptance probability in (G)MJMCMC}
 \usage{
 mjmcmc.prop(
   data,
@@ -29,5 +29,5 @@ mjmcmc.prop(
 \item{params}{A list of the various parameters for all the parts of the algorithm TODO: specification of this}
 }
 \description{
-Subalgorithm for generating a proposal and acceptance probability
+Subalgorithm for generating a proposal and acceptance probability in (G)MJMCMC
 }
