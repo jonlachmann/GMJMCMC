@@ -6,20 +6,19 @@
 simulated.annealing <- function (model, data, loglik.pi, indices, complex, params) {
   # Select which kernel to use for the random steps
   kernel <- sample.int(n = 6, size = 1, prob = params$kern$probs)
-  # TODO: Can any of these be set dynamically based on data?
-  t <- params$t.init # Initial temperature
+  temp <- params$t.init # Initial temperature
 
   # Calculate current likelihood
   model.lik <- loglik.pre(loglik.pi, model, complex, data)
-  while (t > params$t.min) {
+  while (temp > params$t.min) {
     # Make M tries at current temperature
     for (m in 1:params$M) {
       # Get a modified model as proposal and calculate its likelihood
       proposal <- xor(model, gen.proposal(model, params$kern, kernel, indices)$swap)
       proposal.lik <- loglik.pre(loglik.pi, proposal, complex, data)
-
-      # Calculate move probability (Bolzmann distribution, see Blum and Roli p. 274)
-      alpha <- min(1, exp((model.lik - proposal.lik)/t))
+      # Calculate move probability for negative steps (Bolzmann distribution, see Blum and Roli p. 274)
+      if (proposal.lik > model.lik) alpha <- 1
+      else alpha <- min(1, exp((proposal.lik - model.lik)/temp))
       # Accept move with probability alpha
       if (runif(1) < alpha) {
         model <- proposal
@@ -27,13 +26,29 @@ simulated.annealing <- function (model, data, loglik.pi, indices, complex, param
       }
     }
     # Update temperature
-    t <- t * exp(-params$dt)
+    temp <- temp * exp(-params$dt)
   }
   return(model)
 }
 
 greedy.optim <- function (model, data, loglik.pi, indices, complex, params) {
- return(model)
+  # Select which kernel to use for the random steps
+  kernel <- sample.int(n = 6, size = 1, prob = params$kern$probs)
+
+  # Calculate current likelihood
+  model.lik <- loglik.pre(loglik.pi, model, complex, data)
+
+  for (i in 1:params$steps) {
+      # Get a modified model as proposal and calculate its likelihood
+      proposal <- xor(model, gen.proposal(model, params$kern, kernel, indices)$swap)
+      proposal.lik <- loglik.pre(loglik.pi, proposal, complex, data)
+      # Accept every improvement
+      if (proposal.lik > model.lik) {
+        model <- proposal
+        model.lik <- proposal.lik
+      }
+  }
+  return(model)
 }
 
 local.optim <- function (model, data, loglik.pi, indices, complex, type, params) {

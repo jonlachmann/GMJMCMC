@@ -10,8 +10,8 @@
 #' @param transforms A list of the available nonlinear transformations for feature generation
 #' @param T The number of population iterations
 #' @param N The number of iterations per population (total iterations = T*N)
-#' @param probs A list of the various probability vectors to use TODO: specification of this
-#' @param params A list of the various parameters for all the parts of the algorithm TODO: specification of this
+#' @param probs A list of the various probability vectors to use
+#' @param params A list of the various parameters for all the parts of the algorithm
 #'
 #' @export gmjmcmc
 gmjmcmc <- function (data, loglik.pi, transforms, T, N, N.final, probs, params) {
@@ -74,8 +74,8 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, N.final, probs, params) 
 #' @param loglik.pi The the (log) density to explore
 #' @param model.cur The current model to make the proposal respective to
 #' @param features The features available
-#' @param probs A list of the various probability vectors to use TODO: specification of this
-#' @param params A list of the various parameters for all the parts of the algorithm TODO: specification of this
+#' @param probs A list of the various probability vectors to use
+#' @param params A list of the various parameters for all the parts of the algorithm
 #'
 mjmcmc.prop <- function (data, loglik.pi, model.cur, features, complex, marg.probs, probs, params) {
   l <- runif(1)
@@ -95,7 +95,7 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, complex, marg.pro
     chi.k.star <- local.optim(chi.0.star, data, loglik.pi, !large.jump$swap, complex, q.o, params) # Do local optimization
 
     # Randomize around the mode
-    proposal <- gen.proposal(chi.k.star, params$random, q.r, large.jump$swap, prob=T)
+    proposal <- gen.proposal(chi.k.star, params$random, q.r, !large.jump$swap, prob=T)
     proposal$model <- xor(chi.k.star, proposal$swap)
 
     # Do a backwards large jump
