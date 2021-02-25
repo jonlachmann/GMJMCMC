@@ -28,6 +28,7 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, N.final, probs, params) 
   complex <- complex.features(S[[1]])
   model.cur <- as.logical(rbinom(n = length(S[[1]]), size = 1, prob = 0.9))
   model.cur <- list(model=model.cur, crit=loglik.pre(loglik.pi, model.cur, complex, data))
+  best.crit <- model.cur$crit
 
   ### Main algorithm loop - Iterate over T different populations
   for (t in 1:T) {
@@ -42,6 +43,10 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, N.final, probs, params) 
     if (t==T) N <- N.final
     for (i in 1:N) {
       proposal <- mjmcmc.prop(data.t, loglik.pi, model.cur, S[[t]], complex, marg.probs, probs, params)
+      if (proposal$crit > best.crit) {
+        best.crit <- proposal$crit
+        print(paste("New best crit:", best.crit))
+      }
       if (log(runif(1)) <= proposal$alpha) {
         model.cur <- proposal
         accept <- accept + 1
