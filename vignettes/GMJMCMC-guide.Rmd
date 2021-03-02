@@ -54,9 +54,10 @@ set.seed(1234)
 result <- gmjmcmc(bc, loglik.example, transforms, T=3, N=30, N.final=60, probs, params)
 ```
 We can then summarize the results using the supplied function and get a plot of the importance of the parameters in the last population of features
-```{r}
+```{r, fig.width=6, fig.height=6}
 res.summary <- summary.gmjresult(result)
 importance <- data.frame(res.summary$importance)
 names(res.summary$importance) <- res.summary$features
+par(mar=c(14,3,3,3))
 barplot(res.summary$importance, las=2)
 ```
