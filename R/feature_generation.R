@@ -48,7 +48,9 @@ gen.feature <- function (features, transforms, probs, F.0.size, params) {
     if (depth.feature(feat) <= params$D && width.feature(feat) <= params$L) too.large <- F
     # Check for linear dependence of new the feature
     if (!too.large) {
-      colinear <- check.collinearity(feat, features[(F.0.size+1):length(features)], transforms, F.0.size)
+      if (length(features) == F.0.size) feats <- list()
+      else feats <- features[(F.0.size+1):length(features)]
+      colinear <- check.collinearity(feat, feats, transforms, F.0.size)
     }
   }
   print(paste("New feature:", print.feature(feat, transforms), "depth:", depth.feature(feat), "width:", width.feature(feat)))

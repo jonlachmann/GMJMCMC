@@ -40,7 +40,7 @@ model.proposal.1_4 <- function (model.size, neigh.min, neigh.max, indices, probs
 # By setting prob vector to all ones, we get swap instead of random change (Type 3 and 4)
 model.proposal.1_4.prob <- function (swaps, probs, neigh.size, neigh.min, neigh.max) {
   p <- length(probs) # Get number of available covariates
-  prod(probs[swaps]) / (choose(p, neigh.size)*(neigh.max-neigh.min+1))
+  log(prod(probs[swaps]) / (choose(p, neigh.size)*(neigh.max-neigh.min+1)))
 }
 
 # Uniform addition and deletion of a covariate (Type 5 and 6)
@@ -65,11 +65,11 @@ model.proposal.5_6.prob <- function (model, addition) {
   p <- length(model)
   modsum <- sum(model)
   if (addition) {
-    if (modsum==p) return(0)
-    else return(1/(p-modsum))
+    if (modsum==p) return(log(.Machine$double.eps))
+    else return(log(1/(p-modsum)))
   } else {
-    if (modsum==0) return(0)
-    else return(1/modsum)
+    if (modsum==0) return(log(.Machine$double.eps))
+    else return(log(1/modsum))
   }
 }
 

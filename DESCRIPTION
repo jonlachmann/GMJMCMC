@@ -8,5 +8,8 @@ Maintainer: Jon Lachmann <jon@lachmann.nu>
 Description: The package implements the GMJMCMC algorithm used to fit Bayesian Generalized Non-Linear Models (BGNLM)
 License: GPL-2
 Suggests: 
-    testthat
+    testthat,
+    knitr,
+    rmarkdown
 RoxygenNote: 7.1.1
+VignetteBuilder: knitr

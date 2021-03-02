@@ -20,8 +20,8 @@ gen.probs.list <- function (transforms) {
 
   ## Feature generation probabilities
   transcount <- length(transforms)
-  filter <- 0.6                         # filtration threshold
-  gen <- rep(1/4, 4)                    # probability for different feature generation methods
+  filter <- 0.6                           # filtration threshold
+  gen <- rep(1/4, 4)                      # probability for different feature generation methods
   trans <- rep(1/transcount, transcount)  # probability for each different nonlinear transformation
 
   ## Compile the list and return
@@ -46,7 +46,7 @@ gen.params.list <- function () {
   greedy_params <- list(steps=20, kern=greedy_kern)                     # Greedy algorithm parameters
 
   ## MJMCMC parameters
-  large_params <- list(neigh.size=2, neigh.min=1, neigh.max=2)          # Large jump parameters
+  large_params <- list(neigh.size=4, neigh.min=3, neigh.max=5)          # Large jump parameters
   random_params <- list(neigh.size=1, neigh.min=1, neigh.max=2)         # Small random jump parameters
   mh_params <- list(neigh.size=1, neigh.min=1, neigh.max=2)             # Regular MH parameters
 

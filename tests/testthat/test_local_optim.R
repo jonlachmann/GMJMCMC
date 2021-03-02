@@ -18,7 +18,7 @@ test_that("Testing Greedy algorithm", {
   optmod <- greedy.optim(c(F,F,F,F,F,F,F,F,F,F),
                          NULL, loglik.tester,
                          c(F,F,T,T,T,T,T,T,T,T), NULL,
-                         greedy_params_test)
+                         greedy_params_test)$model
   expect_equal(sum(optmod), 8)
   expect_equal(optmod, c(F,F,T,T,T,T,T,T,T,T))
 })

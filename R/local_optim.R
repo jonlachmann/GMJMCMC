@@ -3,13 +3,15 @@
 # Created by: jonlachmann
 # Created on: 2021-02-11
 
-simulated.annealing <- function (model, data, loglik.pi, indices, complex, params) {
+simulated.annealing <- function (model, data, loglik.pi, indices, complex, params, kernel=NULL) {
   # Select which kernel to use for the random steps
-  kernel <- sample.int(n = 6, size = 1, prob = params$kern$probs)
+  if (is.null(kernel)) kernel <- sample.int(n = 6, size = 1, prob = params$kern$probs)
+
   temp <- params$t.init # Initial temperature
 
   # Calculate current likelihood
   model.lik <- loglik.pre(loglik.pi, model, complex, data)
+  print(paste("SA Start:", model.lik))
   while (temp > params$t.min) {
     # Make M tries at current temperature
     for (m in 1:params$M) {
@@ -28,12 +30,13 @@ simulated.annealing <- function (model, data, loglik.pi, indices, complex, param
     # Update temperature
     temp <- temp * exp(-params$dt)
   }
-  return(model)
+  print(paste("SA Finish:", model.lik))
+  return(list(model=model, kern=kernel))
 }
 
-greedy.optim <- function (model, data, loglik.pi, indices, complex, params) {
+greedy.optim <- function (model, data, loglik.pi, indices, complex, params, kernel=NULL) {
   # Select which kernel to use for the random steps
-  kernel <- sample.int(n = 6, size = 1, prob = params$kern$probs)
+  if (is.null(kernel)) kernel <- sample.int(n = 6, size = 1, prob = params$kern$probs)
 
   # Calculate current likelihood
   model.lik <- loglik.pre(loglik.pi, model, complex, data)
@@ -48,15 +51,15 @@ greedy.optim <- function (model, data, loglik.pi, indices, complex, params) {
         model.lik <- proposal.lik
       }
   }
-  return(model)
+  return(list(model=model, kern=kernel))
 }
 
-local.optim <- function (model, data, loglik.pi, indices, complex, type, params) {
+local.optim <- function (model, data, loglik.pi, indices, complex, type, params, kernel=NULL) {
   if (type == 1) {
-    return(simulated.annealing(model, data, loglik.pi, indices, complex, params$sa))
+    return(simulated.annealing(model, data, loglik.pi, indices, complex, params$sa, kernel))
   }
   if (type == 2) {
-    return(greedy.optim(model, data, loglik.pi, indices, complex, params$greedy))
+    return(greedy.optim(model, data, loglik.pi, indices, complex, params$greedy, kernel))
   }
   if (type == 3) {
     return("not implemented")

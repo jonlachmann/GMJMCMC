@@ -17,9 +17,9 @@ gmjmcmc(data, loglik.pi, transforms, T, N, N.final, probs, params)
 
 \item{N}{The number of iterations per population (total iterations = T*N)}
 
-\item{probs}{A list of the various probability vectors to use TODO: specification of this}
+\item{probs}{A list of the various probability vectors to use}
 
-\item{params}{A list of the various parameters for all the parts of the algorithm TODO: specification of this}
+\item{params}{A list of the various parameters for all the parts of the algorithm}
 }
 \description{
 Main algorithm for GMJMCMC

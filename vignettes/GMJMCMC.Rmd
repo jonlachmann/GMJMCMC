@@ -1,0 +1,62 @@
+---
+title: "GMJMCMC - Genetically Modified Mode Jumping MCMC"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{GMJMCMC - Genetically Modified Mode Jumping MCMC}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+The `GMJMCMC` package provides functions to estimate Bayesian Generalized nonlinear models (BGNLMs) through a Genetically Modified Mode Jumping MCMC algorithm.
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+# Examples
+Below are provided examples on how to run the algorithm and what the results tell us, we begin by loading the package and a supplied dataset
+```{r setup}
+library(GMJMCMC)
+data("breastcancer")
+bc <- breastcancer[,c(ncol(breastcancer),2:(ncol(breastcancer)-1))]
+```
+We need to define some nonlinear transformations for the algorithm to use, this is done below, as well as creating a list of them for the package to work with
+```{r}
+sigmoid <- function(x)exp(-x)
+sini <- function(x)sin(x/180*pi)
+expi <- function(x)exp(-abs(x))
+logi <- function(x)log(abs(x)+1)
+troot <- function(x)abs(x)^(1/3)
+to25 <- function(x)abs(x)^(2.5)
+to35 <- function(x)abs(x)^(3.5)
+
+transforms <- c("sigmoid","sini","expi","logi","troot","to25","to35")
+```
+By calling two functions in the package, a list of probabilities for various parts of the algorithm, as well as a list of parameters are created. The list of probabilities needs the list of transformations to be able to create the vector of probabilities for the different transformations
+```{r}
+probs <- gen.probs.list(transforms)
+params <- gen.params.list()
+```
+We can use one of the supplied likelihood functions, but here we demonstrate how to create our own, it takes four arguments, the data, the model, the formula to use and a list of complexity measures for the features involved in the model
+```{r}
+loglik.example <- function (data, model, formula, complex) {
+  r <- 20/223
+  suppressWarnings({model <- glm(formula = formula, data=data, family = "binomial", maxit=100)})
+  ret <- (-(model$deviance -2*log(r)*sum(complex$width)))/2
+  return(ret)
+}
+```
+We are now ready to run the algorithm, in this vignette we will only run very few iterations for demonstration purposes, but the only thing that needs to be changed are the number or populations to visit `T`, the number of iterations per population `N` and the number of iterations for the final population `N.final`
+```{r}
+set.seed(1234)
+result <- gmjmcmc(bc, loglik.example, transforms, T=3, N=30, N.final=60, probs, params)
+```
+We can then summarize the results using the supplied function and get a plot of the importance of the parameters in the last population of features
+```{r}
+res.summary <- summary.gmjresult(result)
+importance <- data.frame(res.summary$importance)
+names(res.summary$importance) <- res.summary$features
+barplot(res.summary$importance, las=2)
+```

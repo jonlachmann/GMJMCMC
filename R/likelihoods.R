@@ -13,7 +13,7 @@
 #' @export logistic.loglik
 logistic.loglik <- function (data, model, formula, complex) {
   r <- 20/223
-  model <- glm(formula = formula, data=data, family = "binomial")
+  suppressWarnings({model <- glm(formula = formula, data=data, family = "binomial", maxit=100)})
   ret <- (-(model$deviance -2*log(r)*sum(complex$width)))/2
   return(ret)
 }
