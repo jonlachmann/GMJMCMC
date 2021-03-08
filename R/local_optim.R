@@ -41,15 +41,25 @@ greedy.optim <- function (model, data, loglik.pi, indices, complex, params, kern
   # Calculate current likelihood
   model.lik <- loglik.pre(loglik.pi, model, complex, data)
 
+  # Run the algorithm for the number of steps specified
   for (i in 1:params$steps) {
+    # For each step, do the specified number of tries
+    proposal.best <- NULL
+    proposal.lik.best <- -Inf
+    for (j in 1:params$tries) {
       # Get a modified model as proposal and calculate its likelihood
       proposal <- xor(model, gen.proposal(model, params$kern, kernel, indices)$swap)
       proposal.lik <- loglik.pre(loglik.pi, proposal, complex, data)
-      # Accept every improvement
-      if (proposal.lik > model.lik) {
-        model <- proposal
-        model.lik <- proposal.lik
+      if (proposal.lik > proposal.lik.best) {
+        proposal.best <- proposal
+        proposal.lik.best <- proposal.lik
       }
+    }
+    # Accept every improvement
+    if (proposal.lik > model.lik) {
+      model <- proposal
+      model.lik <- proposal.lik
+    }
   }
   return(list(model=model, kern=kernel))
 }
