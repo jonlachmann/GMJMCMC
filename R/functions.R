@@ -9,3 +9,10 @@ ind.to.log <- function (ind, length) {
   log[ind] <- T
   return(log)
 }
+
+# Replace non-finite elements of a data frame
+replace.infinite.data.frame <- function(df, replacewith=c(.Machine$double.xmin, .Machine$double.xmax)){
+  df[df == "-Inf"] <- replacewith[1]
+  df[df == "Inf"] <- replacewith[2]
+  return(df)
+}

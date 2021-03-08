@@ -11,7 +11,7 @@ simulated.annealing <- function (model, data, loglik.pi, indices, complex, param
 
   # Calculate current likelihood
   model.lik <- loglik.pre(loglik.pi, model, complex, data)
-  print(paste("SA Start:", model.lik))
+  # print(paste("SA Start:", model.lik))
   while (temp > params$t.min) {
     # Make M tries at current temperature
     for (m in 1:params$M) {
@@ -30,7 +30,7 @@ simulated.annealing <- function (model, data, loglik.pi, indices, complex, param
     # Update temperature
     temp <- temp * exp(-params$dt)
   }
-  print(paste("SA Finish:", model.lik))
+  # print(paste("SA Finish:", model.lik))
   return(list(model=model, kern=kernel))
 }
 

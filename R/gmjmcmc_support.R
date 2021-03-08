@@ -51,6 +51,8 @@ precalc.features <- function (data, features, transforms) {
     feature_string <- print.feature(features[[f]], transforms, dataset=T)
     precalc[,(f+1)] <- eval(parse(text=feature_string))
   }
+  # Replace any -Inf and Inf values caused by under- or overflow
+  precalc <- replace.infinite.data.frame(precalc)
   return(precalc)
 }
 

@@ -64,13 +64,17 @@ loglik.tester <- function (data, model, formula, complex) {
   return(summod)
 }
 
-result <- gmjmcmc(testdata, logistic.loglik, transforms, 50, 200, 500, probs, params)
+result <- gmjmcmc(testdata, logistic.loglik, transforms, 100, 500, 1000, probs, params)
 
 summ <- summary.gmjresult(result)
+
+
 
 importance <- data.frame(c(summ$importance))
 names(summ$importance) <- summ$features
 barplot(summ$importance, las=2)
+
+gmjmcmc.totdens.plot(result)
 
 greedy_kern_test <- list(probs=c(1,0,0,0,0,0),
                       neigh.size=1, neigh.min=1, neigh.max=2)           # Greedy algorithm proposal kernel parameters
