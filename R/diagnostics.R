@@ -33,4 +33,5 @@ gmjmcmc.totdens <- function (models) {
 gmjmcmc.totdens.plot <- function (result) {
   totdens_pops <- sapply(result$models, gmjmcmc.totdens)
   plot(log(totdens_pops), type="l", xlab="Population", ylab="Total log density")
+  return(totdens_pops)
 }

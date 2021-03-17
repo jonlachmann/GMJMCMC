@@ -21,7 +21,7 @@ troot <- function(x)abs(x)^(1/3)
 to25 <- function(x)abs(x)^(2.5)
 to35 <- function(x)abs(x)^(3.5)
 
-transforms <- c("to25","expi","logi","to35","troot","sigmoid")
+transforms <- c("sini", "to25","expi","logi","to35","troot","sigmoid")
 
 probs <- gen.probs.list(transforms)
 params <- gen.params.list()
@@ -30,9 +30,9 @@ data("breastcancer")
 
 bc <- breastcancer[,c(ncol(breastcancer),2:(ncol(breastcancer)-1))]
 
-result <- gmjmcmc(bc, logistic.loglik, transforms, 30, 1000, 5000, probs, params)
+result2 <- gmjmcmc(bc, logistic.loglik, transforms, 1, 500, 1000, probs, params)
 
-result$accept
+result2$accept
 
 summ <- summary.gmjresult(result)
 
@@ -59,14 +59,16 @@ y2 <- rbinom(100, 1, 1/(1+exp(-y)))
 testdata <- data.frame(cbind(y2,x1,x2,x3,x4,x5,x6,x7,x8))
 
 
+glmod <- glm(y2 ~ ., family=binomial(link="logit"), data=testdata)
+
 loglik.tester <- function (data, model, formula, complex) {
   summod <- sum(which(model)) - sum(complex$width)*5
   return(summod)
 }
 
-result <- gmjmcmc(testdata, logistic.loglik, transforms, 100, 500, 1000, probs, params)
+result <- gmjmcmc(testdata, logistic.loglik, transforms, 10, 100, 200, probs, params)
 
-summ <- summary.gmjresult(result)
+summ <- summary.gmjresult(result, 75)
 
 
 
@@ -74,7 +76,7 @@ importance <- data.frame(c(summ$importance))
 names(summ$importance) <- summ$features
 barplot(summ$importance, las=2)
 
-gmjmcmc.totdens.plot(result)
+totdens <- gmjmcmc.totdens.plot(result2)
 
 greedy_kern_test <- list(probs=c(1,0,0,0,0,0),
                       neigh.size=1, neigh.min=1, neigh.max=2)           # Greedy algorithm proposal kernel parameters
@@ -90,7 +92,7 @@ simulated.annealing(c(F,F,F,F,F,F,F,F,F,F), NULL, loglik.tester, c(T,T,T,T,T,T,T
 
 for(i in 1:10) sales2[,i] <- as.numeric(sales2[,i])
 
-result <- gmjmcmc(sales2, loglik.test, transforms, 100, 200, 500, probs, params)
+result <- gmjmcmc(sales2, loglik.test, transforms, 10, 200, 500, probs, params)
 
 result$accept
 
@@ -130,8 +132,19 @@ library(ggplot2)
 ggplot(dff, aes(x=x.pos, y=y.pos)) +
   stat_density2d(aes(fill=..level..), geom = "polygon", colour="white", show.legend=F)
 
+# Alpha generation stuff
 library(gnlm)
+library(Rcpp)
+sourceCpp("src/set_alphas.cpp")
 
-attach(sales2)
+g <- function(x) 1/(1+exp(-x))
 
-gnlr(y=price, mu=~cos(b0+b1*size+b2*room_count), pmu=rnorm(3, 0, 0.0001), pshape=1)
+# Create an environment that gnlr can work with
+testenv <- attach(testdata)
+# Create the formula for gnlr
+formul <- formula(paste0("~g(",set_alphas(paste0(sapply(result$populations[[9]][6], print.feature, transforms, alphas=T), collapse="+")),")"))
+
+# Run gnlr to estimate alpha parameters
+gnlr(y=y2, mu=formul, distribution = "binomial", envir=testenv, pmu=rep(0.05,5))$coefficients /
+gnlr(y=y2, mu=formul, distribution = "binomial", envir=testenv, pmu=rep(0.01,5))$coefficients
+

@@ -7,6 +7,10 @@ Author: Jon Lachamnn
 Maintainer: Jon Lachmann <jon@lachmann.nu>
 Description: The package implements the GMJMCMC algorithm used to fit Bayesian Generalized Non-Linear Models (BGNLM)
 License: GPL-2
+Imports:
+    Rcpp
+LinkingTo:
+    Rcpp
 Suggests: 
     testthat,
     knitr,

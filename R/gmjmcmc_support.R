@@ -76,6 +76,7 @@ loglik.pre <- function (loglik.pi, model, complex, data) {
 #' @export summary.gmjresult
 summary.gmjresult <- function (results, population="last") {
   if (population=="last") pops <- length(results$models)
+  else pops <- population
   feature_strings <- vector("list", length(result$populations[[pops]]))
   for (i in 1:length(feature_strings)) {
     feature_strings[[i]] <- print.feature(result$populations[[pops]][[i]], transforms)

@@ -27,7 +27,7 @@ create.feature <- function (transform, features, alphas=NULL) {
   # Given no alphas, assume no intercept and unit coefficients
   if (is.null(alphas)) alphas <- c(0, rep(1, length(features)))
   if (length(alphas) != (length(features) + 1)) stop("Invalid alpha/feature count")
-  # Calculate the depth and of the new feature
+  # Calculate the depth and width of the new feature
   if (transform == 0) {
     depth <- 1 + depth.feature(features[[1]]) + depth.feature(features[[2]])
     width <- 2 + width.feature(features[[1]]) + width.feature(features[[2]])
@@ -57,10 +57,11 @@ create.feature <- function (transform, features, alphas=NULL) {
 #' @param feature An object of class "feature"
 #' @param transforms The list of transforms to use
 #' @param dataset Set the regular covariates as columns in a dataset
+#' @param alphas Print a "?" instead of actual alphas to prepare the output for alpha estimation
 #'
 #' @method print feature
 #' @export
-print.feature <- function (feature, transforms, dataset=F) {
+print.feature <- function (feature, transforms, dataset=F, alphas=F) {
   fString <- ""
   feat <- feature[[length(feature)]]
   # This is a more complex feature
@@ -78,11 +79,19 @@ print.feature <- function (feature, transforms, dataset=F) {
       # No plus or multiplication sign on the last one
       if (j == nrow(feat)) op <- ""
       # If this is an intercept just add it in
-      if (j == 1 && feat[j,3] != 0) fString <- paste0(fString, feat[j,3], op)
+      if (j == 1 && feat[j,3] != 0) {
+        if (!alphas) fString <- paste0(fString, feat[j,3], op)
+        else fString <- paste0(fString, "?", op)
+      }
       # Otherwise this is a feature or covariate, do a recursive conversion
       if (j != 1) {
-        if (feat[j,3] == 1) fString <- paste0(fString, print.feature(feature[[feat[j,2]]], transforms, dataset), op)
-        else fString <- paste0(fString, feat[j,3], "*", print.feature(feature[[feat[j,2]]], transforms, dataset), op)
+        # Process alphas, which are only present if there is more than one term in the feature
+        # this implies that the feature is not a multiplication (i.e. only one _term_).
+        if (nrow(feat) > 2 && feat[1,1] != 0) {
+          if (alphas) fString <- paste0(fString, "?*")
+          else fString <- paste0(fString, feat[j,3], "*")
+        }
+        fString <- paste0(fString, print.feature(feature[[feat[j,2]]], transforms, dataset), op)
       }
     }
     fString <- paste0(fString, ")")
@@ -95,7 +104,6 @@ print.feature <- function (feature, transforms, dataset=F) {
   return(fString)
 }
 
-# TODO: Add a way to get depth and width of a feature
 # A function to get the depth of a feature
 depth.feature <- function (feature) {
   feat <- feature[[length(feature)]]
@@ -112,7 +120,7 @@ width.feature <- function (feature) {
   else stop("Invalid feature structure")
 }
 
-# A function to get the complexity of a list of features
+# A function to get the complexity measures of a list of features
 complex.features <- function (features) {
   featcount <- length(features)
   width <- rep(NA, featcount)

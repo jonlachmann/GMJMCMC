@@ -4,7 +4,7 @@
 \alias{print.feature}
 \title{Print method for "feature" class}
 \usage{
-\method{print}{feature}(feature, transforms, dataset = F)
+\method{print}{feature}(feature, transforms, dataset = F, alphas = F)
 }
 \arguments{
 \item{feature}{An object of class "feature"}
@@ -12,6 +12,8 @@
 \item{transforms}{The list of transforms to use}
 
 \item{dataset}{Set the regular covariates as columns in a dataset}
+
+\item{alphas}{Print a "?" instead of actual alphas to prepare the output for alpha estimation}
 }
 \description{
 Print method for "feature" class
