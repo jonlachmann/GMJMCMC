@@ -52,6 +52,40 @@ create.feature <- function (transform, features, alphas=NULL) {
   return(feature)
 }
 
+#' Update alphas on a feature
+#'
+#' @param feature The feature to be updated
+#' @param alphas The alphas that will be used
+#' @param recurse If we are recursing, to note the number of alphas used
+update.alphas <- function (feature, alphas, recurse=FALSE) {
+  feat <- feature[[length(feature)]]
+  alpha <- 0
+  # This is a more complex feature
+  if (is.matrix(feat)) {
+    # Adjust intercept if it is not multiplication
+    if (feat[1,1] > 0 && nrow(feat) > 2) {
+      alpha <- alpha + 1
+      feat[1,3] <- alphas[alpha]
+    }
+    for (i in 2:nrow(feat)) {
+      # Multiplication does not have alphas, and a zero intercept is no intercept
+      if (feat[1,1] > 0 && feat[1,3] != 0) {
+        alpha <- alpha + 1
+        feat[i,3] <- alphas[alpha]
+      }
+      # If we have a nested feature, recurse into it
+      if (is.list(feature[[feat[i,2]]])) {
+        recur <- update.alphas(feature[[feat[i,2]]], alphas[alpha+1:length(alphas)], TRUE)
+        feature[[feat[i,2]]] <- recur$feature
+        alpha <- alpha + recur$alpha
+      }
+    }
+  }
+  feature[[length(feature)]] <- feat
+  if (recurse) return(list(alpha=alpha, feature=feature))
+  else return(feature)
+}
+
 #' Print method for "feature" class
 #'
 #' @param feature An object of class "feature"
@@ -87,11 +121,11 @@ print.feature <- function (feature, transforms, dataset=F, alphas=F) {
       if (j != 1) {
         # Process alphas, which are only present if there is more than one term in the feature
         # this implies that the feature is not a multiplication (i.e. only one _term_).
-        if (nrow(feat) > 2 && feat[1,1] != 0) {
+        if (nrow(feat) > 2 && feat[1,1] > 0) {
           if (alphas) fString <- paste0(fString, "?*")
           else fString <- paste0(fString, feat[j,3], "*")
         }
-        fString <- paste0(fString, print.feature(feature[[feat[j,2]]], transforms, dataset), op)
+        fString <- paste0(fString, print.feature(feature[[feat[j,2]]], transforms, dataset, alphas), op)
       }
     }
     fString <- paste0(fString, ")")
@@ -130,4 +164,18 @@ complex.features <- function (features) {
     depth[i] <- depth.feature(features[[i]])
   }
   return(list(width=width, depth=depth))
+}
+
+#' Function to generate a function string for a model consisting of features
+#'
+#' @param transform A numeric denoting the transform type
+#' @param features A list of features to include
+#' @param transform A numeric vector denoting the alphas to use
+#'
+#' @export create.feature
+model.function <- function (model, features, transforms, link) {
+  modelstring <- paste0(sapply(features[model], print.feature, transforms, alphas=T), collapse="+")
+  modelfun <- set_alphas(modelstring)
+  modelfun$formula <- paste0(link, "(", modelfun$formula, ")")
+  return(modelfun)
 }

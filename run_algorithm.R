@@ -137,14 +137,115 @@ library(gnlm)
 library(Rcpp)
 sourceCpp("src/set_alphas.cpp")
 
+feat <- alpha_3(featt, transforms, "g", loglik)
+print(feat, transforms)
+
+
+featt <- create.feature(1, list(feature2, feature1),c(1,2,3))
+
+feature2 <- result$populations[[9]][[1]]
+
+print(featt, transforms)
+
+feat2 <- update.alphas(featt, c(10.1,9.1,8.1,7.1,6.1,5.1,4.1,3.1,2.1,1.1))
+print(feat2, transforms)
+
 g <- function(x) 1/(1+exp(-x))
 
 # Create an environment that gnlr can work with
 testenv <- attach(testdata)
+
 # Create the formula for gnlr
-formul <- formula(paste0("~g(",set_alphas(paste0(sapply(result$populations[[9]][6], print.feature, transforms, alphas=T), collapse="+")),")"))
+mufcn <- model.function(c(F,F,F,F,T,F,F,F), result$populations[[8]], transforms, "g")
+
+# Log likelihood function for manual evaluation
+loglik <- function (a, mu_func) {
+    m <- eval(parse(text=mu_func))
+    -sum((y2 * log(m) + (1-y2) * log(1 - m)))
+}
+
+range <- 10
+done <- FALSE
+while(!done) {
+  sares <- GenSA(rep(0,mufcn$count), loglik,
+                    rep(-range/2,mufcn$count), rep(range/2,mufcn$count),
+                    control=list(max.call=1e4), mufcn$formula)
+  if (sum((sares$par==(-range/2))+(sares$par==(range/2))) != 0) range <- range*2
+  else done <- TRUE
+}
+
+
+gnlr(y=y2, mu=formula(mufcn2$formula), distribution = "binomial", envir=testenv, pmu=rep(0.3,mufcn$count))
+
+mufcn2 <- mufcn
+
+
+for (i in 1:20) {
+  sarestmp <- GenSA(rep(0,mufcn$count), loglik, rep(-i*10,mufcn$count), rep(i*10,mufcn$count), control=list(max.call=1e4), mufcn$formula)
+  sares2[i,] <- c(sarestmp$par, sarestmp$value)
+}
+
+
+loglik(rep(2,5),mufcn)
 
 # Run gnlr to estimate alpha parameters
-gnlr(y=y2, mu=formul, distribution = "binomial", envir=testenv, pmu=rep(0.05,5))$coefficients /
-gnlr(y=y2, mu=formul, distribution = "binomial", envir=testenv, pmu=rep(0.01,5))$coefficients
+nlm <- gnlr(y=y2, mu=formul, distribution = "binomial", envir=testenv, pmu=rep(0.3,5))
+
+install.packages("nloptr")
+library(nloptr)
+
+gnlr(y=y2, mu=formul, distribution = "binomial", envir=testenv, pmu=rep(0.3,5))
+
+y_cbind <- cbind(y2, 1-y2)
+
+bnlr(y=y_cbind, mu=formul2, pmu=rep(0.1,5))$coefficients
+
+matt <- matrix(NA,200,5)
+liks <- matrix(NA, 200, 1)
+for(i in 1:200) {
+  matt[i,] <- gnlr(y=y2, mu=formul, distribution = "binomial", envir=testenv, pmu=rep(i/50,5), steptol=1e-10)$coefficients
+  liks[i] <- gnlr(y=y2, mu=formul, distribution = "binomial", envir=testenv, pmu=rep(i/50,5), steptol=1e-10)$maxlik
+}
+
+resid <- y2 - sin(nlm$coefficients[1]+nlm$coefficients[2]*x2+nlm$coefficients[3]*x3+nlm$coefficients[4]*x4+nlm$coefficients[5]*x5*x3)
+
+sin(fitted2)
+sin(fitted)
+
+
+g(y2)
+
+fitted
+
+sum(nlm$residuals^2)
+
+plot(sort(round(liks, digits=5)), type="l")
+
+plot(sort(liks), type="l", ylim=c(55,70))
+lines(sort(samat[,6]), col="red")
+
+min(samat[,6])
+min(liks)
+
+cor(matt)
+
+for (i in 2:20) {
+  matt[i,] <- matt[i,] / matt[1,]
+}
+
+for (i in 2:5) matt[,i] <- matt[,i] / matt[,1]
+
+plot(matt[,1], type="l", col="red")
+lines(matt[,2], col="blue")
+lines(matt[,3], col="yellow")
+lines(matt[,4], col="green")
+lines(matt[,5])
+
+samat <- matrix(NA, 20, 6)
+
+for (i in 1:20) {
+  satmp <- GenSA(rep(as.numeric(i),5), fcnn, rep(-100,5), rep(100,5))
+  samat[i,] <- c(satmp$par, satmp$value)
+}
+
 
