@@ -13,7 +13,7 @@
 #' @export logistic.loglik
 logistic.loglik <- function (y, x, model, complex) {
   r <- 20/223
-  suppressWarnings({mod <- fastglm(as.matrix(x[,model]), y, family=binomial())})
+  suppressWarnings({mod <- fastglm(as.matrix(x[,model]), y, family=binomial(), method=2)})
   ret <- (-(mod$deviance -2*log(r)*sum(complex$width)))/2
   return(ret)
 }

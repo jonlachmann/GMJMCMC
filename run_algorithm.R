@@ -29,11 +29,18 @@ test()
   params <- gen.params.list()
 }
 
+glm.logistic.loglik <- function (y, x, model, complex) {
+  r <- 20/223
+  suppressWarnings({mod <- glm.fit(as.matrix(x[,model]), y, family=binomial())})
+  ret <- (-(mod$deviance -2*log(r)*sum(complex$width)))/2
+  return(ret)
+}
+
 data("breastcancer")
 
 bc <- breastcancer[,c(ncol(breastcancer),2:(ncol(breastcancer)-1))]
 
-result2 <- gmjmcmc(bc, logistic.loglik, transforms, 1, 500, 1000, probs, params)
+system.time(result2 <- gmjmcmc(bc, logistic.loglik, transforms, 3, 100, 100, probs, params))
 
 result2$accept
 
@@ -64,7 +71,7 @@ profvis({result <- gmjmcmc(bc, loglik.test, transforms, 30, 20, 50, probs, param
   testdata <- matrix(cbind(y2,1,x1,x2,x3,x4,x5,x6,x7,x8), nrow=nobs)
 }
 
-system.time(result3 <- gmjmcmc(testdata, fast.logistic.loglik, transforms, 50, 50, 200, probs, params))
+system.time(result3 <- gmjmcmc(testdata, logistic.loglik, transforms, 20, 10, 200, probs, params))
 
 install.packages("fastglm")
 library(fastglm)
