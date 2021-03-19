@@ -11,9 +11,14 @@
 #' @param complex A list of complexity measures for the features
 #'
 #' @export logistic.loglik
-logistic.loglik <- function (data, model, formula, complex) {
+logistic.loglik <- function (y, x, model, complex) {
   r <- 20/223
-  suppressWarnings({model <- glm(formula = formula, data=data, family = "binomial", maxit=100)})
-  ret <- (-(model$deviance -2*log(r)*sum(complex$width)))/2
+  suppressWarnings({mod <- fastglm(as.matrix(x[,model]), y, family=binomial())})
+  ret <- (-(mod$deviance -2*log(r)*sum(complex$width)))/2
   return(ret)
+}
+
+logistic.loglik.alpha <- function (a, mu_func) {
+  m <- eval(parse(text=mu_func))
+  -sum((y2 * log(m) + (1-y2) * log(1 - m)))
 }

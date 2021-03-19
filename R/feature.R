@@ -166,6 +166,7 @@ complex.features <- function (features) {
   return(list(width=width, depth=depth))
 }
 
+# TODO: This should probably be moved as it is not immediately connected to the features
 #' Function to generate a function string for a model consisting of features
 #'
 #' @param transform A numeric denoting the transform type

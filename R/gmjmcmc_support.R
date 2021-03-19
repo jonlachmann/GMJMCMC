@@ -45,11 +45,11 @@ marginal.probs.renorm <- function (models) {
 
 # Function for precalculating features for a new feature population
 precalc.features <- function (data, features, transforms) {
-  precalc <- data.frame(matrix(NA, nrow(data), length(features)+1))
-  precalc[,1] <- data[,1]
+  precalc <- matrix(NA, nrow(data), length(features)+2)
+  precalc[,1:2] <- data[,1:2]
   for (f in 1:length(features)) {
     feature_string <- print.feature(features[[f]], transforms, dataset=T)
-    precalc[,(f+1)] <- eval(parse(text=feature_string))
+    precalc[,(f+2)] <- eval(parse(text=feature_string))
   }
   # Replace any -Inf and Inf values caused by under- or overflow
   precalc <- replace.infinite.data.frame(precalc)
@@ -58,14 +58,10 @@ precalc.features <- function (data, features, transforms) {
 
 # Function to call the model function
 loglik.pre <- function (loglik.pi, model, complex, data) {
-  # Create a formula with only an intercept
-  formula <- paste0(colnames(data)[1], " ~ 1 ")
-  # Add covariates to formula if we have any
-  if (sum(model) != 0) formula <- paste0(formula, "+ ", paste(colnames(data)[c(F,model)], collapse=" + "))
   # Get the complexity measures for just this model
   complex <- list(width=complex$width[model], depth=complex$depth[model])
-  # Call the model estimator with the data and the formula
-  return(loglik.pi(data, model, as.formula(formula), complex))
+  # Call the model estimator with the data and the model, note that we add the intercept to every model
+  return(loglik.pi(data[,1], data[,-1], c(T,model), complex))
 }
 
 #' Summarize results from GMJMCMC
@@ -93,4 +89,19 @@ print.model <- function (model, features, transforms) {
     if (model$model[i]) model_print[[i]] <- print.feature(features[[i]], transforms)
   }
   return(model_print)
+}
+
+# Function to check the data
+# Checks that there is an intercept in the data, adds it if missing
+# Coerces the data to be of type matrix
+check.data <- function (data) {
+  if (!is.matrix(data)) {
+    data <- as.matrix(data)
+    print("Data coerced to matrix type")
+  }
+  if (sum(data[,2] == 1) != nrow(data)) {
+    data <- cbind(data[,1],1,data[,-1])
+    print("Intercept added to data")
+  }
+  return(data)
 }

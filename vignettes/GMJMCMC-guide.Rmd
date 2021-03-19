@@ -5,6 +5,7 @@ vignette: >
   %\VignetteIndexEntry{GMJMCMC - Genetically Modified Mode Jumping MCMC}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{fastglm,GMJMCMC}
 ---
 The `GMJMCMC` package provides functions to estimate Bayesian Generalized nonlinear models (BGNLMs) through a Genetically Modified Mode Jumping MCMC algorithm.
 
@@ -19,6 +20,7 @@ knitr::opts_chunk$set(
 Below are provided examples on how to run the algorithm and what the results tell us, we begin by loading the package and a supplied dataset
 ```{r setup}
 library(GMJMCMC)
+library(fastglm)
 data("breastcancer")
 bc <- breastcancer[,c(ncol(breastcancer),2:(ncol(breastcancer)-1))]
 ```
@@ -41,10 +43,10 @@ params <- gen.params.list()
 ```
 We can use one of the supplied likelihood functions, but here we demonstrate how to create our own, it takes four arguments, the data, the model, the formula to use and a list of complexity measures for the features involved in the model
 ```{r}
-loglik.example <- function (data, model, formula, complex) {
+loglik.example <- function (y, x, model, complex) {
   r <- 20/223
-  suppressWarnings({model <- glm(formula = formula, data=data, family = "binomial", maxit=100)})
-  ret <- (-(model$deviance -2*log(r)*sum(complex$width)))/2
+  suppressWarnings({mod <- fastglm(as.matrix(x[,model]), y, family=binomial())})
+  ret <- (-(mod$deviance -2*log(r)*sum(complex$width)))/2
   return(ret)
 }
 ```

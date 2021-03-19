@@ -5,7 +5,9 @@
 
 #' Main algorithm for GMJMCMC
 #'
-#' @param data The data to use in the algorithm
+#' @param data A matrix containing the data to use in the algorithm,
+#' first column should be the dependent variable, second should be the intercept
+#' and the rest of the columns should be the independent variables.
 #' @param loglik.pi The (log) density to explore
 #' @param transforms A list of the available nonlinear transformations for feature generation
 #' @param T The number of population iterations
@@ -15,6 +17,8 @@
 #'
 #' @export gmjmcmc
 gmjmcmc <- function (data, loglik.pi, transforms, T, N, N.final, probs, params) {
+  # Verify that data is well-formed
+  data <- check.data(data)
   # Acceptance probability
   accept <- 0
   # A list of populations that have been visited
@@ -23,7 +27,7 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, N.final, probs, params) 
   models <- vector("list", T)
 
   # TODO: Initialization of first model
-  F.0 <- gen.covariates(ncol(data)-1)
+  F.0 <- gen.covariates(ncol(data)-2)
   S[[1]] <- F.0
   complex <- complex.features(S[[1]])
   model.cur <- as.logical(rbinom(n = length(S[[1]]), size = 1, prob = 0.9))

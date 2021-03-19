@@ -2,15 +2,19 @@
 % Please edit documentation in R/alpha_generation.R
 \name{alpha_3}
 \alias{alpha_3}
-\title{Alpha generator using strategy 1 as per Hubin et. al.}
+\title{Alpha generator using strategy 3 as per Hubin et. al.}
 \usage{
-alpha_3(feature, transforms)
+alpha_3(feature, transforms, link, loglik)
 }
 \arguments{
 \item{feature}{The feature to generate alphas for}
 
 \item{transforms}{The transforms used}
+
+\item{link}{The link function to use}
+
+\item{loglik}{log likelihood function to use}
 }
 \description{
-Alpha generator using strategy 1 as per Hubin et. al.
+Alpha generator using strategy 3 as per Hubin et. al.
 }

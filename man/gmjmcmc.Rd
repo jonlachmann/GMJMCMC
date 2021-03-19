@@ -7,7 +7,9 @@
 gmjmcmc(data, loglik.pi, transforms, T, N, N.final, probs, params)
 }
 \arguments{
-\item{data}{The data to use in the algorithm}
+\item{data}{A matrix containing the data to use in the algorithm,
+first column should be the dependent variable, second should be the intercept
+and the rest of the columns should be the independent variables.}
 
 \item{loglik.pi}{The (log) density to explore}
 

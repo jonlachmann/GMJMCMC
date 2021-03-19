@@ -6,7 +6,7 @@
 using namespace Rcpp;
 
 // set_alphas
-std::string set_alphas(std::string formula);
+List set_alphas(std::string formula);
 RcppExport SEXP _GMJMCMC_set_alphas(SEXP formulaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;

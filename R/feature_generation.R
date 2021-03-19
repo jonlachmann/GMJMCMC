@@ -61,11 +61,11 @@ check.collinearity <- function (proposal, features, transforms, F.0.size) {
   # Add the proposal to the feature list for evaluation
   features[[length(features)+1]] <- proposal
   # Generate mock data to test with (avoiding too costly computations)
-  mock.data <- matrix(runif((F.0.size*2)*(F.0.size+1), -1, 1), F.0.size*2, F.0.size+1)
+  mock.data <- matrix(c(runif((F.0.size*2), -1, 1),rep(1,F.0.size*2),runif((F.0.size*2)*(F.0.size), -1, 1)), F.0.size*2, F.0.size+2)
   # Use the mock data to precalc the features
   mock.data.precalc <- precalc.features(mock.data, features, transforms)
   # Fit a linear model with the mock data precalculated features
-  linearmod <- lm(mock.data.precalc)
+  linearmod <- lm(as.data.frame(mock.data.precalc[,-2]))
   # Check if all coefficients were possible to calculate
   if (sum(is.na(linearmod$coefficients)) == 0) return(F)
   else return(T)
