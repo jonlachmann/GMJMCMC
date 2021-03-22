@@ -4,7 +4,17 @@
 \alias{gmjmcmc}
 \title{Main algorithm for GMJMCMC}
 \usage{
-gmjmcmc(data, loglik.pi, transforms, T, N, N.final, probs, params)
+gmjmcmc(
+  data,
+  loglik.pi,
+  loglik.alpha,
+  transforms,
+  T,
+  N,
+  N.final,
+  probs,
+  params
+)
 }
 \arguments{
 \item{data}{A matrix containing the data to use in the algorithm,

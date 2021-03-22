@@ -1,5 +1,5 @@
 # Title     : A file to keep a running example of the algorithm, not really anything to keep around when it is done
-# Objective : TODO
+# Objective : A scratchpad for me to try out different things while developing
 # Created by: jonlachmann
 # Created on: 2021-02-12
 
@@ -7,9 +7,12 @@ library(roxygen2)
 roxygenize()
 library(devtools)
 build(vignettes=FALSE)
-install.packages("../GMJMCMC_1.0.tar.gz")
 build()
 test()
+
+install.packages("../GMJMCMC_1.0.tar.gz")
+detach("package:GMJMCMC", unload=TRUE)
+library(GMJMCMC)
 
 {
   files.sources <- list.files("R", full.names=T)
@@ -29,6 +32,10 @@ test()
   params <- gen.params.list()
 }
 
+library(GenSA)
+sourceCpp("src/set_alphas.cpp")
+params$feat$alpha <- 3
+
 glm.logistic.loglik <- function (y, x, model, complex) {
   r <- 20/223
   suppressWarnings({mod <- glm.fit(as.matrix(x[,model]), y, family=binomial())})
@@ -40,7 +47,8 @@ data("breastcancer")
 
 bc <- breastcancer[,c(ncol(breastcancer),2:(ncol(breastcancer)-1))]
 
-system.time(result2 <- gmjmcmc(bc, logistic.loglik, transforms, 3, 100, 100, probs, params))
+system.time(result2 <- gmjmcmc(testdata, logistic.loglik, logistic.loglik.alpha, transforms, 10, 100, 100, probs, params))
+system.time(result2 <- gmjmcmc(testdata, glm.logistic.loglik, transforms, 2, 100, 100, probs, params))
 
 result2$accept
 
@@ -60,37 +68,30 @@ profvis({result <- gmjmcmc(bc, loglik.test, transforms, 30, 20, 50, probs, param
   x1 <- rnorm(nobs, 1, 2)
   x2 <- rnorm(nobs, 3, 2)
   x3 <- rnorm(nobs, 5,2)
-  x4 <- rnorm(nobs, 1, 200)
+  x4 <- rnorm(nobs, 1, 4)
   x5 <- rnorm(nobs)
   x6 <- rnorm(nobs)
   x7 <- rnorm(nobs)
   x8 <- rnorm(nobs)
-  y <- 0.5*sini(x1)+2*logi(x2+x8)+7*troot(x3)-5*x5*x6 -15
+  y <- 5*sini(x1)+2*logi(x2+x8)+3*troot(x3)-3*x5*x6 -15
   y2 <- rbinom(nobs, 1, 1/(1+exp(-y)))
 
   testdata <- matrix(cbind(y2,1,x1,x2,x3,x4,x5,x6,x7,x8), nrow=nobs)
 }
 
-system.time(result3 <- gmjmcmc(testdata, logistic.loglik, transforms, 20, 10, 200, probs, params))
-
-install.packages("fastglm")
-library(fastglm)
-
-
-
-fast.logistic.loglik <- function (data, model, formula, complex) {
-  r <- 20/223
-  suppressWarnings({model <- fastglm(cbind(rep(1,nrow(data)),as.matrix(data[,-1][,model])), data[,1], family=binomial())})
-  ret <- (-(model$deviance -2*log(r)*sum(complex$width)))/2
-  return(ret)
-}
-
-summ <- summary.gmjresult(result, 75)
+mattt <- matrix(c(2,2,1,1,1,1), 2, 3)
+fett <- list(3, mattt)
+class(fett) <- "feature"
+print(fett, transforms, dataset=T, alphas=T)
 
 
+system.time(result3 <- gmjmcmc(testdata, logistic.loglik, logistic.loglik.alpha, transforms, 50, 500, 1000, probs, params))
+
+summ <- summary.gmjresult(result3)
 
 importance <- data.frame(c(summ$importance))
 names(summ$importance) <- summ$features
+par(mar=c(14,3,3,3))
 barplot(summ$importance, las=2)
 
 totdens <- gmjmcmc.totdens.plot(result2)
@@ -134,7 +135,7 @@ ggplot(dff, aes(x=x.pos, y=y.pos)) +
 # Alpha generation stuff
 library(gnlm)
 library(Rcpp)
-sourceCpp("src/set_alphas.cpp")
+
 
 feat <- alpha_3(featt, transforms, "g", loglik)
 print(feat, transforms)
@@ -149,36 +150,11 @@ print(featt, transforms)
 feat2 <- update.alphas(featt, c(10.1,9.1,8.1,7.1,6.1,5.1,4.1,3.1,2.1,1.1))
 print(feat2, transforms)
 
-g <- function(x) 1/(1+exp(-x))
-
 # Create an environment that gnlr can work with
 testenv <- attach(testdata)
 
 # Create the formula for gnlr
 mufcn <- model.function(c(F,F,F,F,T,F,F,F), result$populations[[8]], transforms, "g")
-
-# Log likelihood function for manual evaluation
-loglik <- function (a, mu_func) {
-    m <- eval(parse(text=mu_func))
-    -sum((y2 * log(m) + (1-y2) * log(1 - m)))
-}
-
-system.time({
-  eval(parse(text=print(feat2, transforms)))
-})
-
-range <- 10
-done <- FALSE
-while(!done) {
-  sares <- GenSA(rep(0,mufcn$count), loglik,
-                    rep(-range/2,mufcn$count), rep(range/2,mufcn$count),
-                    control=list(max.call=1e4), mufcn$formula)
-  if (sum((sares$par==(-range/2))+(sares$par==(range/2))) != 0) range <- range*2
-  else done <- TRUE
-}
-
-
-gnlr(y=y2, mu=formula(mufcn2$formula), distribution = "binomial", envir=testenv, pmu=rep(0.3,mufcn$count))
 
 mufcn2 <- mufcn
 
@@ -199,28 +175,12 @@ library(nloptr)
 
 gnlr(y=y2, mu=formul, distribution = "binomial", envir=testenv, pmu=rep(0.3,5))
 
-y_cbind <- cbind(y2, 1-y2)
-
-bnlr(y=y_cbind, mu=formul2, pmu=rep(0.1,5))$coefficients
-
 matt <- matrix(NA,200,5)
 liks <- matrix(NA, 200, 1)
 for(i in 1:200) {
   matt[i,] <- gnlr(y=y2, mu=formul, distribution = "binomial", envir=testenv, pmu=rep(i/50,5), steptol=1e-10)$coefficients
   liks[i] <- gnlr(y=y2, mu=formul, distribution = "binomial", envir=testenv, pmu=rep(i/50,5), steptol=1e-10)$maxlik
 }
-
-resid <- y2 - sin(nlm$coefficients[1]+nlm$coefficients[2]*x2+nlm$coefficients[3]*x3+nlm$coefficients[4]*x4+nlm$coefficients[5]*x5*x3)
-
-sin(fitted2)
-sin(fitted)
-
-
-g(y2)
-
-fitted
-
-sum(nlm$residuals^2)
 
 plot(sort(round(liks, digits=5)), type="l")
 

@@ -121,7 +121,7 @@ print.feature <- function (feature, transforms, dataset=F, alphas=F) {
       if (j != 1) {
         # Process alphas, which are only present if there is more than one term in the feature
         # this implies that the feature is not a multiplication (i.e. only one _term_).
-        if (nrow(feat) > 2 && feat[1,1] > 0) {
+        if ((nrow(feat) > 2 || feat[1,3] != 0) && feat[1,1] > 0) {
           if (alphas) fString <- paste0(fString, "?*")
           else fString <- paste0(fString, feat[j,3], "*")
         }

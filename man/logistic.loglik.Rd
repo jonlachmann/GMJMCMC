@@ -2,19 +2,23 @@
 % Please edit documentation in R/likelihoods.R
 \name{logistic.loglik}
 \alias{logistic.loglik}
-\title{Log likelihood function for logistic regression with a prior p(m)=sum(total_width)}
+\title{Log likelihood function for logistic regression with a prior p(m)=sum(total_width)
+This function is created as an example of how to create an estimator that is used
+to calculate the marginal likelihood of a model.}
 \usage{
-logistic.loglik(data, model, formula, complex)
+logistic.loglik(y, x, model, complex)
 }
 \arguments{
-\item{data}{Data to be used for the estimation}
-
 \item{model}{The model as a logical vector to estimate}
 
-\item{formula}{The formula to be used for estimation}
-
 \item{complex}{A list of complexity measures for the features}
+
+\item{data}{Data to be used for the estimation}
+
+\item{formula}{The formula to be used for estimation}
 }
 \description{
 Log likelihood function for logistic regression with a prior p(m)=sum(total_width)
+This function is created as an example of how to create an estimator that is used
+to calculate the marginal likelihood of a model.
 }

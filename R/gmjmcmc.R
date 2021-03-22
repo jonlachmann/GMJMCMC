@@ -3,6 +3,10 @@
 # Created by: jonlachmann
 # Created on: 2021-02-11
 
+#' @useDynLib GMJMCMC
+#' @importFrom Rcpp sourceCpp
+NULL
+
 #' Main algorithm for GMJMCMC
 #'
 #' @param data A matrix containing the data to use in the algorithm,
@@ -16,7 +20,7 @@
 #' @param params A list of the various parameters for all the parts of the algorithm
 #'
 #' @export gmjmcmc
-gmjmcmc <- function (data, loglik.pi, transforms, T, N, N.final, probs, params) {
+gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, probs, params) {
   # Verify that data is well-formed
   data <- check.data(data)
   # Acceptance probability
@@ -42,6 +46,7 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, N.final, probs, params) 
     population.models <- vector("list", N)
 
     if (t==T) N <- N.final
+    print(paste("Population", t, "begin."))
     for (i in 1:N) {
       proposal <- mjmcmc.prop(data.t, loglik.pi, model.cur, S[[t]], complex, probs, params)
       if (proposal$crit > best.crit) {
@@ -64,7 +69,7 @@ gmjmcmc <- function (data, loglik.pi, transforms, T, N, N.final, probs, params) 
     marg.probs <- marginal.probs.renorm(population.models)
     # Generate a new population of features for the next iteration (if this is not the last)
     if (t != T) {
-      S[[t+1]] <- gmjmcmc.transition(S[[t]], F.0, marg.probs, transforms, probs, params)
+      S[[t+1]] <- gmjmcmc.transition(S[[t]], F.0, data, loglik.alpha, marg.probs, transforms, probs, params)
       complex <- complex.features(S[[t+1]])
     }
   }
@@ -140,8 +145,20 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, complex, probs, p
   return(proposal)
 }
 
-# Subalgorithm for generating a new population of features
-gmjmcmc.transition <- function (S.t, F.0, marg.probs, transforms, probs, params) {
+#
+#' Subalgorithm for generating a new population of features in GMJMCMC
+#'
+#' @param S.t The current population of features
+#' @param F.0 The initial population of features, i.e. the bare covariates
+#' @param data The data used in the model, here we use it to generate alphas for new features
+#' @param loglik.alpha The log likelihood function to optimize the alphas for
+#' @param marg.probs The marginal inclusion probabilities of the current features
+#' @param transforms The nonlinear transformations available
+#' @param probs A list of the various probability vectors to use
+#' @param params A list of the various parameters for all the parts of the algorithm
+#'
+#' @return The updated population of features, that becomes S.t+1
+gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs, transforms, probs, params) {
   # Sample which features to keep based on marginal inclusion below probs$filter
   feats.keep <- as.logical(rbinom(n = length(marg.probs), size = 1, prob = pmin(marg.probs/probs$filter, 1)))
 
@@ -149,7 +166,7 @@ gmjmcmc.transition <- function (S.t, F.0, marg.probs, transforms, probs, params)
   feats.replace <- which(!feats.keep)
 
   for (i in feats.replace) {
-    S.t[[i]] <- gen.feature(c(F.0, S.t[feats.keep]), transforms, probs, length(F.0), params$feat)
+    S.t[[i]] <- gen.feature(c(F.0, S.t[feats.keep]), data, loglik.alpha, transforms, probs, length(F.0), params$feat)
     feats.keep[i] <- T
   }
   return(S.t)

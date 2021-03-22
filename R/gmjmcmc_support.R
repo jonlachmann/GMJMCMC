@@ -73,9 +73,9 @@ loglik.pre <- function (loglik.pi, model, complex, data) {
 summary.gmjresult <- function (results, population="last") {
   if (population=="last") pops <- length(results$models)
   else pops <- population
-  feature_strings <- vector("list", length(result$populations[[pops]]))
+  feature_strings <- vector("list", length(results$populations[[pops]]))
   for (i in 1:length(feature_strings)) {
-    feature_strings[[i]] <- print.feature(result$populations[[pops]][[i]], transforms)
+    feature_strings[[i]] <- print.feature(results$populations[[pops]][[i]], transforms)
   }
   feature_importance <- marginal.probs.renorm(results$models[[pops]])
   return(list(features=feature_strings, importance=feature_importance))

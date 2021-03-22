@@ -51,7 +51,8 @@ gen.params.list <- function () {
   mh_params <- list(neigh.size=1, neigh.min=1, neigh.max=2)             # Regular MH parameters
 
   ## GM parameters
-  feat_params <- list(D=5, L=15)                                        # Hard limits on feature complexity
+  feat_params <- list(D=5, L=15, alpha=0)                               # Hard limits on feature complexity and
+                                                                        # alpha strategy (0=None) TODO: Fully Bayesian
 
   ## Compile the list and return
   params <- list(mh=mh_params, large=large_params, random=random_params,

@@ -6,7 +6,7 @@
 # Generate a multiplication feature
 gen.multiplication <- function (features) {
   # generate two features to be multiplied
-  feats <- sample.int(n = length(features), size = 2)
+  feats <- sample.int(n = length(features), size = 2, replace = T)
   create.feature(0, features[feats])
 }
 
@@ -19,8 +19,8 @@ gen.modification <- function (features, transforms, trans.probs) {
 
 # Generate a projection feature
 # TODO: This is not working according to spec yet
-gen.projection <- function (features, transforms, trans.probs) {
-  feat.count <- sample.int(n = length(features), size = 1) # TODO: Should be a specific distribution?
+gen.projection <- function (features, transforms, trans.probs, max.width) {
+  feat.count <- sample.int(n = max.width, size = 1) # TODO: Should be a specific distribution?
   feats <- sample.int(n = length(features), size = feat.count)
   trans <- sample.int(n = length(transforms), size = 1, prob = trans.probs)
   # TODO: Generate alphas properly using various methods
@@ -35,22 +35,26 @@ gen.new <- function (features, F.0.size) {
 }
 
 # Select a feature to generate and generate it
-gen.feature <- function (features, transforms, probs, F.0.size, params) {
+gen.feature <- function (features, data, loglik.alpha, transforms, probs, F.0.size, params) {
   feat.type <- sample.int(n = 4, size = 1, prob = probs$gen)
-  colinear <- T
-  too.large <- T
-  while (colinear || too.large) {
+  feat.ok <- F
+  while (!feat.ok) {
     if (feat.type == 1) feat <- gen.multiplication(features)
     if (feat.type == 2) feat <- gen.modification(features, transforms, probs$trans)
-    if (feat.type == 3) feat <- gen.projection(features, transforms, probs$trans)
+    if (feat.type == 3) feat <- gen.projection(features, transforms, probs$trans, params$L)
     if (feat.type == 4) feat <- gen.new(features, F.0.size)
     # Check that the feature is not too wide or deep
-    if (depth.feature(feat) <= params$D && width.feature(feat) <= params$L) too.large <- F
-    # Check for linear dependence of new the feature
-    if (!too.large) {
-      if (length(features) == F.0.size) feats <- list()
-      else feats <- features[(F.0.size+1):length(features)]
-      colinear <- check.collinearity(feat, feats, transforms, F.0.size)
+    if (!(depth.feature(feat) > params$D || width.feature(feat) > params$L)) {
+      # Generate alphas using the strategy chosen
+      if (params$alpha > 0) {
+        feat <- gen.alphas(params$alpha, feat, data, transforms, loglik.alpha)
+      }
+      if (!is.null(feat)) {
+        # Check for linear dependence of new the feature
+        if (length(features) == F.0.size) feats <- list()
+        else feats <- features[(F.0.size+1):length(features)]
+        if (!check.collinearity(feat, feats, transforms, F.0.size)) feat.ok <- T
+      }
     }
   }
   print(paste("New feature:", print.feature(feat, transforms), "depth:", depth.feature(feat), "width:", width.feature(feat)))

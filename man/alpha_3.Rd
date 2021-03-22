@@ -4,14 +4,14 @@
 \alias{alpha_3}
 \title{Alpha generator using strategy 3 as per Hubin et. al.}
 \usage{
-alpha_3(feature, transforms, link, loglik)
+alpha_3(feature, data, transforms, loglik)
 }
 \arguments{
 \item{feature}{The feature to generate alphas for}
 
-\item{transforms}{The transforms used}
+\item{data}{The dataset used}
 
-\item{link}{The link function to use}
+\item{transforms}{The transforms used}
 
 \item{loglik}{log likelihood function to use}
 }

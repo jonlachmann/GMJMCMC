@@ -2,7 +2,8 @@
 % Please edit documentation in R/alpha_generation.R
 \name{alpha_2}
 \alias{alpha_2}
-\title{Alpha generator using strategy 1 as per Hubin et. al.}
+\title{Alpha generator using strategy 2 as per Hubin et. al.
+TODO: Implement me}
 \usage{
 alpha_2(feature, transforms)
 }
@@ -12,5 +13,6 @@ alpha_2(feature, transforms)
 \item{transforms}{The transforms used}
 }
 \description{
-Alpha generator using strategy 1 as per Hubin et. al.
+Alpha generator using strategy 2 as per Hubin et. al.
+TODO: Implement me
 }
