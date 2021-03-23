@@ -18,14 +18,6 @@ library(GMJMCMC)
   files.sources <- list.files("R", full.names=T)
   sapply(files.sources, source)
 
-  sigmoid <- function(x)exp(-x)
-  sini <- function(x)sin(x/180*pi)
-  expi <- function(x)exp(-abs(x))
-  logi <- function(x)log(abs(x)+.Machine$double.eps)
-  troot <- function(x)abs(x)^(1/3)
-  to25 <- function(x)abs(x)^(2.5)
-  to35 <- function(x)abs(x)^(3.5)
-
   transforms <- c("sini", "to25","expi","logi","to35","troot","sigmoid")
 
   probs <- gen.probs.list(transforms)
@@ -76,7 +68,7 @@ profvis({result <- gmjmcmc(bc, loglik.test, transforms, 30, 20, 50, probs, param
   y <- 5*sini(x1)+2*logi(x2+x8)+3*troot(x3)-3*x5*x6 -15
   y2 <- rbinom(nobs, 1, 1/(1+exp(-y)))
 
-  testdata <- matrix(cbind(y2,1,x1,x2,x3,x4,x5,x6,x7,x8), nrow=nobs)
+  testdata <- matrix(cbind(y,1,x1,x2,x3,x4,x5,x6,x7,x8), nrow=nobs)
 }
 
 mattt <- matrix(c(2,2,1,1,1,1), 2, 3)
@@ -84,10 +76,16 @@ fett <- list(3, mattt)
 class(fett) <- "feature"
 print(fett, transforms, dataset=T, alphas=T)
 
+probs$filter <- 0.9
+params$large$neigh.size <- 6
+params$large$neigh.max <- 7
+params$large$neigh.min <- 5
 
-system.time(result3 <- gmjmcmc(testdata, logistic.loglik, logistic.loglik.alpha, transforms, 50, 500, 1000, probs, params))
+system.time(result3 <- gmjmcmc(testdata, gaussian.loglik, gaussian.loglik.alpha, transforms, 50, 500, 1000, probs, params))
 
-summ <- summary.gmjresult(result3)
+
+
+summ <- summary.gmjresult(result3,50)
 
 importance <- data.frame(c(summ$importance))
 names(summ$importance) <- summ$features
@@ -96,7 +94,7 @@ barplot(summ$importance, las=2)
 
 totdens <- gmjmcmc.totdens.plot(result2)
 
-result$accept
+result3$accept
 
 summ <- summary.gmjresult(result)
 barplot(summ$importance)
@@ -211,4 +209,14 @@ for (i in 1:20) {
   samat[i,] <- c(satmp$par, satmp$value)
 }
 
+fcnnn <- function (p)
+{
+    sum((y - p[1]+p[2]*x1+p[3]*x2+p[4]*x3)^2)
+}
 
+library(GenSA)
+gensa <- GenSA(rep(0,5), fcnnn, rep(-15,5), rep(15,5))
+
+lm(y ~ x1+x2+x3-1)
+
+gnlr(y=y, mu=formula(~x1+x2+x3), distribution = "normal", pmu=rep(0,4), pshape = rep(0,1))

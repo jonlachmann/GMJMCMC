@@ -18,10 +18,9 @@ gen.modification <- function (features, transforms, trans.probs) {
 }
 
 # Generate a projection feature
-# TODO: This is not working according to spec yet
 gen.projection <- function (features, transforms, trans.probs, max.width) {
-  feat.count <- sample.int(n = max.width, size = 1) # TODO: Should be a specific distribution?
-  feats <- sample.int(n = length(features), size = feat.count)
+  feat.count <- sample.int(n = min(max.width, length(features)), size = 1) # TODO: Should be a specific distribution?
+  feats <- sample.int(n = length(features) - 1, size = feat.count) + 1
   trans <- sample.int(n = length(transforms), size = 1, prob = trans.probs)
   # TODO: Generate alphas properly using various methods
   alphas <- rep(1, length(feats)+1)
@@ -36,9 +35,9 @@ gen.new <- function (features, F.0.size) {
 
 # Select a feature to generate and generate it
 gen.feature <- function (features, data, loglik.alpha, transforms, probs, F.0.size, params) {
-  feat.type <- sample.int(n = 4, size = 1, prob = probs$gen)
   feat.ok <- F
   while (!feat.ok) {
+    feat.type <- sample.int(n = 4, size = 1, prob = probs$gen)
     if (feat.type == 1) feat <- gen.multiplication(features)
     if (feat.type == 2) feat <- gen.modification(features, transforms, probs$trans)
     if (feat.type == 3) feat <- gen.projection(features, transforms, probs$trans, params$L)

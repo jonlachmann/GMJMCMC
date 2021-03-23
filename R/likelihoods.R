@@ -33,3 +33,33 @@ logistic.loglik.alpha <- function (a, data, mu_func) {
   m <- 1/(1+exp(-eval(parse(text=mu_func))))
   -sum((data[,1] * log(m) + (1-data[,1]) * log(1 - m)))
 }
+
+#' Log likelihood function for gaussian regression with a prior p(m)=sum(total_width).
+#'
+#' @param data Data to be used for the estimation
+#' @param model The model as a logical vector to estimate
+#' @param formula The formula to be used for estimation
+#' @param complex A list of complexity measures for the features
+#'
+#' @export logistic.loglik
+gaussian.loglik <- function (y, x, model, complex) {
+  r <- 20/223
+  suppressWarnings({mod <- fastglm(as.matrix(x[,model]), y, family=gaussian())})
+  ret <- (-(mod$deviance -2*log(r)*sum(complex$width)))/2
+  return(ret)
+}
+
+#' Log likelihood function for gaussian regression for alpha calculation
+#' This function is just the bare likelihood function
+#' Note that it only gives a proportional value and is equivalent to least squares
+#'
+#' @param a A vector of the alphas to be used
+#' @param data The data to be used for calculation
+#' @param mu_func The function linking the mean to the covariates,
+#' as a string with the alphas as a[i].
+#'
+#' @export gaussian.loglik.alpha
+gaussian.loglik.alpha <- function (a, data, mu_func) {
+  m <- eval(parse(text=mu_func))
+  sum((data[,1]-m)^2)
+}

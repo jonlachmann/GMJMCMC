@@ -3,6 +3,7 @@
 # Created by: jonlachmann
 # Created on: 2021-02-11
 
+# Allow the package to access Rcpp functions
 #' @useDynLib GMJMCMC
 #' @importFrom Rcpp sourceCpp
 NULL
@@ -34,14 +35,16 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, p
   F.0 <- gen.covariates(ncol(data)-2)
   S[[1]] <- F.0
   complex <- complex.features(S[[1]])
-  model.cur <- as.logical(rbinom(n = length(S[[1]]), size = 1, prob = 0.9))
-  model.cur <- list(model=model.cur, crit=loglik.pre(loglik.pi, model.cur, complex, data))
-  best.crit <- model.cur$crit
 
   ### Main algorithm loop - Iterate over T different populations
   for (t in 1:T) {
     # Precalculate covariates and put them in data.t
-    data.t <- precalc.features(data, S[[t]], transforms)
+    if (t != 1) data.t <- precalc.features(data, S[[t]], transforms)
+    else data.t <- data
+    # Initialize first model of population
+    model.cur <- as.logical(rbinom(n = length(S[[t]]), size = 1, prob = 0.5))
+    model.cur <- list(model=model.cur, crit=loglik.pre(loglik.pi, model.cur, complex, data.t))
+    if (t==1) best.crit <- model.cur$crit # Set first best criteria value
     # Initialize a vector to contain the models visited in this population
     population.models <- vector("list", N)
 
@@ -66,10 +69,10 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, p
     # Add the models visited in the current population to the model list
     models[[t]] <- population.models
     # Calculate marginal likelihoods for current features, TODO: This is using the frequency, maybe switch to renormalized?
-    marg.probs <- marginal.probs.renorm(population.models)
+    marg.probs <- marginal.probs(population.models)
     # Generate a new population of features for the next iteration (if this is not the last)
     if (t != T) {
-      S[[t+1]] <- gmjmcmc.transition(S[[t]], F.0, data, loglik.alpha, marg.probs, transforms, probs, params)
+      S[[t+1]] <- gmjmcmc.transition(S[[t]], F.0, data, loglik.alpha, marg.probs, transforms, probs, params$feat)
       complex <- complex.features(S[[t+1]])
     }
   }
@@ -165,9 +168,16 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs, transf
   # Generate new features to replace the filtered ones
   feats.replace <- which(!feats.keep)
 
+  # Perform the replacements
   for (i in feats.replace) {
-    S.t[[i]] <- gen.feature(c(F.0, S.t[feats.keep]), data, loglik.alpha, transforms, probs, length(F.0), params$feat)
+    S.t[[i]] <- gen.feature(c(F.0, S.t[feats.keep]), data, loglik.alpha, transforms, probs, length(F.0), params)
     feats.keep[i] <- T
+  }
+
+  # Add additional features if the population is not at max size
+  if (length(S.t) < params$pop.max) {
+    for (i in (length(S.t)+1):params$pop.max)
+    S.t[[i]] <- gen.feature(c(F.0, S.t[feats.keep]), data, loglik.alpha, transforms, probs, length(F.0), params)
   }
   return(S.t)
 }
