@@ -53,9 +53,9 @@ gen.params.list <- function (data) {
   greedy_params <- list(steps=20, tries=3, kern=greedy_kern)            # Greedy algorithm parameters
 
   ## MJMCMC parameters
-  large_params <- list(neigh.size=as.integer(ncov*0.75),
-                       neigh.min=as.integer(ncov*0.65),
-                       neigh.max=as.integer(ncov*0.85))                 # Large jump parameters
+  large_params <- list(neigh.size=as.integer(ncov*0.35),
+                       neigh.min=as.integer(ncov*0.25),
+                       neigh.max=as.integer(ncov*0.45))                 # Large jump parameters
   random_params <- list(neigh.size=1, neigh.min=1, neigh.max=2)         # Small random jump parameters
   mh_params <- list(neigh.size=1, neigh.min=1, neigh.max=2)             # Regular MH parameters
 
@@ -67,6 +67,7 @@ gen.params.list <- function (data) {
 
   ## Compile the list and return
   params <- list(mh=mh_params, large=large_params, random=random_params,
-                 sa=sa_params, greedy=greedy_params, feat=feat_params)
+                 sa=sa_params, greedy=greedy_params, feat=feat_params,
+                 loglik=list())
   return(params)
 }

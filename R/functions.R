@@ -16,3 +16,14 @@ replace.infinite.data.frame <- function(df, replacewith=c(.Machine$double.xmin, 
   df[df == "Inf"] <- replacewith[2]
   return(df)
 }
+
+# Print a progress bar while iterating over a population
+print.progressbar <- function (progress, size=40) {
+  cat("\r", "|")
+  for (p in 1:size-1) {
+    if (progress >= p) cat("=")
+    else cat(" ")
+  }
+  cat("|")
+  return(progress+1)
+}

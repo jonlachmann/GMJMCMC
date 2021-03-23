@@ -13,7 +13,7 @@
 #' @param complex A list of complexity measures for the features
 #'
 #' @export logistic.loglik
-logistic.loglik <- function (y, x, model, complex) {
+logistic.loglik <- function (y, x, model, complex, params) {
   r <- 20/223
   suppressWarnings({mod <- fastglm(as.matrix(x[,model]), y, family=binomial())})
   ret <- (-(mod$deviance -2*log(r)*sum(complex$width)))/2
@@ -42,8 +42,9 @@ logistic.loglik.alpha <- function (a, data, mu_func) {
 #' @param complex A list of complexity measures for the features
 #'
 #' @export logistic.loglik
-gaussian.loglik <- function (y, x, model, complex) {
-  r <- 20/223
+gaussian.loglik <- function (y, x, model, complex, params) {
+  r <- 250/223
+  if (sum(model) > 7) return(-1000000)
   suppressWarnings({mod <- fastglm(as.matrix(x[,model]), y, family=gaussian())})
   ret <- (-(mod$deviance -2*log(r)*sum(complex$width)))/2
   return(ret)
@@ -62,4 +63,21 @@ gaussian.loglik <- function (y, x, model, complex) {
 gaussian.loglik.alpha <- function (a, data, mu_func) {
   m <- eval(parse(text=mu_func))
   sum((data[,1]-m)^2)
+}
+
+#' Log likelihood function for linear regression using Zellners g-prior
+#'
+#' @param data Data to be used for the estimation
+#' @param model The model as a logical vector to estimate
+#' @param formula The formula to be used for estimation
+#' @param complex A list of complexity measures for the features
+#'
+#' @export linear.g.prior.loglik
+linear.g.prior.loglik <- function (y, x, model, complex, params) {
+  out <- lm.fit(as.matrix(x[,model]),y)
+  rsquared <- 1-sum(var(out$residuals))/sum(var(y))
+  p <- out$rank
+  n <- nrow(x)
+  logmarglik <- 0.5*(log(1+params$g)*(n-p) - log(1+params$g*(1-rsquared))*(n-1))*(p!=1)
+  return(logmarglik)
 }

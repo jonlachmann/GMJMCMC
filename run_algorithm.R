@@ -68,26 +68,75 @@ profvis({result <- gmjmcmc(bc, loglik.test, transforms, 30, 20, 50, probs, param
   testdata <- matrix(cbind(y,1,x1,x2,x3,x4,x5,x6,x7,x8), nrow=nobs)
 }
 
+
+xx1 <- 5*sini(x1)
+xx2 <- 2*logi(x2+x8)
+xx3 <- 3*troot(x3)
+xx4 <- 3*x5*x6
+
+testdata2 <- cbind(xx1, xx2, xx3, xx4)
+glmmodel <- glm.fit(testdata2[1:100,], y[1:100])
+
+
 mattt <- matrix(c(2,2,1,1,1,1), 2, 3)
 fett <- list(3, mattt)
 class(fett) <- "feature"
 print(fett, transforms, dataset=T, alphas=T)
 
-probs$filter <- 0.9
-params$large$neigh.size <- 6
-params$large$neigh.max <- 7
-params$large$neigh.min <- 5
+probs$filter <- 0.8
+params$feat$pop.max <- 15
 
 probs <- gen.probs.list(transforms)
 params <- gen.params.list(testdata)
 
-system.time(result3 <- gmjmcmc(testdata, gaussian.loglik, gaussian.loglik.alpha, transforms, 50, 500, 1000, probs, params))
+system.time(result3 <- gmjmcmc(testdata[1:100,], gaussian.loglik, gaussian.loglik.alpha, transforms, 50, 500, 1000, probs, params))
+
+par(mar=c(3,3,3,3))
+gmjmcmc.totdens.plot(result3)
+
+pop <- unlist(print.model(list(model=rep(T,15)), result3$populations[[48]], transforms))
+pop[matt[23837]]
+marginal.probs.renorm(result3$models[[45]])
+
+matt <- matrix(unlist(result3$models[2:50]), ncol=18, byrow=T)
+
+mat <- matrix(unlist(result3$models[[45]]), ncol=18, byrow=T)
+
+(exp(-10) + exp(-8)) / (exp(-9) + exp(-8))
+(exp(-20) + exp(-16)) / (exp(-18) + exp(-16))
 
 
-dimm <- dim(check.data(testdata))
+log(exp(-10) + exp(-8))
 
-dimm[1]
-dimm[2]
+logspace_add <- function(logx,logy) {
+    pmax(logx,logy) + log1p(exp(-abs(logx - logy)))
+}
+
+install.packages("Rmpfr")
+library(Rmpfr)
+
+m5000 <- mpfr(-5001, 128)
+
+exp(m5000)
+
+testx <- rep(c(5,4),500)
+testy <- rep(1,1000)
+
+glmod1 <- glm.fit(testx, testy)
+glmod <- glm.fit(testx[1:500], testy[1:500])
+
+
+
+
+
+logspace_add(-4300,-4000)
+
+
+
+
+exp(-10+(-10/-9))
+
+
 
 summ <- summary.gmjresult(result3,50)
 
@@ -224,3 +273,41 @@ gensa <- GenSA(rep(0,5), fcnnn, rep(-15,5), rep(15,5))
 lm(y ~ x1+x2+x3-1)
 
 gnlr(y=y, mu=formula(~x1+x2+x3), distribution = "normal", pmu=rep(0,4), pshape = rep(0,1))
+
+
+planets <- read.csv("../DBRM/exa1.csv")
+planets <- planets[,-1]
+
+result_planets2 <- gmjmcmc(planets, gaussian.loglik, gaussian.loglik.alpha, transforms, 20, 5000, 10000, probs, params)
+
+gmjmcmc.totdens.plot(result_planets2)
+
+unlist(print.model(list(model=rep(T,15)), result_planets2$populations[[14]], transforms))
+unlist(print.model(list(model=rep(T,15)), result_planets2$populations[[15]], transforms))
+marginal.probs.renorm(result_planets2$models[[14]])
+
+
+
+pop <- unlist(print.model(list(model=rep(T,15)), result_planets$populations[[25]], transforms))
+pop[matt[23837]]
+
+
+matt <- matrix(unlist(result3$models[2:50]), ncol=18, byrow=T)
+
+library(RCurl)
+
+#prepare data
+simx <- read.table(text=getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/supplementaries/Mode%20Jumping%20MCMC/supplementary/examples/US%20Data/simcen-x1.txt"),sep = ",")
+simy <- read.table(text=getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/supplementaries/Mode%20Jumping%20MCMC/supplementary/examples/US%20Data/simcen-y1.txt"))
+data.example <- cbind(simy,simx)
+names(data.example)[1]="Y"
+
+params$loglik$g <- 47
+
+result_crime <- gmjmcmc(data.example, linear.g.prior.loglik, gaussian.loglik.alpha, transforms, 1, 200, 10000, probs, params)
+marginal.probs.renorm(result_crime$models[[1]])
+
+mcmc <- marginal.probs(result_crime$models[[1]])
+names(mcmc) <- paste0("y",1:15)
+sort(mcmc)
+

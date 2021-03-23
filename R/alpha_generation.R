@@ -36,11 +36,11 @@ alpha_3 <- function (feature, data, transforms, loglik) {
   # Create the string representation of the feature with variable alphas
   featfun <- print.feature(feature, transforms, dataset = T, alphas = T)
   featfun <- set_alphas(featfun)
-  print(featfun$formula)
   # Return if there are no alphas to set
   if(featfun$count == 0) return(feature)
 
   # Set initial range for Simulated Annealing
+  print("Generating alphas")
   range <- 10
   done <- FALSE
   while(!done) {

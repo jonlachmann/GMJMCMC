@@ -43,18 +43,20 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, p
     else data.t <- data
     # Initialize first model of population
     model.cur <- as.logical(rbinom(n = length(S[[t]]), size = 1, prob = 0.5))
-    model.cur <- list(model=model.cur, crit=loglik.pre(loglik.pi, model.cur, complex, data.t))
+    model.cur <- list(prob=0, model=model.cur, crit=loglik.pre(loglik.pi, model.cur, complex, data.t, params$loglik), alpha=0)
     if (t==1) best.crit <- model.cur$crit # Set first best criteria value
     # Initialize a vector to contain the models visited in this population
     population.models <- vector("list", N)
 
     if (t==T) N <- N.final
     print(paste("Population", t, "begin."))
+    progress <- 0
     for (i in 1:N) {
+      if (i %% floor(N/40) == 0) progress <- print.progressbar(progress, 40)
       proposal <- mjmcmc.prop(data.t, loglik.pi, model.cur, S[[t]], complex, probs, params)
       if (proposal$crit > best.crit) {
         best.crit <- proposal$crit
-        print(paste("New best crit:", best.crit))
+        cat(paste("\rNew best crit:", best.crit, "\n"))
       }
       if (log(runif(1)) <= proposal$alpha) {
         model.cur <- proposal
@@ -63,13 +65,11 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, p
       # Add the current model to the list of visited models
       population.models[[i]] <- model.cur
     }
-    print(paste("Population", t, "done."))
-    # Set the marginal probabilities for the bare covariates if this is the first run
-    if (t == 1) cov.probs <- marginal.probs(population.models)
+    cat(paste("\nPopulation", t, "done.\n"))
     # Add the models visited in the current population to the model list
     models[[t]] <- population.models
-    # Calculate marginal likelihoods for current features, TODO: This is using the frequency, maybe switch to renormalized?
-    marg.probs <- marginal.probs(population.models)
+    # Calculate marginal likelihoods for current features
+    marg.probs <- marginal.probs.renorm(population.models)
     # Generate a new population of features for the next iteration (if this is not the last)
     if (t != T) {
       S[[t+1]] <- gmjmcmc.transition(S[[t]], F.0, data, loglik.alpha, marg.probs, transforms, probs, params$feat)
@@ -138,7 +138,7 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, complex, probs, p
     model.cur$prob <- prob.proposal(proposal$model, model.cur$model, q.g, params$mh)
   }
   # Calculate log likelihoods for the proposed model
-  proposal$crit <- loglik.pre(loglik.pi, proposal$model, complex, data)
+  proposal$crit <- loglik.pre(loglik.pi, proposal$model, complex, data, params$loglik)
 
   # Calculate acceptance probability for proposed model
   proposal$alpha <- min(0, (proposal$crit + model.cur$prob) - (model.cur$crit + proposal$prob))
@@ -165,11 +165,12 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs, transf
   # Sample which features to keep based on marginal inclusion below probs$filter
   feats.keep <- as.logical(rbinom(n = length(marg.probs), size = 1, prob = pmin(marg.probs/probs$filter, 1)))
 
-  # Generate new features to replace the filtered ones
+  # Create a list of which features to replace
   feats.replace <- which(!feats.keep)
 
   # Perform the replacements
   for (i in feats.replace) {
+    print(paste0("Replacing feature ", print.feature(S.t[[i]], transforms)))
     S.t[[i]] <- gen.feature(c(F.0, S.t[feats.keep]), data, loglik.alpha, transforms, probs, length(F.0), params)
     feats.keep[i] <- T
   }
