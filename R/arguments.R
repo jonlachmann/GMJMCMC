@@ -34,8 +34,13 @@ gen.probs.list <- function (transforms) {
 #' Generate a parameter list for GMJMCMC
 #'
 #' @export gen.params.list
-gen.params.list <- function () {
+gen.params.list <- function (data) {
   ### Create a list of parameters for the algorithm
+
+  ## Get the dimensions of the data to set parameters based on it
+  data.dim <- data.dims(data)
+  ncov <- data.dim[2] - 2
+  nobs <- data.dim[1]
 
   ## Local optimization parameters
   sa_kern <- list(probs=c(0.1, 0.05, 0.2, 0.3, 0.2, 0.15),
@@ -46,13 +51,17 @@ gen.params.list <- function () {
   greedy_params <- list(steps=20, tries=3, kern=greedy_kern)            # Greedy algorithm parameters
 
   ## MJMCMC parameters
-  large_params <- list(neigh.size=4, neigh.min=3, neigh.max=5)          # Large jump parameters
+  large_params <- list(neigh.size=as.integer(ncov*0.75),
+                       neigh.min=as.integer(ncov*0.85),
+                       neigh.max=as.integer(ncov*0.65))                 # Large jump parameters
   random_params <- list(neigh.size=1, neigh.min=1, neigh.max=2)         # Small random jump parameters
   mh_params <- list(neigh.size=1, neigh.min=1, neigh.max=2)             # Regular MH parameters
 
   ## GM parameters
-  feat_params <- list(D=5, L=15, alpha=0, pop.max=15)                   # Hard limits on feature complexity and
-                                                                        # alpha strategy (0=None) TODO: Fully Bayesian
+  feat_params <- list(D=5, L=15,                            # Hard limits on feature complexity
+                      alpha=0,                              # alpha strategy (0=None, 1,2,3=strategies as per Hubin et al.) TODO: Fully Bayesian
+                      pop.max=as.integer(ncov*1.5))         # Max features population size
+
 
   ## Compile the list and return
   params <- list(mh=mh_params, large=large_params, random=random_params,

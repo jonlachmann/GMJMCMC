@@ -4,7 +4,7 @@
 \alias{model.function}
 \title{Function to generate a function string for a model consisting of features}
 \usage{
-model.function(model, features, transforms, link)
+\method{model}{`function`}(model, features, transforms, link)
 }
 \arguments{
 \item{features}{A list of features to include}

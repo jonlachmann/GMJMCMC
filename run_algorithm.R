@@ -84,6 +84,10 @@ params$large$neigh.min <- 5
 system.time(result3 <- gmjmcmc(testdata, gaussian.loglik, gaussian.loglik.alpha, transforms, 50, 500, 1000, probs, params))
 
 
+dimm <- dim(check.data(testdata))
+
+dimm[1]
+dimm[2]
 
 summ <- summary.gmjresult(result3,50)
 

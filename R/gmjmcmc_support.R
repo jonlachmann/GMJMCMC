@@ -105,3 +105,12 @@ check.data <- function (data) {
   }
   return(data)
 }
+
+# Function to get the dimensions of a dataset, adding an intercept if necessary
+data.dims <- function (data) {
+  dims <- dim(data)
+  if (sum(data[,2] == 1) != nrow(data)) {
+    dims[2] <- dims[2] + 1
+  }
+  return(dims)
+}

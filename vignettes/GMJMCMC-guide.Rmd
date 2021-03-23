@@ -34,7 +34,7 @@ transforms <- c("sigmoid","sini","expi","logi","troot","to3")
 By calling two functions in the package, a list of probabilities for various parts of the algorithm, as well as a list of parameters are created. The list of probabilities needs the list of transformations to be able to create the vector of probabilities for the different transformations
 ```{r}
 probs <- gen.probs.list(transforms)
-params <- gen.params.list()
+params <- gen.params.list(bc)
 ```
 We can use one of the supplied likelihood functions, but here we demonstrate how to create our own, it takes four arguments, the dependent $y$ variable, the matrix $X$ containing all independent variables, the model as a logical vector specifying the columns of $X$, and a list of complexity measures for the features involved in the model
 ```{r}

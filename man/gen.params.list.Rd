@@ -4,7 +4,7 @@
 \alias{gen.params.list}
 \title{Generate a parameter list for GMJMCMC}
 \usage{
-gen.params.list()
+gen.params.list(data)
 }
 \description{
 Generate a parameter list for GMJMCMC
