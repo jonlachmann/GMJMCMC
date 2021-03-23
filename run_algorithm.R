@@ -19,9 +19,6 @@ library(GMJMCMC)
   sapply(files.sources, source)
 
   transforms <- c("sini", "to25","expi","logi","to35","troot","sigmoid")
-
-  probs <- gen.probs.list(transforms)
-  params <- gen.params.list()
 }
 
 library(GenSA)
@@ -80,6 +77,9 @@ probs$filter <- 0.9
 params$large$neigh.size <- 6
 params$large$neigh.max <- 7
 params$large$neigh.min <- 5
+
+probs <- gen.probs.list(transforms)
+params <- gen.params.list(testdata)
 
 system.time(result3 <- gmjmcmc(testdata, gaussian.loglik, gaussian.loglik.alpha, transforms, 50, 500, 1000, probs, params))
 

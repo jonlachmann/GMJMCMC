@@ -33,6 +33,8 @@ gen.probs.list <- function (transforms) {
 
 #' Generate a parameter list for GMJMCMC
 #'
+#' @param data The dataset that will be used in the algorithm
+#'
 #' @export gen.params.list
 gen.params.list <- function (data) {
   ### Create a list of parameters for the algorithm
@@ -52,8 +54,8 @@ gen.params.list <- function (data) {
 
   ## MJMCMC parameters
   large_params <- list(neigh.size=as.integer(ncov*0.75),
-                       neigh.min=as.integer(ncov*0.85),
-                       neigh.max=as.integer(ncov*0.65))                 # Large jump parameters
+                       neigh.min=as.integer(ncov*0.65),
+                       neigh.max=as.integer(ncov*0.85))                 # Large jump parameters
   random_params <- list(neigh.size=1, neigh.min=1, neigh.max=2)         # Small random jump parameters
   mh_params <- list(neigh.size=1, neigh.min=1, neigh.max=2)             # Regular MH parameters
 
