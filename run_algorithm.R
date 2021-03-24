@@ -303,11 +303,52 @@ data.example <- cbind(simy,simx)
 names(data.example)[1]="Y"
 
 params$loglik$g <- 47
+params$random$neigh.size <- 2
+params$random$neigh.min <- 2
+params$mh$neigh.size <- 2
+params$mh$neigh.min <- 2
+params$large$neigh.size <- 4
+params$large$neigh.min <- 4
+params$large$neigh.max <- 4
 
-result_crime <- gmjmcmc(data.example, linear.g.prior.loglik, gaussian.loglik.alpha, transforms, 1, 200, 10000, probs, params)
-marginal.probs.renorm(result_crime$models[[1]])
+
+result_crime <- gmjmcmc(data.example, linear.g.prior.loglik, gaussian.loglik.alpha, transforms, 1, 200, 3276, probs, params)
+renorm <- marginal.probs.renorm(result_crime$models[[1]])
+names(renorm) <- paste0("y",1:15)
+
+modds <- matrix(unlist(result_crime$models), ncol=18, byrow=T)
 
 mcmc <- marginal.probs(result_crime$models[[1]])
 names(mcmc) <- paste0("y",1:15)
 sort(mcmc)
+sort(renorm)
 
+simxx <- cbind(1,simx)
+
+logliks <- matrix(NA,32768, 17)
+for (i in 1:32768) {
+  modelvector <- as.logical(c(T,intToBits(i)[1:15]))
+  loglik <- linear.g.prior.loglik(as.matrix(simy), as.matrix(simxx), modelvector, NULL, list(g=47))
+  logliks[i,] <- c(loglik, modelvector)
+}
+unimodds <- modds[(!duplicated(modds[,2:16], dim=1)),]
+renormtruth <- matrix(NA,1,15)
+for (i in 3:17) renormtruth[i] <- sum(exp(logliks[as.logical(logliks[,i]),1]))/sum(exp(logliks[,1]))
+renormmj <- matrix(NA,1,15)
+for (i in 2:16) renormmj[i] <- sum(exp(unimodds[as.logical(unimodds[,i]),17]))/sum(exp(unimodds[,17]))
+
+sum(exp(unimodds[,17]))
+sum(exp(logliks[,1]))
+
+sort(renormmj)
+sort(renormtruth)
+
+
+
+# Hassan
+x1<-rnorm(20,0,1)
+x2<-abs(rnorm(20,2,4))
+e<-rnorm(20,0,1)
+y<-20+3*x1+4*sqrt(x2)+10*x1^3+e
+
+result <- gmjmcmc(cbind(y,x1,x2), loglik.test,NULL, transforms, 30, 20, 50, probs, params)

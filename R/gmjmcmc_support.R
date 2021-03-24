@@ -36,8 +36,8 @@ marginal.probs.renorm <- function (models) {
   probs <- rep(0, length=length(models[[1]]$model))
   crit.sum <- 0
   for (i in 1:mod.count) {
-    probs <- probs + models[[i]]$model * models[[i]]$crit
-    crit.sum <- crit.sum + models[[i]]$crit
+    probs <- probs + models[[i]]$model * exp(models[[i]]$crit)
+    crit.sum <- crit.sum + exp(models[[i]]$crit)
   }
   probs <- probs / crit.sum
   return(probs)

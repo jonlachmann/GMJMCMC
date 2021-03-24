@@ -52,7 +52,7 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, p
     print(paste("Population", t, "begin."))
     progress <- 0
     for (i in 1:N) {
-      if (i %% floor(N/40) == 0) progress <- print.progressbar(progress, 40)
+      if (N > 40 && i %% floor(N/40) == 0) progress <- print.progressbar(progress, 40)
       proposal <- mjmcmc.prop(data.t, loglik.pi, model.cur, S[[t]], complex, probs, params)
       if (proposal$crit > best.crit) {
         best.crit <- proposal$crit
