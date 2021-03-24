@@ -311,8 +311,9 @@ params$large$neigh.size <- 4
 params$large$neigh.min <- 4
 params$large$neigh.max <- 4
 
+probs$large <- 0.025
 
-result_crime <- gmjmcmc(data.example, linear.g.prior.loglik, gaussian.loglik.alpha, transforms, 1, 200, 3276, probs, params)
+result_crime <- gmjmcmc(data.example, linear.g.prior.loglik, gaussian.loglik.alpha, transforms, 1, 200, 6000, probs, params)
 renorm <- marginal.probs.renorm(result_crime$models[[1]])
 names(renorm) <- paste0("y",1:15)
 
@@ -331,17 +332,21 @@ for (i in 1:32768) {
   loglik <- linear.g.prior.loglik(as.matrix(simy), as.matrix(simxx), modelvector, NULL, list(g=47))
   logliks[i,] <- c(loglik, modelvector)
 }
+
 unimodds <- modds[(!duplicated(modds[,2:16], dim=1)),]
 renormtruth <- matrix(NA,1,15)
 for (i in 3:17) renormtruth[i] <- sum(exp(logliks[as.logical(logliks[,i]),1]))/sum(exp(logliks[,1]))
 renormmj <- matrix(NA,1,15)
-for (i in 2:16) renormmj[i] <- sum(exp(unimodds[as.logical(unimodds[,i]),17]))/sum(exp(unimodds[,17]))
+for (i in 2:16) renormmj[i-1] <- sum(exp(unimodds[as.logical(unimodds[,i]),17]))/sum(exp(unimodds[,17]))
 
-sum(exp(unimodds[,17]))
+sum(exp(unimodds[,17])) /
 sum(exp(logliks[,1]))
 
-sort(renormmj)
-sort(renormtruth)
+names(renormmj) <- paste0("y",1:15)
+names(renormtruth) <- paste0("y",1:15)
+sqrt(((sort(renormmj) -
+sort(renormtruth))^2))*100
+sort(mcmc)
 
 
 
@@ -352,3 +357,11 @@ e<-rnorm(20,0,1)
 y<-20+3*x1+4*sqrt(x2)+10*x1^3+e
 
 result <- gmjmcmc(cbind(y,x1,x2), loglik.test,NULL, transforms, 30, 20, 50, probs, params)
+
+mods <- modds[1:20,]
+
+moddds <- rbind(modds,modds,modds,modds,modds,modds,modds,modds)
+
+which(colSums((t(moddds[1:300,2:16]) == moddds[500,2:16])) == 15) == 0
+
+identical(mods[5,2:16], mods[,2:16])
