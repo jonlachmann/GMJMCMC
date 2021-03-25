@@ -32,14 +32,12 @@ marginal.probs <- function (models) {
 
 # Function for calculating feature importance through renormalized model estimates
 marginal.probs.renorm <- function (models) {
-  mod.count <- length(models)
-  probs <- rep(0, length=length(models[[1]]$model))
-  crit.sum <- 0
-  for (i in 1:mod.count) {
-    probs <- probs + models[[i]]$model * exp(models[[i]]$crit)
-    crit.sum <- crit.sum + exp(models[[i]]$crit)
-  }
-  probs <- probs / crit.sum
+  model.size <- length(models[[1]]$model)
+  models.matrix <- matrix(unlist(models), ncol=model.size+3, byrow=T)
+  models.matrix <- models.matrix[(!duplicated(models.matrix[,2:(model.size+1)], dim=1)),]
+  crit.sum <- sum(exp(models.matrix[,(model.size+2)]))
+  probs <- matrix(NA,1,model.size)
+  for (i in 2:(model.size+1)) probs[i-1] <- sum(exp(models.matrix[as.logical(models.matrix[,i]),(model.size+2)]))/crit.sum
   return(probs)
 }
 

@@ -313,7 +313,7 @@ params$large$neigh.max <- 4
 
 probs$large <- 0.025
 
-result_crime <- gmjmcmc(data.example, linear.g.prior.loglik, gaussian.loglik.alpha, transforms, 1, 200, 6000, probs, params)
+system.time(result_crime <- gmjmcmc(data.example, linear.g.prior.loglik, gaussian.loglik.alpha, transforms, 1, 200, 60000, probs, params))
 renorm <- marginal.probs.renorm(result_crime$models[[1]])
 names(renorm) <- paste0("y",1:15)
 
@@ -338,6 +338,9 @@ renormtruth <- matrix(NA,1,15)
 for (i in 3:17) renormtruth[i] <- sum(exp(logliks[as.logical(logliks[,i]),1]))/sum(exp(logliks[,1]))
 renormmj <- matrix(NA,1,15)
 for (i in 2:16) renormmj[i-1] <- sum(exp(unimodds[as.logical(unimodds[,i]),17]))/sum(exp(unimodds[,17]))
+
+renormmj -
+marginal.probs.renorm(result_crime$models[[1]])
 
 sum(exp(unimodds[,17])) /
 sum(exp(logliks[,1]))
@@ -364,4 +367,8 @@ moddds <- rbind(modds,modds,modds,modds,modds,modds,modds,modds)
 
 which(colSums((t(moddds[1:300,2:16]) == moddds[500,2:16])) == 15) == 0
 
+sourceCpp("src/vector_in_matrix.cpp")
+
 identical(mods[5,2:16], mods[,2:16])
+
+system.time(for(i in 1:1000) loglik.pre(logistic.loglik, modds[500,2:16], modds, NULL, NULL, NULL))
