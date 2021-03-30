@@ -294,13 +294,9 @@ pop[matt[23837]]
 
 matt <- matrix(unlist(result3$models[2:50]), ncol=18, byrow=T)
 
-library(RCurl)
 
-#prepare data
-simx <- read.table(text=getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/supplementaries/Mode%20Jumping%20MCMC/supplementary/examples/US%20Data/simcen-x1.txt"),sep = ",")
-simy <- read.table(text=getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/supplementaries/Mode%20Jumping%20MCMC/supplementary/examples/US%20Data/simcen-y1.txt"))
-data.example <- cbind(simy,simx)
-names(data.example)[1]="Y"
+
+
 
 params$loglik$g <- 47
 params$random$neigh.size <- 2
