@@ -35,9 +35,10 @@ marginal.probs.renorm <- function (models) {
   model.size <- length(models[[1]]$model)
   models.matrix <- matrix(unlist(models), ncol=model.size+3, byrow=T)
   models.matrix <- models.matrix[(!duplicated(models.matrix[,2:(model.size+1)], dim=1)),]
-  crit.sum <- sum(exp(models.matrix[,(model.size+2)]))
+  max_mlik <- max(models.matrix[,(model.size+2)])
+  crit.sum <- sum(exp(models.matrix[,(model.size+2)]-max_mlik))
   probs <- matrix(NA,1,model.size)
-  for (i in 2:(model.size+1)) probs[i-1] <- sum(exp(models.matrix[as.logical(models.matrix[,i]),(model.size+2)]))/crit.sum
+  for (i in 2:(model.size+1)) probs[i-1] <- sum(exp(models.matrix[as.logical(models.matrix[,i]),(model.size+2)]-max_mlik))/crit.sum
   return(probs)
 }
 

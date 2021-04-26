@@ -1,4 +1,4 @@
-#include <Rcpp.h>
+/*#include <Rcpp.h>
 using namespace Rcpp;
 
 // [[Rcpp::export]]
@@ -10,4 +10,4 @@ int vector_in_matrix(NumericMatrix mat, NumericVector vec) {
     }
   }
   return row;
-}
+}*/
