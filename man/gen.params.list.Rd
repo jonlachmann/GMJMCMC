@@ -6,6 +6,9 @@
 \usage{
 gen.params.list(data)
 }
+\arguments{
+\item{data}{The dataset that will be used in the algorithm}
+}
 \description{
 Generate a parameter list for GMJMCMC
 }

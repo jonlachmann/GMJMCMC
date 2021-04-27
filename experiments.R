@@ -28,10 +28,12 @@ crime_params <- gen.params.list(crime_data)
 crime_params$loglik$g <- 47
 
 # Generate models using MJMCMC
-crime_result <- gmjmcmc(crime_data, linear.g.prior.loglik, NA, transforms, 1, 60000, 60000, crime_probs, crime_params)
+crime_result <- gmjmcmc(crime_data, linear.g.prior.loglik, NA, transforms, 1, 6000, 6000, crime_probs, crime_params)
+crime_result2 <- mjmcmc(crime_data, linear.g.prior.loglik, 6000, crime_probs, crime_params)
 
 # Calculate the renormalized values for the MJMCMC result
-mjmcmc_renorm <- marginal.probs.renorm(crime_result$models[[1]])
+mjmcmc_renorm <- marginal.probs.renorm(crime_result$models)
+mjmcmc_renorm2 <- marginal.probs.renorm(crime_result2$models)
 
 rmse <- function (full, sim, iters) {
   sim_renorm <- marginal.probs.renorm(sim$models[[1]][1:iters])
@@ -42,14 +44,26 @@ rmse <- function (full, sim, iters) {
   return(rmse*100)
 }
 
+rmse2 <- function (full, sim, iters) {
+  sim_renorm <- marginal.probs.renorm(sim$models[1:iters])
+  names(sim_renorm) <- paste0("y",1:length(sim_renorm))
+  sim_renorm <- sim_renorm[order(full)]
+  full <- sort(full)
+  rmse <- sqrt((sim_renorm - full)^2)
+  return(rmse*100)
+}
+
 # Calculate the rmse for 1000-60000 iterations as the MJMCMC baseline
 rmse_converge <- matrix(NA, 60, 15)
+rmse_converge2 <- matrix(NA, 60, 15)
 for(i in 1:60) {
-  rmse_converge[i,] <- rmse(full_renorm, crime_result, i*1000)
+  rmse_converge[i,] <- rmse(full_renorm, crime_result, i*100)
+  rmse_converge2[i,] <- rmse2(full_renorm, crime_result2, i*100)
 }
 
 # Plot the convergence
 plot(rowMeans(rmse_converge), type="l")
+plot(rowMeans(rmse_converge2), type="l")
 
 ### Download simulated logistic data as per example 2
 logistic_x <- read.csv(header=F, text=getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/supplementaries/Mode%20Jumping%20MCMC/supplementary/examples/Simulated%20Logistic%20Data%20With%20Multiple%20Modes%20(Example%203)/sim3-X.txt"))
