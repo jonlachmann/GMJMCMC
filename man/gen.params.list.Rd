@@ -2,13 +2,15 @@
 % Please edit documentation in R/arguments.R
 \name{gen.params.list}
 \alias{gen.params.list}
-\title{Generate a parameter list for GMJMCMC}
+\title{Generate a parameter list for (G)MJMCMC}
 \usage{
-gen.params.list(data)
+gen.params.list(data, G = F)
 }
 \arguments{
 \item{data}{The dataset that will be used in the algorithm}
+
+\item{G}{True if we want parameters for GMJMCMC, false for MJMCMC}
 }
 \description{
-Generate a parameter list for GMJMCMC
+Generate a parameter list for (G)MJMCMC
 }

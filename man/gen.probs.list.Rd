@@ -2,13 +2,14 @@
 % Please edit documentation in R/arguments.R
 \name{gen.probs.list}
 \alias{gen.probs.list}
-\title{Generate a probability list for GMJMCMC}
+\title{Generate a probability list for (G)MJMCMC}
 \usage{
-gen.probs.list(transforms)
+gen.probs.list(transforms = F)
 }
 \arguments{
-\item{transforms}{A list of the transformations used (to get the count)}
+\item{transforms}{A list of the transformations used (to get the count),
+default is false and gives a MJMCMC prob list.}
 }
 \description{
-Generate a probability list for GMJMCMC
+Generate a probability list for (G)MJMCMC
 }
