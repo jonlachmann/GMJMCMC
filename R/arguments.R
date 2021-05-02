@@ -58,7 +58,7 @@ gen.params.list <- function (data, G=F) {
   sa_params <- list(t.init=10, t.min=0.0001, dt=3, M=12, kern=sa_kern)  # Simulated annealing parameters
   greedy_kern <- list(probs=c(0.1, 0.05, 0.2, 0.3, 0.2, 0.15),
                       neigh.size=1, neigh.min=1, neigh.max=2)           # Greedy algorithm proposal kernel parameters
-  greedy_params <- list(steps=20, tries=3, kern=greedy_kern)            # Greedy algorithm parameters
+  greedy_params <- list(steps=20, tries=3, kern=greedy_kern)            # Greedy algorithm parameters (60 models default)
 
   ## MJMCMC parameters
   large_params <- list(neigh.size=as.integer(ncov*0.35),

@@ -21,7 +21,7 @@ NULL
 #' @param params A list of the various parameters for all the parts of the algorithm
 #'
 #' @export gmjmcmc
-gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, probs, params) {
+gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, probs, params, sub=F) {
   # Verify that data is well-formed
   data <- check.data(data)
   # Acceptance probability
@@ -47,6 +47,11 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, p
     if (t==1) best.crit <- model.cur$crit # Set first best criteria value
     # Initialize a vector to contain the models visited in this population
     population.models <- vector("list", N)
+    # Initialize a vector to contain local opt visited models
+    population.lo.models <- vector("list", 0)
+    # If we are running a subsampling strategy, keep a list of best mliks for all models
+    if (sub) mliks <- vector("list", (2^(length(S[[t]]))))
+    else mliks <- NULL
 
     if (t==T) N <- N.final
     print(paste("Population", t, "begin."))
@@ -58,6 +63,36 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, p
         best.crit <- proposal$crit
         cat(paste("\rNew best crit:", best.crit, "\n"))
       }
+
+      # If we did a large jump and visited models to save
+      if (!is.null(proposal$models)) {
+        population.lo.models <- c(population.lo.models, proposal$models)
+        # If we are doing subsampling and want to update best mliks
+        if (!is.null(mliks)) {
+          for (mod in 1:length(proposal$models)) {
+            model_idx <- bitsToInt(proposal$models[[mod]]$model)
+            # This is a model we have seen before
+            if (!is.null(mliks[[model_idx]]) && mliks[[model_idx]] < proposal$models[[mod]]$crit) {
+              # This is a model which has worse mlik in the previous seen
+              mliks[[model_idx]] <- proposal$models[[mod]]$crit
+            } else if (is.null(mliks[[model_idx]])) {
+              mliks[[model_idx]] <- proposal$models[[mod]]$crit
+            }
+          }
+        }
+        proposal$models <- NULL
+      }
+      if (!is.null(mliks)) {
+        model_idx <- bitsToInt(proposal$model)
+        # This is a model we have seen before
+        if (!is.null(mliks[[model_idx]]) && mliks[[model_idx]] < proposal$crit) {
+          # This is a model which has worse mlik in the previous seen
+          mliks[[model_idx]] <- proposal$crit
+        } else if (is.null(mliks[[model_idx]])) {
+          mliks[[model_idx]] <- proposal$crit
+        }
+      }
+
       if (log(runif(1)) <= proposal$alpha) {
         model.cur <- proposal
         accept <- accept + 1
@@ -91,7 +126,7 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, p
 #' @param probs A list of the various probability vectors to use
 #' @param params A list of the various parameters for all the parts of the algorithm
 #'
-mjmcmc.prop <- function (data, loglik.pi, model.cur, features, complex, probs, params) {
+mjmcmc.prop <- function (data, loglik.pi, model.cur, features, complex, probs, params, mliks=NULL) {
   l <- runif(1)
   if (l < probs$large) {
     ### Large jump
@@ -109,6 +144,7 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, complex, probs, p
     localopt <- local.optim(chi.0.star, data, loglik.pi, !large.jump$swap, complex, q.o, params) # Do local optimization
     chi.k.star <- localopt$model
 
+
     # Randomize around the mode
     proposal <- gen.proposal(chi.k.star, params$random, q.r, !large.jump$swap, prob=T)
     proposal$model <- xor(chi.k.star, proposal$swap)
@@ -117,7 +153,8 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, complex, probs, p
     chi.0 <- xor(proposal$model, large.jump$swap)
 
     # Do a backwards local optimization
-    chi.k <- local.optim(chi.0, data, loglik.pi, !large.jump$swap, complex, q.o, params, kern=localopt$kern)$model
+    localopt2 <- local.optim(chi.0, data, loglik.pi, !large.jump$swap, complex, q.o, params, kern=localopt$kern)
+    chi.k <- localopt2$model
     # TODO: We could compare if chi.k is reached by optimising from gamma (model.cur) as "intended"
 
     ### Calculate acceptance probability
@@ -126,6 +163,9 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, complex, probs, p
 
     # Calculate current model probability given proposal
     model.cur$prob <- prob.proposal(proposal$model, chi.k, q.r, prop.params) # Get probability of gamma given chi.k
+
+    # Store models visited during local optimization
+    proposal$models <- c(localopt$models, localopt2$models)
   } else {
     ### Regular MH step
     # Select MH kernel
@@ -139,6 +179,19 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, complex, probs, p
   }
   # Calculate log likelihoods for the proposed model
   proposal$crit <- loglik.pre(loglik.pi, proposal$model, complex, data, params$loglik)
+
+  # TODO: Compare to a list of best mliks for all visited models,
+  # TODO: update that list if our estimate is better, otherwise update our estimate.
+  # TODO: Save all models visited by local optim, and update the best mliks if we see one during local optim.
+  # If we are running with subsampling, check the list for a better mlik
+  if (!is.null(mliks)) {
+    model_idx <- bitsToInt(proposal$model)
+    # This is a model we have not seen before
+    if (!is.null(mliks[[model_idx]]) && mliks[[model_idx]] > proposal$crit) {
+      # This is a model which has better mlik in the previous seen
+      proposal$crit <- mliks[[model_idx]]
+    }
+  }
 
   # Calculate acceptance probability for proposed model
   proposal$alpha <- min(0, (proposal$crit + model.cur$prob) - (model.cur$crit + proposal$prob))

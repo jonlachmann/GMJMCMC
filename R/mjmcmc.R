@@ -14,24 +14,29 @@
 #' @param params A list of the various parameters for all the parts of the algorithm
 #'
 #' @export mjmcmc
-mjmcmc <- function (data, loglik.pi, N, probs, params) {
+mjmcmc <- function (data, loglik.pi, N, probs, params, sub=F) {
   # Verify that data is well-formed
   data <- check.data(data)
   # Acceptance probability
   accept <- 0
-  # A list of models that have been visited
-  models <- vector("list", N)
 
   # Create a population of just the covariates
   S <- gen.covariates(ncol(data)-2)
   complex <- complex.features(S)
 
-  # Initialize first model of population
+  # Initialize first model
   model.cur <- as.logical(rbinom(n = length(S), size = 1, prob = 0.5))
   model.cur <- list(prob=0, model=model.cur, crit=loglik.pre(loglik.pi, model.cur, complex, data, params$loglik), alpha=0)
   best.crit <- model.cur$crit # Set first best criteria value
-  # Initialize a vector to contain the models visited in this population
-  population.models <- vector("list", N)
+
+  # A list of models that have been visited
+  models <- vector("list", N)
+  # Initialize a vector to contain local opt visited models
+  lo.models <- vector("list", 0)
+  # If we are running a subsampling strategy, keep a list of best mliks for all models
+  if (sub) mliks <- vector("list", (2^(length(S))))
+  else mliks <- NULL
+
 
   print("MJMCMC begin.")
   progress <- 0
@@ -42,6 +47,36 @@ mjmcmc <- function (data, loglik.pi, N, probs, params) {
       best.crit <- proposal$crit
       cat(paste("\rNew best crit:", best.crit, "\n"))
     }
+
+    # If we did a large jump and visited models to save
+    if (!is.null(proposal$models)) {
+      lo.models <- c(lo.models, proposal$models)
+      # If we are doing subsampling and want to update best mliks
+      if (!is.null(mliks)) {
+        for (mod in 1:length(proposal$models)) {
+          model_idx <- bitsToInt(proposal$models[[mod]]$model)
+          # This is a model we have seen before
+          if (!is.null(mliks[[model_idx]]) && mliks[[model_idx]] < proposal$models[[mod]]$crit) {
+            # This is a model which has worse mlik in the previous seen
+            mliks[[model_idx]] <- proposal$models[[mod]]$crit
+          } else if (is.null(mliks[[model_idx]])) {
+            mliks[[model_idx]] <- proposal$models[[mod]]$crit
+          }
+        }
+      }
+      proposal$models <- NULL
+    }
+    if (!is.null(mliks)) {
+      model_idx <- bitsToInt(proposal$model)
+      # This is a model we have seen before
+      if (!is.null(mliks[[model_idx]]) && mliks[[model_idx]] < proposal$crit) {
+        # This is a model which has worse mlik in the previous seen
+        mliks[[model_idx]] <- proposal$crit
+      } else if (is.null(mliks[[model_idx]])) {
+        mliks[[model_idx]] <- proposal$crit
+      }
+    }
+
     if (log(runif(1)) <= proposal$alpha) {
       model.cur <- proposal
       accept <- accept + 1
@@ -53,5 +88,5 @@ mjmcmc <- function (data, loglik.pi, N, probs, params) {
   # Calculate acceptance rate
   accept <- accept / N
   # Return formatted results
-  return(list(models=models, populations=S, accept=accept))
+  return(list(models=models, populations=S, accept=accept, lo.models=lo.models))
 }
