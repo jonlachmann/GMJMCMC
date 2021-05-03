@@ -57,8 +57,6 @@ mjmcmc <- function (data, loglik.pi, N, probs, params, sub=F) {
           # This is a model we have seen before
           if (!is.null(mliks[[model_idx]]) && mliks[[model_idx]] < proposal$models[[mod]]$crit) {
             # This is a model which has worse mlik in the previous seen
-            print("mlik changed localopt")
-            print(proposal$models[[mod]]$crit)
             mliks[[model_idx]] <- proposal$models[[mod]]$crit
           } else if (is.null(mliks[[model_idx]])) {
             mliks[[model_idx]] <- proposal$models[[mod]]$crit
@@ -165,8 +163,6 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, features, complex, probs, p
     if (!is.null(mliks[[model_idx]]) && mliks[[model_idx]] > proposal$crit) {
       # This is a model which has better mlik in the previous seen
       proposal$crit <- mliks[[model_idx]]
-      print("mlik changed cur")
-      print(proposal$crit)
     }
   }
 

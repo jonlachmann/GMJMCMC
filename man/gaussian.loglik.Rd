@@ -2,7 +2,7 @@
 % Please edit documentation in R/likelihoods.R
 \name{gaussian.loglik}
 \alias{gaussian.loglik}
-\title{Log likelihood function for gaussian regression with a prior p(m)=sum(total_width).}
+\title{Log likelihood function for gaussian regression with a prior p(m)=r*sum(total_width).}
 \usage{
 gaussian.loglik(y, x, model, complex, params)
 }
@@ -16,5 +16,5 @@ gaussian.loglik(y, x, model, complex, params)
 \item{formula}{The formula to be used for estimation}
 }
 \description{
-Log likelihood function for gaussian regression with a prior p(m)=sum(total_width).
+Log likelihood function for gaussian regression with a prior p(m)=r*sum(total_width).
 }

@@ -14,11 +14,14 @@ NULL
 #' first column should be the dependent variable, second should be the intercept
 #' and the rest of the columns should be the independent variables.
 #' @param loglik.pi The (log) density to explore
+#' @param loglik.alpha The likelihood function to use for alpha calculation
 #' @param transforms A list of the available nonlinear transformations for feature generation
 #' @param T The number of population iterations
-#' @param N The number of iterations per population (total iterations = T*N)
+#' @param N The number of iterations per population (total iterations = (T-1)*N+N.final)
+#' @param N.final The number of iterations for the final population (total iterations = (T-1)*N+N.final)
 #' @param probs A list of the various probability vectors to use
 #' @param params A list of the various parameters for all the parts of the algorithm
+#' @param sub An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)
 #'
 #' @export gmjmcmc
 gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, probs, params, sub=F) {
@@ -131,23 +134,36 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, p
 #'
 #' @return The updated population of features, that becomes S.t+1
 gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs, transforms, probs, params) {
+  # Print the marginal posterior distribution of the features after MJMCMC
+  print("Feature importance")
+  print.dist(marg.probs, sapply(S.t, print.feature, transforms), probs$filter)
+
   # Sample which features to keep based on marginal inclusion below probs$filter
   feats.keep <- as.logical(rbinom(n = length(marg.probs), size = 1, prob = pmin(marg.probs/probs$filter, 1)))
 
   # Create a list of which features to replace
   feats.replace <- which(!feats.keep)
 
+  # Create a list of inclusion probabilities
+  eps <- 0.05
+  marg.probs.use <- c(rep(eps, length(F.0)), pmin(pmax(marg.probs[feats.keep], eps), (1-eps)))
+
   # Perform the replacements
   for (i in feats.replace) {
     print(paste0("Replacing feature ", print.feature(S.t[[i]], transforms)))
-    S.t[[i]] <- gen.feature(c(F.0, S.t[feats.keep]), data, loglik.alpha, transforms, probs, length(F.0), params)
+    S.t[[i]] <- gen.feature(c(F.0, S.t[feats.keep]), marg.probs.use, data, loglik.alpha, transforms, probs, length(F.0), params)
+    # TODO: Handle the case when we get a shrinking feature set, it causes the feats.replace to not be aligned with the still existing features
+    # TODO: It might be okay to just stop trying to add more features since the population is obviously too large anyway.
     feats.keep[i] <- T
+    marg.probs.use <- append(marg.probs.use, eps, length(F.0)+i-1)
   }
 
   # Add additional features if the population is not at max size
   if (length(S.t) < params$pop.max) {
-    for (i in (length(S.t)+1):params$pop.max)
-    S.t[[i]] <- gen.feature(c(F.0, S.t[feats.keep]), data, loglik.alpha, transforms, probs, length(F.0), params)
+    for (i in (length(S.t)+1):params$pop.max) {
+      S.t[[i]] <- gen.feature(c(F.0, S.t[feats.keep]), marg.probs.use, data, loglik.alpha, transforms, probs, length(F.0), params)
+      marg.probs.use <- c(marg.probs.use, eps)
+    }
   }
   return(S.t)
 }

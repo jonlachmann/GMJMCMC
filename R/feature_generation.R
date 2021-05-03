@@ -4,23 +4,23 @@
 # Created on: 2021-02-10
 
 # Generate a multiplication feature
-gen.multiplication <- function (features) {
+gen.multiplication <- function (features, marg.probs) {
   # generate two features to be multiplied
-  feats <- sample.int(n = length(features), size = 2, replace = T)
+  feats <- sample.int(n = length(features), size = 2, prob = marg.probs, replace = T)
   create.feature(0, features[feats])
 }
 
 # Generate a modification feature
-gen.modification <- function (features, transforms, trans.probs) {
-  feat <- sample.int(n = length(features), size = 1)
+gen.modification <- function (features, marg.probs, transforms, trans.probs) {
+  feat <- sample.int(n = length(features), size = 1, prob = marg.probs)
   trans <- sample.int(n = length(transforms), size = 1, prob = trans.probs)
   create.feature(trans, features[feat])
 }
 
 # Generate a projection feature
-gen.projection <- function (features, transforms, trans.probs, max.width) {
-  feat.count <- sample.int(n = min(max.width, length(features)), size = 1) # TODO: Should be a specific distribution?
-  feats <- sample.int(n = length(features) - 1, size = feat.count) + 1
+gen.projection <- function (features, marg.probs, transforms, trans.probs, max.width) {
+  feat.count <- sample.int(n = (min(max.width, (length(features)))-1), size = 1) + 1 # TODO: Should be a specific distribution?
+  feats <- sample.int(n = length(features), size = feat.count, prob = marg.probs)
   trans <- sample.int(n = length(transforms), size = 1, prob = trans.probs)
   # TODO: Generate alphas properly using various methods
   alphas <- rep(1, length(feats)+1)
@@ -34,13 +34,15 @@ gen.new <- function (features, F.0.size) {
 }
 
 # Select a feature to generate and generate it
-gen.feature <- function (features, data, loglik.alpha, transforms, probs, F.0.size, params) {
+gen.feature <- function (features, marg.probs, data, loglik.alpha, transforms, probs, F.0.size, params) {
+  eps <- 0.05
+  tries <- 0
   feat.ok <- F
-  while (!feat.ok) {
+  while (!feat.ok && tries < 50) {
     feat.type <- sample.int(n = 4, size = 1, prob = probs$gen)
-    if (feat.type == 1) feat <- gen.multiplication(features)
-    if (feat.type == 2) feat <- gen.modification(features, transforms, probs$trans)
-    if (feat.type == 3) feat <- gen.projection(features, transforms, probs$trans, params$L)
+    if (feat.type == 1) feat <- gen.multiplication(features, marg.probs)
+    if (feat.type == 2) feat <- gen.modification(features, marg.probs, transforms, probs$trans)
+    if (feat.type == 3) feat <- gen.projection(features, marg.probs, transforms, probs$trans, params$L)
     if (feat.type == 4) feat <- gen.new(features, F.0.size)
     # Check that the feature is not too wide or deep
     if (!(depth.feature(feat) > params$D || width.feature(feat) > params$L)) {
@@ -55,17 +57,25 @@ gen.feature <- function (features, data, loglik.alpha, transforms, probs, F.0.si
         if (!check.collinearity(feat, feats, transforms, F.0.size)) feat.ok <- T
       }
     }
+    tries <- tries + 1
+    eps <- min(eps+0.01, 0.5)
+    marg.probs <- pmin(pmax(marg.probs, eps), (1-eps))
   }
-  print(paste("New feature:", print.feature(feat, transforms), "depth:", depth.feature(feat), "width:", width.feature(feat)))
-  return(feat)
+  if (!feat.ok) {
+    print("No feature could be generated, population shrinking.")
+    return(NULL)
+  } else {
+    print(paste("New feature:", print.feature(feat, transforms), "depth:", depth.feature(feat), "width:", width.feature(feat)))
+    return(feat)
+  }
 }
 
 check.collinearity <- function (proposal, features, transforms, F.0.size) {
   # Add the proposal to the feature list for evaluation
   features[[length(features)+1]] <- proposal
   # Generate mock data to test with (avoiding too costly computations)
-  mock.data <- matrix(c(runif((F.0.size*2), -1, 1), rep(1,F.0.size*2),
-                        runif((F.0.size*2)*(F.0.size), -1, 1)), F.0.size*2, F.0.size+2)
+  mock.data <- matrix(c(runif((F.0.size*2), -100, 100), rep(1,F.0.size*2),
+                        runif((F.0.size*2)*(F.0.size), -100, 100)), F.0.size*2, F.0.size+2)
   # Use the mock data to precalc the features
   mock.data.precalc <- precalc.features(mock.data, features, transforms)
   # Fit a linear model with the mock data precalculated features

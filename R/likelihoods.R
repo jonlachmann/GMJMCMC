@@ -34,7 +34,7 @@ logistic.loglik.alpha <- function (a, data, mu_func) {
   -sum((data[,1] * log(m) + (1-data[,1]) * log(1 - m)))
 }
 
-#' Log likelihood function for gaussian regression with a prior p(m)=sum(total_width).
+#' Log likelihood function for gaussian regression with a prior p(m)=r*sum(total_width).
 #'
 #' @param data Data to be used for the estimation
 #' @param model The model as a logical vector to estimate
@@ -43,10 +43,8 @@ logistic.loglik.alpha <- function (a, data, mu_func) {
 #'
 #' @export gaussian.loglik
 gaussian.loglik <- function (y, x, model, complex, params) {
-  r <- 250/223
-  if (sum(model) > 7) return(-1000000)
   suppressWarnings({mod <- fastglm(as.matrix(x[,model]), y, family=gaussian())})
-  ret <- (-(mod$deviance -2*log(r)*sum(complex$width)))/2
+  ret <- (-(mod$deviance -2*log(params$r)*sum(complex$width)))/2
   return(ret)
 }
 

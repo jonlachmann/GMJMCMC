@@ -24,15 +24,21 @@ and the rest of the columns should be the independent variables.}
 
 \item{loglik.pi}{The (log) density to explore}
 
+\item{loglik.alpha}{The likelihood function to use for alpha calculation}
+
 \item{transforms}{A list of the available nonlinear transformations for feature generation}
 
 \item{T}{The number of population iterations}
 
-\item{N}{The number of iterations per population (total iterations = T*N)}
+\item{N}{The number of iterations per population (total iterations = (T-1)*N+N.final)}
+
+\item{N.final}{The number of iterations for the final population (total iterations = (T-1)*N+N.final)}
 
 \item{probs}{A list of the various probability vectors to use}
 
 \item{params}{A list of the various parameters for all the parts of the algorithm}
+
+\item{sub}{An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)}
 }
 \description{
 Main algorithm for GMJMCMC
