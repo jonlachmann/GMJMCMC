@@ -41,7 +41,7 @@ logistic.loglik.alpha <- function (a, data, mu_func) {
 #' @param formula The formula to be used for estimation
 #' @param complex A list of complexity measures for the features
 #'
-#' @export logistic.loglik
+#' @export gaussian.loglik
 gaussian.loglik <- function (y, x, model, complex, params) {
   r <- 250/223
   if (sum(model) > 7) return(-1000000)

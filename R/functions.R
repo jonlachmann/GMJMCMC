@@ -30,5 +30,5 @@ print.progressbar <- function (progress, size=40) {
 
 # Convert a logical vector to an integer
 bitsToInt <- function (x) {
-    packBits(rev(c(rep(FALSE, 32-length(x)%%32), as.logical(x))), "integer")
+    packBits(rev(c(rep(FALSE, 32-length(x)%%32), as.logical(x))), "integer") + 1
 }

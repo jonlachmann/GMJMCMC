@@ -55,6 +55,7 @@ precalc.features <- function (data, features, transforms) {
   return(precalc)
 }
 
+# TODO: Compare to previous mliks here instead, also add a flag to do that in full likelihood estimation scenarios.
 # Function to call the model function
 loglik.pre <- function (loglik.pi, model, complex, data, params) {
   # Get the complexity measures for just this model

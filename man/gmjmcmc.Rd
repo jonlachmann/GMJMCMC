@@ -13,7 +13,8 @@ gmjmcmc(
   N,
   N.final,
   probs,
-  params
+  params,
+  sub = F
 )
 }
 \arguments{
