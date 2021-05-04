@@ -134,6 +134,8 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, p
 #'
 #' @return The updated population of features, that becomes S.t+1
 gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs, transforms, probs, params) {
+  eps <- 0.05
+
   # Print the marginal posterior distribution of the features after MJMCMC
   print("Feature importance")
   print.dist(marg.probs, sapply(S.t, print.feature, transforms), probs$filter)
@@ -145,17 +147,19 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs, transf
   feats.replace <- which(!feats.keep)
 
   # Create a list of inclusion probabilities
-  eps <- 0.05
-  marg.probs.use <- c(rep(eps, length(F.0)), pmin(pmax(marg.probs[feats.keep], eps), (1-eps)))
+  marg.probs.use <- sqrt(c(rep(eps, length(F.0)), pmin(pmax(marg.probs[feats.keep], eps), (1-eps))))
 
   # Perform the replacements
   for (i in feats.replace) {
+    prev.size <- length(S.t)
     print(paste0("Replacing feature ", print.feature(S.t[[i]], transforms)))
     S.t[[i]] <- gen.feature(c(F.0, S.t[feats.keep]), marg.probs.use, data, loglik.alpha, transforms, probs, length(F.0), params)
-    # TODO: Handle the case when we get a shrinking feature set, it causes the feats.replace to not be aligned with the still existing features
-    # TODO: It might be okay to just stop trying to add more features since the population is obviously too large anyway.
+    if (prev.size > length(S.t)) {
+      print("Population shrinking, returning.")
+      return(S.t)
+    }
     feats.keep[i] <- T
-    marg.probs.use <- append(marg.probs.use, eps, length(F.0)+i-1)
+    marg.probs.use <- append(marg.probs.use, mean(marg.probs.use), length(F.0)+i-1)
   }
 
   # Add additional features if the population is not at max size
