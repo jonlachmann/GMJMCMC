@@ -134,8 +134,6 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, p
 #'
 #' @return The updated population of features, that becomes S.t+1
 gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs, transforms, probs, params) {
-  eps <- 0.05
-
   # Print the marginal posterior distribution of the features after MJMCMC
   print("Feature importance")
   print.dist(marg.probs, sapply(S.t, print.feature, transforms), probs$filter)
@@ -143,11 +141,19 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs, transf
   # Sample which features to keep based on marginal inclusion below probs$filter
   feats.keep <- as.logical(rbinom(n = length(marg.probs), size = 1, prob = pmin(marg.probs/probs$filter, 1)))
 
+  # Always keep original covariates if that setting is on
+  if (params$keep.org) feats.keep[1:length(F.0)] <- T
+
+  # Avoid removing too many features
+  
+
   # Create a list of which features to replace
   feats.replace <- which(!feats.keep)
 
+  # TODO: Let filtered features become part of new features - tuning parameter
+  # TODO: Avoid killing too many features
   # Create a list of inclusion probabilities
-  marg.probs.use <- sqrt(c(rep(eps, length(F.0)), pmin(pmax(marg.probs[feats.keep], eps), (1-eps))))
+  marg.probs.use <- sqrt(c(rep(params$eps, length(F.0)), pmin(pmax(marg.probs[feats.keep], params$eps), (1-params$eps))))
 
   # Perform the replacements
   for (i in feats.replace) {
@@ -165,8 +171,13 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs, transf
   # Add additional features if the population is not at max size
   if (length(S.t) < params$pop.max) {
     for (i in (length(S.t)+1):params$pop.max) {
+      prev.size <- length(S.t)
       S.t[[i]] <- gen.feature(c(F.0, S.t[feats.keep]), marg.probs.use, data, loglik.alpha, transforms, probs, length(F.0), params)
-      marg.probs.use <- c(marg.probs.use, eps)
+      if (prev.size == length(S.t)) {
+        print("Population not growing, returning.")
+        return(S.t)
+      }
+      marg.probs.use <- c(marg.probs.use, params$eps)
     }
   }
   return(S.t)

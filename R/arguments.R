@@ -75,7 +75,9 @@ gen.params.list <- function (data, G=F) {
     ## GM parameters
     feat_params <- list(D=5, L=15,                            # Hard limits on feature complexity
                         alpha=0,                              # alpha strategy (0=None, 1,2,3=strategies as per Hubin et al.) TODO: Fully Bayesian
-                        pop.max=as.integer(ncov*1.5))         # Max features population size
+                        pop.max=as.integer(ncov*1.5),         # Max features population size
+                        keep.org = F,                         # Always keep original covariates in every population
+                        eps = 0.05)                           # Inclusion probability limit for feature generation
 
     params$feat <- feat_params
 

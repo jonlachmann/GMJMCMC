@@ -35,7 +35,6 @@ gen.new <- function (features, F.0.size) {
 
 # Select a feature to generate and generate it
 gen.feature <- function (features, marg.probs, data, loglik.alpha, transforms, probs, F.0.size, params) {
-  eps <- 0.05
   tries <- 0
   feat.ok <- F
   while (!feat.ok && tries < 50) {
@@ -58,8 +57,8 @@ gen.feature <- function (features, marg.probs, data, loglik.alpha, transforms, p
       }
     }
     tries <- tries + 1
-    eps <- min(eps+0.01, 0.5)
-    marg.probs <- pmin(pmax(marg.probs, eps), (1-eps))
+    params$eps <- min(params$eps+0.01, 0.5)
+    marg.probs <- pmin(pmax(marg.probs, params$eps), (1-params$eps))
   }
   if (!feat.ok) {
     print("No feature could be generated, population shrinking.")
