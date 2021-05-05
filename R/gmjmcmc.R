@@ -145,7 +145,11 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs, transf
   if (params$keep.org) feats.keep[1:length(F.0)] <- T
 
   # Avoid removing too many features
-  
+  if (sum(feats.keep) < params$keep.min) {
+    feats.add.n <- params$keep.min - sum(feats.keep)
+    feats.add <- sample(which(!feats.keep), feats.add.n)
+    feats.keep[feats.add] <- T
+  }
 
   # Create a list of which features to replace
   feats.replace <- which(!feats.keep)

@@ -77,6 +77,7 @@ gen.params.list <- function (data, G=F) {
                         alpha=0,                              # alpha strategy (0=None, 1,2,3=strategies as per Hubin et al.) TODO: Fully Bayesian
                         pop.max=as.integer(ncov*1.5),         # Max features population size
                         keep.org = F,                         # Always keep original covariates in every population
+                        keep.min = ncov*0.8,                  # Minimum number of features to always keep
                         eps = 0.05)                           # Inclusion probability limit for feature generation
 
     params$feat <- feat_params
