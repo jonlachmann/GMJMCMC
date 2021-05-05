@@ -108,6 +108,10 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, p
     models[[t]] <- population.models
     # Calculate marginal likelihoods for current features
     marg.probs <- marginal.probs.renorm(population.models)
+    # Print the marginal posterior distribution of the features after MJMCMC
+    cat(paste("\rCurrent best crit:", best.crit, "\n"))
+    cat("Feature importance:\n")
+    print.dist(marg.probs, sapply(S[[t]], print.feature, transforms), probs$filter)
     # Generate a new population of features for the next iteration (if this is not the last)
     if (t != T) {
       S[[t+1]] <- gmjmcmc.transition(S[[t]], F.0, data, loglik.alpha, marg.probs, transforms, probs, params$feat)
@@ -134,10 +138,6 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, p
 #'
 #' @return The updated population of features, that becomes S.t+1
 gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs, transforms, probs, params) {
-  # Print the marginal posterior distribution of the features after MJMCMC
-  print("Feature importance")
-  print.dist(marg.probs, sapply(S.t, print.feature, transforms), probs$filter)
-
   # Sample which features to keep based on marginal inclusion below probs$filter
   feats.keep <- as.logical(rbinom(n = length(marg.probs), size = 1, prob = pmin(marg.probs/probs$filter, 1)))
 
