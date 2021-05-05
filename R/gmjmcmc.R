@@ -139,14 +139,14 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, p
 #' @return The updated population of features, that becomes S.t+1
 gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs, transforms, probs, params) {
   # Sample which features to keep based on marginal inclusion below probs$filter
-  feats.keep <- as.logical(rbinom(n = length(marg.probs), size = 1, prob = pmin(marg.probs/probs$filter, 1)))
+  feats.keep <- as.logical(rbinom(n = length(marg.probs), size = 1, prob = sqrt(pmin(marg.probs/probs$filter, 1-params$eps))))
 
   # Always keep original covariates if that setting is on
   if (params$keep.org) feats.keep[1:length(F.0)] <- T
 
   # Avoid removing too many features
-  if (sum(feats.keep) < params$keep.min) {
-    feats.add.n <- params$keep.min - sum(feats.keep)
+  if (mean(feats.keep) < params$keep.min) {
+    feats.add.n <- round((params$keep.min - mean(feats.keep))*length(feats.keep))
     feats.add <- sample(which(!feats.keep), feats.add.n)
     feats.keep[feats.add] <- T
   }
