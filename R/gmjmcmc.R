@@ -123,7 +123,9 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, p
   # Calculate acceptance rate
   accept <- accept / (N*T)
   # Return formatted results
-  return(list(models=models, populations=S, accept=accept, best=best.crit))
+  results <- list(models=models, populations=S, accept=accept, best=best.crit)
+  attr(results, "class") <- "gmjmcmcresult"
+  return(results)
 }
 
 

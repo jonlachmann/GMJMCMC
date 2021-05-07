@@ -106,3 +106,16 @@ model.string <- function (model, features, link) {
   modelfun$formula <- paste0(link, "(", modelfun$formula, ")")
   return(modelfun)
 }
+
+summary.gmjmcmcresult <- function (results, pop="last") {
+  if (pop=="last") pop <- length(results$models)
+  # Get features as strings for printing
+  feats.strings <- sapply(results$populations[[pop]], print.feature)
+  # Get marginal posterior of features
+  marg.probs <- marginal.probs.renorm(results$models[[pop]])
+  # Print the final distribution
+  cat("                   Importance | Feature\n")
+  print.dist(marg.probs, feats.strings, -1)
+  # Print the best marginal likelihood
+  cat("\nBest marginal likelihood: ", results$best, "\n")
+}

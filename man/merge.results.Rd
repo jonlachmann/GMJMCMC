@@ -6,12 +6,10 @@
 This function will weight the features based on the best mlik in that population
 and merge the results together, simplifying by merging equivalent features (having high correlation).}
 \usage{
-\method{merge}{results}(results, transforms, complex.measure = 1, tol = 0)
+\method{merge}{results}(results, complex.measure = 1, tol = 0)
 }
 \arguments{
 \item{results}{A list containing multiple results from GMJMCMC.}
-
-\item{transforms}{A list of the available nonlinear transformations for feature generation used in the runs.}
 
 \item{complex.measure}{The complex measure to use when finding the simplest equivalent feature,
 1=total width, 2=operation count and 3=depth.}
