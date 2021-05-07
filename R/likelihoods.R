@@ -17,7 +17,7 @@
 logistic.loglik <- function (y, x, model, complex, params) {
   r <- 20/223
   suppressWarnings({mod <- fastglm(as.matrix(x[,model]), y, family=binomial())})
-  ret <- (-(mod$deviance -2*log(r)*sum(complex$width)))/2
+  ret <- (-(mod$deviance -2*log(r)*sum(complex$oc)))/2
   return(ret)
 }
 
@@ -46,7 +46,7 @@ logistic.loglik.alpha <- function (a, data, mu_func) {
 #' @export gaussian.loglik
 gaussian.loglik <- function (y, x, model, complex, params) {
   suppressWarnings({mod <- fastglm(as.matrix(x[,model]), y, family=gaussian())})
-  ret <- (-(mod$deviance + 2*log(length(y))*(mod$rank) - 2*log(params$r)*(sum(complex$width))))/2
+  ret <- (-(mod$deviance + 2*log(length(y))*(mod$rank) - 2*log(params$r)*(sum(complex$oc))))/2
   return(ret)
 }
 

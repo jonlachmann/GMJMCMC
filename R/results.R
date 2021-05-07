@@ -5,11 +5,12 @@
 
 #' Merge a list of multiple results from multiple runs
 #' This function will weight the features based on the best mlik in that population
-#' and merge the results together, simplifying by merging equivalent features (having high correlation)
+#' and merge the results together, simplifying by merging equivalent features (having high correlation).
 #'
-#' @param results A list containing multiple results from GMJMCMC
-#' @param transforms A list of the available nonlinear transformations for feature generation used in the runs
-#' @param complex.measure The complex measure to use when finding the simplest equivalent feature , 1=total.width, 2=depth
+#' @param results A list containing multiple results from GMJMCMC.
+#' @param transforms A list of the available nonlinear transformations for feature generation used in the runs.
+#' @param complex.measure The complex measure to use when finding the simplest equivalent feature,
+#' 1=total width, 2=operation count and 3=depth.
 #' @param tol The tolerance to use for the correlation when finding equivalent features, default is 0.
 #'
 #' @export merge.results
@@ -55,20 +56,20 @@ merge.results <- function (results, transforms, complex.measure=1, tol=0) {
   # A map to link equivalent features together,
   # row 1-2 are the simplest equivalent features based on two complexity measures
   # row 3 is the total weighted density of those features
-  feats.map <- matrix(1:feat.count, 3, feat.count, byrow=T)
+  feats.map <- matrix(1:feat.count, 4, feat.count, byrow=T)
   for (i in 1:nrow(cors)) {
     equiv.feats <- which(cors[i,] >= (1-tol))
     # Compare equivalent features complexity to find most simple
-    equiv.complex <- list(width=complex$width[equiv.feats], depth=complex$depth[equiv.feats])
+    equiv.complex <- list(width=complex$width[equiv.feats], oc=complex$oc[equiv.feats], depth=complex$depth[equiv.feats])
     equiv.simplest <- lapply(equiv.complex, which.min)
     if (length(equiv.feats) > 1) print("Equivalent features:")
     if (length(equiv.feats) > 1) print(sapply(features[equiv.feats], print.feature, transforms))
-    feats.map[1:2,equiv.feats] <- c(equiv.feats[equiv.simplest$width], equiv.feats[equiv.simplest$width])
-    feats.map[3,equiv.feats] <- sum(renorms[equiv.feats])
+    feats.map[1:3,equiv.feats] <- c(equiv.feats[equiv.simplest$width], equiv.feats[equiv.simplest$oc], equiv.feats[equiv.simplest$depth])
+    feats.map[4,equiv.feats] <- sum(renorms[equiv.feats])
   }
   fests.simplest.ids <- feats.map[complex.measure,unique(feats.map[complex.measure,])]
   feats.simplest <- features[fests.simplest.ids]
-  importance <- feats.map[3,fests.simplest.ids]
+  importance <- feats.map[4,fests.simplest.ids]
   return(list(feats=feats.simplest, importance=importance))
 }
 

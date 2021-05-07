@@ -27,26 +27,31 @@ create.feature <- function (transform, features, alphas=NULL) {
   # Given no alphas, assume no intercept and unit coefficients
   if (is.null(alphas)) alphas <- c(0, rep(1, length(features)))
   if (length(alphas) != (length(features) + 1)) stop("Invalid alpha/feature count")
-  # Calculate the depth and width of the new feature
+  # Calculate the depth, operation count and width of the new feature
   if (transform == 0) {
     depth <- 1 + depth.feature(features[[1]]) + depth.feature(features[[2]])
+    oc <- 1 + oc.feature(features[[1]]) + oc.feature(features[[2]])
     width <- 2 + width.feature(features[[1]]) + width.feature(features[[2]])
   }
   else {
-    depth <- 0
-    width <- length(features)
+    depth <- 0 # Assume 0 depth to find the deepest included feature
+    oc <- length(features) # Every + is an operation, and the outer transform is also one
+    width <- length(features) # Width is the number of features
     for (i in 1:(length(features))) {
       locdepth <- depth.feature(features[[i]])
+      lococ <- oc.feature(features[[i]])
       locwidth <- width.feature(features[[i]])
       width <- width + locwidth
+      oc <- oc + lococ
       if (locdepth > depth) depth <- locdepth
     }
-    depth <- depth + 1
+    depth <- depth + 1 # Add 1 to depth to account for the outer transformation
   }
 
   # Generate the new feature matrix
   newFeature <- list(matrix(c(transform, depth, rep(NA,length(alphas)-2),
                       width, 1:(length(features)), alphas), length(alphas)))
+  attr(newFeature[[1]], "oc") <- oc
   feature <- append(newFeature, features, 0)
   class(feature) <- "feature"
   return(feature)
@@ -154,16 +159,26 @@ width.feature <- function (feature) {
   else stop("Invalid feature structure")
 }
 
+# A function to get the oc (operation count) of a feature
+oc.feature <- function (feature) {
+  feat <- feature[[length(feature)]]
+  if (is.matrix(feat)) return(attr(feat, "oc"))
+  else if (is.numeric(feat)) return(0)
+  else stop("Invalid feature structure")
+}
+
 # A function to get the complexity measures of a list of features
 complex.features <- function (features) {
   featcount <- length(features)
   width <- rep(NA, featcount)
+  oc <- rep(NA, featcount)
   depth <- rep(NA, featcount)
   for (i in 1:featcount) {
     width[i] <- width.feature(features[[i]])
+    oc[i] <- oc.feature(features[[i]])
     depth[i] <- depth.feature(features[[i]])
   }
-  return(list(width=width, depth=depth))
+  return(list(width=width, oc=oc, depth=depth))
 }
 
 # TODO: This should probably be moved as it is not immediately connected to the features

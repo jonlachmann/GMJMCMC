@@ -64,7 +64,7 @@ gen.feature <- function (features, marg.probs, data, loglik.alpha, transforms, p
     print("No feature could be generated, population shrinking.")
     return(NULL)
   } else {
-    print(paste("New feature:", print.feature(feat, transforms), "depth:", depth.feature(feat), "width:", width.feature(feat)))
+    print(paste("New feature:", print.feature(feat, transforms), "depth:", depth.feature(feat), "oc:", oc.feature(feat), "width:", width.feature(feat)))
     return(feat)
   }
 }
