@@ -3,7 +3,7 @@
 # Created by: jonlachmann
 # Created on: 2021-05-06
 
-#' Merge a list of multiple results from multiple runs
+#' Merge a list of multiple results from many runs
 #' This function will weight the features based on the best mlik in that population
 #' and merge the results together, simplifying by merging equivalent features (having high correlation).
 #'
@@ -54,19 +54,20 @@ merge.results <- function (results, transforms, complex.measure=1, tol=0) {
   # Calculate the correlation to find equivalent features
   cors <- cor(mock.data.precalc)
   # A map to link equivalent features together,
-  # row 1-2 are the simplest equivalent features based on two complexity measures
-  # row 3 is the total weighted density of those features
+  # row 1-3 are the simplest equivalent features based on three different complexity measures
+  # row 4 is the total weighted density of those features
   feats.map <- matrix(1:feat.count, 4, feat.count, byrow=T)
   for (i in 1:nrow(cors)) {
     equiv.feats <- which(cors[i,] >= (1-tol))
     # Compare equivalent features complexity to find most simple
     equiv.complex <- list(width=complex$width[equiv.feats], oc=complex$oc[equiv.feats], depth=complex$depth[equiv.feats])
     equiv.simplest <- lapply(equiv.complex, which.min)
-    if (length(equiv.feats) > 1) print("Equivalent features:")
-    if (length(equiv.feats) > 1) print(sapply(features[equiv.feats], print.feature, transforms))
+    #if (length(equiv.feats) > 1) print("Equivalent features:")
+    #if (length(equiv.feats) > 1) print(sapply(features[equiv.feats], print.feature, transforms))
     feats.map[1:3,equiv.feats] <- c(equiv.feats[equiv.simplest$width], equiv.feats[equiv.simplest$oc], equiv.feats[equiv.simplest$depth])
     feats.map[4,equiv.feats] <- sum(renorms[equiv.feats])
   }
+  # Select the simplest features based on the specified complexity measure and sort them
   feats.simplest.ids <- feats.map[complex.measure,unique(feats.map[complex.measure,])]
   feats.simplest.ids <- feats.simplest.ids[order(feats.map[4,feats.simplest.ids])]
   feats.simplest <- features[feats.simplest.ids]
@@ -74,6 +75,7 @@ merge.results <- function (results, transforms, complex.measure=1, tol=0) {
   return(list(feats=feats.simplest, importance=importance))
 }
 
+# Function for calculating the weights of different populations based on best mlik (other version not implemented yet).
 population.weigths <- function (results, simple=T) {
   pop.count <- length(results)
   modmats <- vector("list", pop.count)
