@@ -7,13 +7,15 @@
 gaussian.loglik(y, x, model, complex, params)
 }
 \arguments{
-\item{model}{The model as a logical vector to estimate}
+\item{y}{A vector containing the dependent variable}
+
+\item{x}{The matrix containing the precalculated features}
+
+\item{model}{The model to estimate as a logical vector}
 
 \item{complex}{A list of complexity measures for the features}
 
-\item{data}{Data to be used for the estimation}
-
-\item{formula}{The formula to be used for estimation}
+\item{params}{A list of parameters for the log likelihood, supplied by the user}
 }
 \description{
 Log likelihood function for gaussian regression with a prior p(m)=r*sum(total_width).

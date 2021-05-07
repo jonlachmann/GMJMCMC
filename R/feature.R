@@ -20,7 +20,7 @@
 #'
 #' @param transform A numeric denoting the transform type
 #' @param features A list of features to include
-#' @param transform A numeric vector denoting the alphas to use
+#' @param alphas A numeric vector denoting the alphas to use
 #'
 #' @export create.feature
 create.feature <- function (transform, features, alphas=NULL) {

@@ -7,10 +7,11 @@
 #' This function is created as an example of how to create an estimator that is used
 #' to calculate the marginal likelihood of a model.
 #'
-#' @param data Data to be used for the estimation
-#' @param model The model as a logical vector to estimate
-#' @param formula The formula to be used for estimation
+#' @param y A vector containing the dependent variable
+#' @param x The matrix containing the precalculated features
+#' @param model The model to estimate as a logical vector
 #' @param complex A list of complexity measures for the features
+#' @param params A list of parameters for the log likelihood, supplied by the user
 #'
 #' @export logistic.loglik
 logistic.loglik <- function (y, x, model, complex, params) {
@@ -36,10 +37,11 @@ logistic.loglik.alpha <- function (a, data, mu_func) {
 
 #' Log likelihood function for gaussian regression with a prior p(m)=r*sum(total_width).
 #'
-#' @param data Data to be used for the estimation
-#' @param model The model as a logical vector to estimate
-#' @param formula The formula to be used for estimation
+#' @param y A vector containing the dependent variable
+#' @param x The matrix containing the precalculated features
+#' @param model The model to estimate as a logical vector
 #' @param complex A list of complexity measures for the features
+#' @param params A list of parameters for the log likelihood, supplied by the user
 #'
 #' @export gaussian.loglik
 gaussian.loglik <- function (y, x, model, complex, params) {
@@ -65,10 +67,11 @@ gaussian.loglik.alpha <- function (a, data, mu_func) {
 
 #' Log likelihood function for linear regression using Zellners g-prior
 #'
-#' @param data Data to be used for the estimation
-#' @param model The model as a logical vector to estimate
-#' @param formula The formula to be used for estimation
+#' @param y A vector containing the dependent variable
+#' @param x The matrix containing the precalculated features
+#' @param model The model to estimate as a logical vector
 #' @param complex A list of complexity measures for the features
+#' @param params A list of parameters for the log likelihood, supplied by the user
 #'
 #' @export linear.g.prior.loglik
 linear.g.prior.loglik <- function (y, x, model, complex, params) {

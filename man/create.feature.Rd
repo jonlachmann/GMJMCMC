@@ -7,9 +7,11 @@
 create.feature(transform, features, alphas = NULL)
 }
 \arguments{
-\item{transform}{A numeric vector denoting the alphas to use}
+\item{transform}{A numeric denoting the transform type}
 
 \item{features}{A list of features to include}
+
+\item{alphas}{A numeric vector denoting the alphas to use}
 }
 \description{
 Create method for "feature" class
