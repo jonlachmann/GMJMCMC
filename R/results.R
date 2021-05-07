@@ -48,10 +48,11 @@ merge.results <- function (results, complex.measure=1, tol=0) {
   ## Detect equivalent features
   # Generate mock data to compare features with
   mock.data <- matrix(runif((feat.count+2)^2, -100, 100), ncol=feat.count+2)
-  # Use the mock data to precalc the features
   mock.data.precalc <- precalc.features(mock.data, features)[,-(1:2)]
+
   # Calculate the correlation to find equivalent features
   cors <- cor(mock.data.precalc)
+
   # A map to link equivalent features together,
   # row 1-3 are the simplest equivalent features based on three different complexity measures
   # row 4 is the total weighted density of those features
@@ -61,8 +62,6 @@ merge.results <- function (results, complex.measure=1, tol=0) {
     # Compare equivalent features complexity to find most simple
     equiv.complex <- list(width=complex$width[equiv.feats], oc=complex$oc[equiv.feats], depth=complex$depth[equiv.feats])
     equiv.simplest <- lapply(equiv.complex, which.min)
-    #if (length(equiv.feats) > 1) print("Equivalent features:")
-    #if (length(equiv.feats) > 1) print(sapply(features[equiv.feats], print.feature))
     feats.map[1:3,equiv.feats] <- c(equiv.feats[equiv.simplest$width], equiv.feats[equiv.simplest$oc], equiv.feats[equiv.simplest$depth])
     feats.map[4,equiv.feats] <- sum(renorms[equiv.feats])
   }
@@ -108,6 +107,12 @@ model.string <- function (model, features, link) {
   return(modelfun)
 }
 
+#' Function to print a quick summary of the results
+#'
+#' @param results The results to use
+#' @param pop The population to print for, defaults to last
+#'
+#' @export summary.gmjmcmcresult
 summary.gmjmcmcresult <- function (results, pop="last") {
   if (pop=="last") pop <- length(results$models)
   # Get features as strings for printing
@@ -119,4 +124,26 @@ summary.gmjmcmcresult <- function (results, pop="last") {
   print.dist(marg.probs, feats.strings, -1)
   # Print the best marginal likelihood
   cat("\nBest marginal likelihood: ", results$best, "\n")
+}
+
+#' Function to plot the results
+#'
+#' @param results The results to use
+#' @param count The number of features to plot, defaults to all
+#' @param pop The population to plot, defaults to last
+#'
+#' @export plot.gmjmcmcresult
+plot.gmjmcmcresult <- function (results, count="all", pop="last") {
+  if (pop=="last") pop <- length(results$models)
+  if (count=="all") count <- length(results$populations[[pop]])
+  # Get features as strings for printing
+  feats.strings <- sapply(results$populations[[pop]], print)
+  # Get marginal posterior of features
+  marg.probs <- marginal.probs.renorm(results$models[[pop]])
+  # Print the distribution
+  feats.strings <- feats.strings[order(marg.probs)]
+  marg.probs <- sort(marg.probs)
+  tot <- length(results$populations[[pop]])
+  y <- barplot(marg.probs[(tot-count):tot], horiz=T, xlab="Marginal probability", ylab="Feature")
+  text((max(marg.probs[(tot-count):tot])/2), y, feats.strings[(tot-count):tot])
 }
