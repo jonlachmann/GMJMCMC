@@ -3,10 +3,10 @@
 # Created by: jonlachmann
 # Created on: 2021-03-16
 
-gen.alphas <- function (strategy, feature, data, transforms, loglik) {
+gen.alphas <- function (strategy, feature, data, loglik) {
   if (strategy == 1) stop("Not implemented.")
   else if (strategy == 2) stop("Not implemented.")
-  else if (strategy == 3) feature <- alpha_3(feature, data, transforms, loglik)
+  else if (strategy == 3) feature <- alpha_3(feature, data, loglik)
   return(feature)
 }
 
@@ -14,7 +14,7 @@ gen.alphas <- function (strategy, feature, data, transforms, loglik) {
 #' TODO: Implement me
 #' @param feature The feature to generate alphas for
 #' @param transforms The transforms used
-alpha_1 <- function (feature, transforms) {
+alpha_1 <- function (feature) {
   return(feature)
 }
 
@@ -22,7 +22,7 @@ alpha_1 <- function (feature, transforms) {
 #' TODO: Implement me
 #' @param feature The feature to generate alphas for
 #' @param transforms The transforms used
-alpha_2 <- function (feature, transforms) {
+alpha_2 <- function (feature) {
   return(feature)
 }
 
@@ -32,9 +32,9 @@ alpha_2 <- function (feature, transforms) {
 #' @param data The dataset used
 #' @param transforms The transforms used
 #' @param loglik log likelihood function to use
-alpha_3 <- function (feature, data, transforms, loglik) {
+alpha_3 <- function (feature, data, loglik) {
   # Create the string representation of the feature with variable alphas
-  featfun <- print.feature(feature, transforms, dataset = T, alphas = T)
+  featfun <- print.feature(feature, dataset = T, alphas = T)
   featfun <- set_alphas(featfun)
   # Return if there are no alphas to set
   if(featfun$count == 0) return(feature)

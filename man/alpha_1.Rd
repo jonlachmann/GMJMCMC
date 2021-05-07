@@ -5,7 +5,7 @@
 \title{Alpha generator using strategy 1 as per Hubin et. al.
 TODO: Implement me}
 \usage{
-alpha_1(feature, transforms)
+alpha_1(feature)
 }
 \arguments{
 \item{feature}{The feature to generate alphas for}

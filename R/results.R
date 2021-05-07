@@ -50,7 +50,7 @@ merge.results <- function (results, transforms, complex.measure=1, tol=0) {
   # Generate mock data to compare features with
   mock.data <- matrix(runif((feat.count+2)^2, -100, 100), ncol=feat.count+2)
   # Use the mock data to precalc the features
-  mock.data.precalc <- precalc.features(mock.data, features, transforms)[,-(1:2)]
+  mock.data.precalc <- precalc.features(mock.data, features)[,-(1:2)]
   # Calculate the correlation to find equivalent features
   cors <- cor(mock.data.precalc)
   # A map to link equivalent features together,
@@ -63,7 +63,7 @@ merge.results <- function (results, transforms, complex.measure=1, tol=0) {
     equiv.complex <- list(width=complex$width[equiv.feats], oc=complex$oc[equiv.feats], depth=complex$depth[equiv.feats])
     equiv.simplest <- lapply(equiv.complex, which.min)
     #if (length(equiv.feats) > 1) print("Equivalent features:")
-    #if (length(equiv.feats) > 1) print(sapply(features[equiv.feats], print.feature, transforms))
+    #if (length(equiv.feats) > 1) print(sapply(features[equiv.feats], print.feature))
     feats.map[1:3,equiv.feats] <- c(equiv.feats[equiv.simplest$width], equiv.feats[equiv.simplest$oc], equiv.feats[equiv.simplest$depth])
     feats.map[4,equiv.feats] <- sum(renorms[equiv.feats])
   }
@@ -92,4 +92,18 @@ population.weigths <- function (results, simple=T) {
     }
   }
   return(max.crits)
+}
+
+#' Function to generate a function string for a model consisting of features
+#'
+#' @param model A logical vector indicating which features to include
+#' @param features The population of features
+#' @param link The link function to use, as a string
+#'
+#' @export model.string
+model.string <- function (model, features, link) {
+  modelstring <- paste0(sapply(features[model], print.feature, alphas=T), collapse="+")
+  modelfun <- set_alphas(modelstring)
+  modelfun$formula <- paste0(link, "(", modelfun$formula, ")")
+  return(modelfun)
 }

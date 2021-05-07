@@ -27,6 +27,8 @@ NULL
 gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, probs, params, sub=F) {
   # Verify that the data is well-formed
   data <- check.data(data)
+  # Set the transformations option
+  options("gmjmcmc-transformations"=transforms)
   # Acceptance probability
   accept <- 0
   # A list of populations that have been visited
@@ -42,7 +44,7 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, p
   ### Main algorithm loop - Iterate over T different populations
   for (t in 1:T) {
     # Precalculate covariates and put them in data.t
-    if (t != 1) data.t <- precalc.features(data, S[[t]], transforms)
+    if (t != 1) data.t <- precalc.features(data, S[[t]])
     else data.t <- data
     # Initialize first model of population
     model.cur <- as.logical(rbinom(n = length(S[[t]]), size = 1, prob = 0.5))
@@ -111,7 +113,7 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, p
     # Print the marginal posterior distribution of the features after MJMCMC
     cat(paste("\rCurrent best crit:", best.crit, "\n"))
     cat("Feature importance:\n")
-    print.dist(marg.probs, sapply(S[[t]], print.feature, transforms), probs$filter)
+    print.dist(marg.probs, sapply(S[[t]], print.feature), probs$filter)
     # Generate a new population of features for the next iteration (if this is not the last)
     if (t != T) {
       S[[t+1]] <- gmjmcmc.transition(S[[t]], F.0, data, loglik.alpha, marg.probs, transforms, probs, params$feat)
@@ -161,7 +163,7 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs, transf
   # Perform the replacements
   for (i in feats.replace) {
     prev.size <- length(S.t)
-    print(paste0("Replacing feature ", print.feature(S.t[[i]], transforms)))
+    print(paste0("Replacing feature ", print.feature(S.t[[i]])))
     S.t[[i]] <- gen.feature(c(F.0, S.t), marg.probs.use, data, loglik.alpha, transforms, probs, length(F.0), params)
     if (prev.size > length(S.t)) {
       print("Population shrinking, returning.")

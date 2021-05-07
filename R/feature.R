@@ -100,7 +100,9 @@ update.alphas <- function (feature, alphas, recurse=FALSE) {
 #'
 #' @method print feature
 #' @export
-print.feature <- function (feature, transforms, dataset=F, alphas=F) {
+print.feature <- function (feature, dataset=F, alphas=F) {
+  transforms <- getOption("gmjmcmc-transformations")
+  if(is.null(transforms)) stop("Please set the gmjmcmc-transformations option to your non-linear functions.")
   fString <- ""
   feat <- feature[[length(feature)]]
   # This is a more complex feature
@@ -130,7 +132,7 @@ print.feature <- function (feature, transforms, dataset=F, alphas=F) {
           if (alphas) fString <- paste0(fString, "?*")
           else fString <- paste0(fString, feat[j,3], "*")
         }
-        fString <- paste0(fString, print.feature(feature[[feat[j,2]]], transforms, dataset, alphas), op)
+        fString <- paste0(fString, print.feature(feature[[feat[j,2]]], dataset, alphas), op)
       }
     }
     fString <- paste0(fString, ")")
@@ -179,19 +181,4 @@ complex.features <- function (features) {
     depth[i] <- depth.feature(features[[i]])
   }
   return(list(width=width, oc=oc, depth=depth))
-}
-
-# TODO: This should probably be moved as it is not immediately connected to the features
-#' Function to generate a function string for a model consisting of features
-#'
-#' @param transform A numeric denoting the transform type
-#' @param features A list of features to include
-#' @param transform A numeric vector denoting the alphas to use
-#'
-#' @export create.feature
-model.function <- function (model, features, transforms, link) {
-  modelstring <- paste0(sapply(features[model], print.feature, transforms, alphas=T), collapse="+")
-  modelfun <- set_alphas(modelstring)
-  modelfun$formula <- paste0(link, "(", modelfun$formula, ")")
-  return(modelfun)
 }

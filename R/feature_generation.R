@@ -11,17 +11,17 @@ gen.multiplication <- function (features, marg.probs) {
 }
 
 # Generate a modification feature
-gen.modification <- function (features, marg.probs, transforms, trans.probs) {
+gen.modification <- function (features, marg.probs, trans.probs) {
   feat <- sample.int(n = length(features), size = 1, prob = marg.probs)
-  trans <- sample.int(n = length(transforms), size = 1, prob = trans.probs)
+  trans <- sample.int(n = length(trans.probs), size = 1, prob = trans.probs)
   create.feature(trans, features[feat])
 }
 
 # Generate a projection feature
-gen.projection <- function (features, marg.probs, transforms, trans.probs, max.width) {
+gen.projection <- function (features, marg.probs, trans.probs, max.width) {
   feat.count <- sample.int(n = (min(max.width, (length(features)))-1), size = 1) + 1 # TODO: Should be a specific distribution?
   feats <- sample.int(n = length(features), size = feat.count, prob = marg.probs)
-  trans <- sample.int(n = length(transforms), size = 1, prob = trans.probs)
+  trans <- sample.int(n = length(trans.probs), size = 1, prob = trans.probs)
   # TODO: Generate alphas properly using various methods
   alphas <- rep(1, length(feats)+1)
   create.feature(trans, features[feats], alphas)
@@ -40,20 +40,20 @@ gen.feature <- function (features, marg.probs, data, loglik.alpha, transforms, p
   while (!feat.ok && tries < 50) {
     feat.type <- sample.int(n = 4, size = 1, prob = probs$gen)
     if (feat.type == 1) feat <- gen.multiplication(features, marg.probs)
-    if (feat.type == 2) feat <- gen.modification(features, marg.probs, transforms, probs$trans)
-    if (feat.type == 3) feat <- gen.projection(features, marg.probs, transforms, probs$trans, params$L)
+    if (feat.type == 2) feat <- gen.modification(features, marg.probs, probs$trans)
+    if (feat.type == 3) feat <- gen.projection(features, marg.probs, probs$trans, params$L)
     if (feat.type == 4) feat <- gen.new(features, F.0.size)
     # Check that the feature is not too wide or deep
     if (!(depth.feature(feat) > params$D || width.feature(feat) > params$L)) {
       # Generate alphas using the strategy chosen
       if (params$alpha > 0) {
-        feat <- gen.alphas(params$alpha, feat, data, transforms, loglik.alpha)
+        feat <- gen.alphas(params$alpha, feat, data, loglik.alpha)
       }
       if (!is.null(feat)) {
         # Check for linear dependence of new the feature
         if (length(features) == F.0.size) feats <- list()
         else feats <- features[(F.0.size+1):length(features)]
-        if (!check.collinearity(feat, feats, transforms, F.0.size)) feat.ok <- T
+        if (!check.collinearity(feat, feats, F.0.size)) feat.ok <- T
       }
     }
     tries <- tries + 1
@@ -64,19 +64,19 @@ gen.feature <- function (features, marg.probs, data, loglik.alpha, transforms, p
     print("No feature could be generated, population shrinking.")
     return(NULL)
   } else {
-    print(paste("New feature:", print.feature(feat, transforms), "depth:", depth.feature(feat), "oc:", oc.feature(feat), "width:", width.feature(feat)))
+    print(paste("New feature:", print.feature(feat), "depth:", depth.feature(feat), "oc:", oc.feature(feat), "width:", width.feature(feat)))
     return(feat)
   }
 }
 
-check.collinearity <- function (proposal, features, transforms, F.0.size) {
+check.collinearity <- function (proposal, features, F.0.size) {
   # Add the proposal to the feature list for evaluation
   features[[length(features)+1]] <- proposal
   # Generate mock data to test with (avoiding too costly computations)
   mock.data <- matrix(c(runif((F.0.size*2), -100, 100), rep(1,F.0.size*2),
                         runif((F.0.size*2)*(F.0.size), -100, 100)), F.0.size*2, F.0.size+2)
   # Use the mock data to precalc the features
-  mock.data.precalc <- precalc.features(mock.data, features, transforms)
+  mock.data.precalc <- precalc.features(mock.data, features)
   # Fit a linear model with the mock data precalculated features
   linearmod <- lm(as.data.frame(mock.data.precalc[,-2]))
   # Check if all coefficients were possible to calculate

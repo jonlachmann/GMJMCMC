@@ -3,6 +3,16 @@
 # Created by: jonlachmann
 # Created on: 2021-02-11
 
+#' Set the transformations option for GMJMCMC,
+#' this is also done when running the algorithm, but this function allows for it to be done manually.
+#'
+#' @param transforms The vector of non-linear transformations
+#'
+#' @export set.transforms
+set.transforms <- function (transforms) {
+  options("gmjmcmc-transformations"=transforms)
+}
+
 # Function to verify inputs and help the user find if they did anything wrong
 verify.inputs <- function (data, loglik.pi, transforms, T, N, N.final, probs, params) {
   # Get information about the data
@@ -43,11 +53,11 @@ marginal.probs.renorm <- function (models, max_mlik=NULL) {
 }
 
 # Function for precalculating features for a new feature population
-precalc.features <- function (data, features, transforms) {
+precalc.features <- function (data, features) {
   precalc <- matrix(NA, nrow(data), length(features)+2)
   precalc[,1:2] <- data[,1:2]
   for (f in 1:length(features)) {
-    feature_string <- print.feature(features[[f]], transforms, dataset=T)
+    feature_string <- print.feature(features[[f]], dataset=T)
     precalc[,(f+2)] <- eval(parse(text=feature_string))
   }
   # Replace any -Inf and Inf values caused by under- or overflow
@@ -75,7 +85,7 @@ summary.gmjresult <- function (results, population="last") {
   else pops <- population
   feature_strings <- vector("list", length(results$populations[[pops]]))
   for (i in 1:length(feature_strings)) {
-    feature_strings[[i]] <- print.feature(results$populations[[pops]][[i]], transforms)
+    feature_strings[[i]] <- print.feature(results$populations[[pops]][[i]])
   }
   feature_importance <- marginal.probs.renorm(results$models[[pops]])
   return(list(features=feature_strings, importance=feature_importance))
@@ -86,7 +96,7 @@ print.model <- function (model, features, transforms) {
   # Create a list to store the features in
   model_print <- vector("list", sum(model$model))
   for (i in 1:length(model$model)) {
-    if (model$model[i]) model_print[[i]] <- print.feature(features[[i]], transforms)
+    if (model$model[i]) model_print[[i]] <- print.feature(features[[i]])
   }
   return(model_print)
 }
