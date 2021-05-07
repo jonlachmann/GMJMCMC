@@ -25,7 +25,7 @@ NULL
 #'
 #' @export gmjmcmc
 gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, probs, params, sub=F) {
-  # Verify that data is well-formed
+  # Verify that the data is well-formed
   data <- check.data(data)
   # Acceptance probability
   accept <- 0
@@ -139,7 +139,7 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N, N.final, p
 #' @return The updated population of features, that becomes S.t+1
 gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs, transforms, probs, params) {
   # Sample which features to keep based on marginal inclusion below probs$filter
-  feats.keep <- as.logical(rbinom(n = length(marg.probs), size = 1, prob = sqrt(pmin(marg.probs/probs$filter, 1-params$eps))))
+  feats.keep <- as.logical(rbinom(n = length(marg.probs), size = 1, prob = pmin(marg.probs/probs$filter, 1)))
 
   # Always keep original covariates if that setting is on
   if (params$keep.org) feats.keep[1:length(F.0)] <- T
@@ -155,9 +155,8 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs, transf
   feats.replace <- which(!feats.keep)
 
   # TODO: Let filtered features become part of new features - tuning parameter
-  # TODO: Avoid killing too many features
   # Create a list of inclusion probabilities
-  marg.probs.use <- sqrt(c(rep(params$eps, length(F.0)), pmin(pmax(marg.probs[feats.keep], params$eps), (1-params$eps))))
+  marg.probs.use <- c(rep(params$eps, length(F.0)), pmin(pmax(marg.probs[feats.keep], params$eps), (1-params$eps)))
 
   # Perform the replacements
   for (i in feats.replace) {

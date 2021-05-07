@@ -67,9 +67,10 @@ merge.results <- function (results, transforms, complex.measure=1, tol=0) {
     feats.map[1:3,equiv.feats] <- c(equiv.feats[equiv.simplest$width], equiv.feats[equiv.simplest$oc], equiv.feats[equiv.simplest$depth])
     feats.map[4,equiv.feats] <- sum(renorms[equiv.feats])
   }
-  fests.simplest.ids <- feats.map[complex.measure,unique(feats.map[complex.measure,])]
-  feats.simplest <- features[fests.simplest.ids]
-  importance <- feats.map[4,fests.simplest.ids]
+  feats.simplest.ids <- feats.map[complex.measure,unique(feats.map[complex.measure,])]
+  feats.simplest.ids <- feats.simplest.ids[order(feats.map[4,feats.simplest.ids])]
+  feats.simplest <- features[feats.simplest.ids]
+  importance <- feats.map[4,feats.simplest.ids]
   return(list(feats=feats.simplest, importance=importance))
 }
 
