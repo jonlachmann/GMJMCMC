@@ -102,7 +102,7 @@ update.alphas <- function (feature, alphas, recurse=FALSE) {
 #' @export
 print.feature <- function (feature, dataset=F, alphas=F) {
   transforms <- getOption("gmjmcmc-transformations")
-  if(is.null(transforms)) stop("Please set the gmjmcmc-transformations option to your non-linear functions.")
+  if(is.null(transforms)) stop("Please set the gmjmcmc-transformations option to your non-linear functions (see ?set.transforms).")
   fString <- ""
   feat <- feature[[length(feature)]]
   # This is a more complex feature

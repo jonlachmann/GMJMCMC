@@ -8,13 +8,12 @@
 #' and merge the results together, simplifying by merging equivalent features (having high correlation).
 #'
 #' @param results A list containing multiple results from GMJMCMC.
-#' @param transforms A list of the available nonlinear transformations for feature generation used in the runs.
 #' @param complex.measure The complex measure to use when finding the simplest equivalent feature,
 #' 1=total width, 2=operation count and 3=depth.
 #' @param tol The tolerance to use for the correlation when finding equivalent features, default is 0.
 #'
 #' @export merge.results
-merge.results <- function (results, transforms, complex.measure=1, tol=0) {
+merge.results <- function (results, complex.measure=1, tol=0) {
   res.count <- length(results)
 
   # Collect all feature populations and save their lengths to be able to map back to the original populations
