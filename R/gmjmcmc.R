@@ -156,26 +156,26 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs, transf
 
   # TODO: Let filtered features become part of new features - tuning parameter
   # Create a list of inclusion probabilities
-  marg.probs.use <- c(rep(params$eps, length(F.0)), pmin(pmax(marg.probs[feats.keep], params$eps), (1-params$eps)))
+  marg.probs.use <- c(rep(params$eps, length(F.0)), pmin(pmax(marg.probs, params$eps), (1-params$eps)))
 
   # Perform the replacements
   for (i in feats.replace) {
     prev.size <- length(S.t)
     print(paste0("Replacing feature ", print.feature(S.t[[i]], transforms)))
-    S.t[[i]] <- gen.feature(c(F.0, S.t[feats.keep]), marg.probs.use, data, loglik.alpha, transforms, probs, length(F.0), params)
+    S.t[[i]] <- gen.feature(c(F.0, S.t), marg.probs.use, data, loglik.alpha, transforms, probs, length(F.0), params)
     if (prev.size > length(S.t)) {
       print("Population shrinking, returning.")
       return(S.t)
     }
     feats.keep[i] <- T
-    marg.probs.use <- append(marg.probs.use, mean(marg.probs.use), length(F.0)+i-1)
+    marg.probs.use[i] <- mean(marg.probs.use)
   }
 
   # Add additional features if the population is not at max size
   if (length(S.t) < params$pop.max) {
     for (i in (length(S.t)+1):params$pop.max) {
       prev.size <- length(S.t)
-      S.t[[i]] <- gen.feature(c(F.0, S.t[feats.keep]), marg.probs.use, data, loglik.alpha, transforms, probs, length(F.0), params)
+      S.t[[i]] <- gen.feature(c(F.0, S.t), marg.probs.use, data, loglik.alpha, transforms, probs, length(F.0), params)
       if (prev.size == length(S.t)) {
         print("Population not growing, returning.")
         return(S.t)
