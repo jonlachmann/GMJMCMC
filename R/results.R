@@ -69,9 +69,10 @@ merge.results <- function (results, complex.measure=1, tol=0) {
   # Select the simplest features based on the specified complexity measure and sort them
   feats.simplest.ids <- feats.map[complex.measure,unique(feats.map[complex.measure,])]
   feats.simplest.ids <- feats.simplest.ids[order(feats.map[4,feats.simplest.ids])]
+  counts <- sapply(feats.simplest.ids, function(x) sum(feats.map[1,] == x))
   feats.simplest <- features[feats.simplest.ids]
   importance <- feats.map[4,feats.simplest.ids]
-  return(list(feats=feats.simplest, importance=importance))
+  return(list(feats=feats.simplest, importance=importance, counts=counts))
 }
 
 # Function for calculating the weights of different populations based on best mlik (other version not implemented yet).
