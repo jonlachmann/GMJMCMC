@@ -98,9 +98,8 @@ update.alphas <- function (feature, alphas, recurse=FALSE) {
 #' @param dataset Set the regular covariates as columns in a dataset
 #' @param alphas Print a "?" instead of actual alphas to prepare the output for alpha estimation
 #'
-#' @method print feature
 #' @export
-print.feature <- function (feature, dataset=F, alphas=F) {
+print.feature <- function (feature, dataset=F, alphas=F, labels=F) {
   transforms <- getOption("gmjmcmc-transformations")
   if(is.null(transforms)) stop("Please set the gmjmcmc-transformations option to your non-linear functions (see ?set.transforms).")
   fString <- ""
@@ -132,7 +131,7 @@ print.feature <- function (feature, dataset=F, alphas=F) {
           if (alphas) fString <- paste0(fString, "?*")
           else fString <- paste0(fString, feat[j,3], "*")
         }
-        fString <- paste0(fString, print.feature(feature[[feat[j,2]]], dataset, alphas), op)
+        fString <- paste0(fString, print.feature(feature[[feat[j,2]]], dataset, alphas, labels), op)
       }
     }
     fString <- paste0(fString, ")")
@@ -140,6 +139,7 @@ print.feature <- function (feature, dataset=F, alphas=F) {
   # This is a plain covariate
   else if (is.numeric(feat)) {
     if (dataset) fString <- paste0("data[,", feat+2, "]")
+    else if (labels[1] != F) fString <- labels[feat]
     else fString <- paste0("x", feat)
   } else stop("Invalid feature structure")
   return(fString)

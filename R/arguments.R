@@ -24,7 +24,7 @@ gen.probs.list <- function (transforms=F) {
                 random.kern=random.kern, mh=mh)
 
   ## Feature generation probabilities
-  if (transforms != F) {
+  if (transforms[1] != F) {
     transcount <- length(transforms)
     filter <- 0.6                           # filtration threshold
     gen <- rep(1/4, 4)                      # probability for different feature generation methods
@@ -81,6 +81,7 @@ gen.params.list <- function (data, G=F) {
                         eps = 0.05)                           # Inclusion probability limit for feature generation
 
     params$feat <- feat_params
+    params$rescale.large <- F
 
   }
 

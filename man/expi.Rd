@@ -10,7 +10,7 @@ expi(x)
 \item{x}{The vector of values}
 }
 \value{
-e^(abs(x))
+e^(-abs(x))
 }
 \description{
 Exponential function of absolute values

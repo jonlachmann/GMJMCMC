@@ -41,11 +41,11 @@ marginal.probs <- function (models) {
 }
 
 # Function for calculating feature importance through renormalized model estimates
-marginal.probs.renorm <- function (models, max_mlik=NULL) {
+marginal.probs.renorm <- function (models) {
   model.size <- length(models[[1]]$model)
   models.matrix <- matrix(unlist(models), ncol=model.size+3, byrow=T)
   models.matrix <- models.matrix[(!duplicated(models.matrix[,2:(model.size+1)], dim=1, fromLast=T)),]
-  if(is.null(max_mlik)) max_mlik <- max(models.matrix[,(model.size+2)])
+  max_mlik <- max(models.matrix[,(model.size+2)])
   crit.sum <- sum(exp(models.matrix[,(model.size+2)]-max_mlik))
   probs <- matrix(NA,1,model.size)
   for (i in 2:(model.size+1)) probs[i-1] <- sum(exp(models.matrix[as.logical(models.matrix[,i]),(model.size+2)]-max_mlik))/crit.sum
@@ -107,11 +107,11 @@ print.model <- function (model, features, transforms) {
 check.data <- function (data) {
   if (!is.matrix(data)) {
     data <- as.matrix(data)
-    print("Data coerced to matrix type")
+    cat("Data coerced to matrix type.\n")
   }
   if (sum(data[,2] == 1) != nrow(data)) {
     data <- cbind(data[,1],1,data[,-1])
-    print("Intercept added to data")
+    cat("Intercept added to data.\n")
   }
   return(data)
 }
@@ -123,4 +123,15 @@ data.dims <- function (data) {
     dims[2] <- dims[2] + 1
   }
   return(dims)
+}
+
+# Function to extract column names if they are well formed
+get.labels <- function (data) {
+  labels <- colnames(data)[-(1:2)]
+  if (is.null(labels)) return(F)
+  if (sum(is.na(labels)) != 0) {
+    cat("NA labels present, using x#\n")
+    return(F)
+  }
+  return(labels)
 }

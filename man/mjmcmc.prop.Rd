@@ -4,16 +4,7 @@
 \alias{mjmcmc.prop}
 \title{Subalgorithm for generating a proposal and acceptance probability in (G)MJMCMC}
 \usage{
-mjmcmc.prop(
-  data,
-  loglik.pi,
-  model.cur,
-  features,
-  complex,
-  probs,
-  params,
-  mliks = NULL
-)
+mjmcmc.prop(data, loglik.pi, model.cur, complex, probs, params, mliks = NULL)
 }
 \arguments{
 \item{data}{The data to use in the algorithm}
@@ -21,8 +12,6 @@ mjmcmc.prop(
 \item{loglik.pi}{The the (log) density to explore}
 
 \item{model.cur}{The current model to make the proposal respective to}
-
-\item{features}{The features available}
 
 \item{probs}{A list of the various probability vectors to use}
 

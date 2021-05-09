@@ -60,13 +60,8 @@ gen.feature <- function (features, marg.probs, data, loglik.alpha, transforms, p
     params$eps <- min(params$eps+0.01, 0.5)
     marg.probs <- pmin(pmax(marg.probs, params$eps), (1-params$eps))
   }
-  if (!feat.ok) {
-    print("No feature could be generated, population shrinking.")
-    return(NULL)
-  } else {
-    print(paste("New feature:", print.feature(feat), "depth:", depth.feature(feat), "oc:", oc.feature(feat), "width:", width.feature(feat)))
-    return(feat)
-  }
+  if (!feat.ok) return(NULL)
+  else return(feat)
 }
 
 check.collinearity <- function (proposal, features, F.0.size) {

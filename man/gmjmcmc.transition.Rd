@@ -11,6 +11,7 @@ gmjmcmc.transition(
   loglik.alpha,
   marg.probs,
   transforms,
+  labels,
   probs,
   params
 )
@@ -27,6 +28,8 @@ gmjmcmc.transition(
 \item{marg.probs}{The marginal inclusion probabilities of the current features}
 
 \item{transforms}{The nonlinear transformations available}
+
+\item{labels}{Variable labels for printing}
 
 \item{probs}{A list of the various probability vectors to use}
 

@@ -13,37 +13,38 @@
 #' @param tol The tolerance to use for the correlation when finding equivalent features, default is 0.
 #'
 #' @export merge.results
-merge.results <- function (results, complex.measure=1, tol=0) {
+merge.results <- function (results, populations="last", complex.measure=1, tol=0) {
   res.count <- length(results)
 
+  # Select populations to use
+  res.lengths <- vector("list")
+  for (i in 1:res.count) res.lengths[[i]] <- length(results[[i]]$populations)
+  if (populations=="last") pops.use <- res.lengths
+  else if (populations=="all") pops.use <- lapply(res.lengths, function(x) 1:x)
+
   # Collect all feature populations and save their lengths to be able to map back to the original populations
-  populations <- vector("list", res.count)
-  pop.lengths <- matrix(NA, res.count, 1)
+  pop.lengths <- vector("list")
+  features <- vector("list")
   for (i in 1:res.count) {
-    populations[[i]] <- results[[i]]$populations[[length(results[[i]]$populations)]]
-    pop.lengths[i] <- length(populations[[i]])
+    for (pop in pops.use[[i]]) {
+      pop.lengths <- append(pop.lengths, length(results[[i]]$populations[[pop]]))
+      features <- append(features, results[[i]]$populations[[pop]])
+    }
   }
-  features <- unlist(populations, recursive = F)
   feat.count <- length(features)
 
   # Get complexity for all features
   complex <- complex.features(features)
 
   # Get the population weigths to be able to weight the features
-  pop.weights <- population.weigths(results)
+  pop.weights <- population.weigths(results, pops.use)
 
-  # Get the max mlik to use for renormalized estimates
-  max.crits <- matrix(NA, res.count)
-  for (i in 1:res.count) max.crits[i] <- results[[i]]$best
-  max.crit <- max(max.crits)
-
-  # Get all the renormalized estimates, renormalizing using the best found mlik
-  renorms <- matrix(NA, feat.count, 1)
-  start <- 1
+  # Get all the renormalized estimates, weighted by population
+  renorms <- vector("list")
   for (i in 1:res.count) {
-    renorms[start:(start+pop.lengths[i]-1)] <- pop.weights[i]*marginal.probs.renorm(results[[i]]$models[[length(results[[i]]$models)]], max.crit)
-    start <- start+pop.lengths[i]
+    for (pop in pops.use[[i]]) renorms <- append(renorms, pop.weights[i]*results[[i]]$marg.probs[[pop]])
   }
+  renorms <- unlist(renorms)
 
   ## Detect equivalent features
   # Generate mock data to compare features with
@@ -71,26 +72,19 @@ merge.results <- function (results, complex.measure=1, tol=0) {
   counts <- sapply(feats.simplest.ids, function(x) sum(feats.map[1,] == x))
   feats.simplest <- features[feats.simplest.ids]
   importance <- feats.map[4,feats.simplest.ids]
-  return(list(feats=feats.simplest, importance=importance, counts=counts))
+  merged <- list(features=feats.simplest, marg.probs=importance, counts=counts)
+  attr(merged, "class") <- "gmjmcmcresult"
+  return(merged)
 }
 
-# Function for calculating the weights of different populations based on best mlik (other version not implemented yet).
-population.weigths <- function (results, simple=T) {
-  pop.count <- length(results)
-  modmats <- vector("list", pop.count)
-  max.crits <- matrix(NA, pop.count)
-  if (simple) {
-    for (i in 1:pop.count) max.crits[i] <- results[[i]]$best
-    return(exp(max.crits)/sum(exp(max.crits)))
-  } else {
-    for (i in 1:pop.count) {
-      model.size <- length(results[[i]]$models[[1]]$model)
-      models <- results[[i]]$models[[length(results[[i]]$models)]]
-      modmats[[i]] <- matrix(unlist(models), ncol=model.size+3, byrow=T)
-      max.crits[i] <- max(modmats[[i]][,(model.size+2)])
-    }
+# Function for calculating the weights of different populations based on best mlik
+population.weigths <- function (results, pops.use) {
+  max.crits <- vector("list")
+  for (i in 1:length(results)) {
+    for (pop in pops.use[[i]]) max.crits <- append(max.crits, results[[i]]$best.margs[[pop]])
   }
-  return(max.crits)
+  max.crits <- unlist(max.crits)
+  return(exp(max.crits)/sum(exp(max.crits)))
 }
 
 #' Function to generate a function string for a model consisting of features
@@ -112,7 +106,7 @@ model.string <- function (model, features, link) {
 #' @param results The results to use
 #' @param pop The population to print for, defaults to last
 #'
-#' @export summary.gmjmcmcresult
+#' @export
 summary.gmjmcmcresult <- function (results, pop="last") {
   if (pop=="last") pop <- length(results$models)
   # Get features as strings for printing
@@ -126,24 +120,33 @@ summary.gmjmcmcresult <- function (results, pop="last") {
   cat("\nBest marginal likelihood: ", results$best, "\n")
 }
 
-#' Function to plot the results
+#' Function to plot the results, works both for results from gmjmcmc and
+#' merged results from merge.results
 #'
 #' @param results The results to use
 #' @param count The number of features to plot, defaults to all
 #' @param pop The population to plot, defaults to last
 #'
-#' @export plot.gmjmcmcresult
+#' @export
 plot.gmjmcmcresult <- function (results, count="all", pop="last") {
-  if (pop=="last") pop <- length(results$models)
-  if (count=="all") count <- length(results$populations[[pop]])
-  # Get features as strings for printing
-  feats.strings <- sapply(results$populations[[pop]], print)
-  # Get marginal posterior of features
-  marg.probs <- marginal.probs.renorm(results$models[[pop]])
-  # Print the distribution
+  if (pop=="last") pop <- length(results$populations)
+
+  ## Get features as strings for printing and marginal posteriors
+  # If this is a merged results the structure is one way
+  if (is.null(results$populations)) {
+    feats.strings <- sapply(results$features, print)
+    marg.probs <- results$marg.probs
+  } # If this is a result that is not merged, it is another way
+  else {
+    feats.strings <- sapply(results$populations[[pop]], print)
+    marg.probs <- results$marg.probs[[pop]]
+  }
+
+  # Plot the distribution
   feats.strings <- feats.strings[order(marg.probs)]
   marg.probs <- sort(marg.probs)
-  tot <- length(results$populations[[pop]])
-  y <- barplot(marg.probs[(tot-count):tot], horiz=T, xlab="Marginal probability", ylab="Feature")
-  text((max(marg.probs[(tot-count):tot])/2), y, feats.strings[(tot-count):tot])
+  tot <- length(marg.probs)
+  if (count=="all") count <- tot
+  y <- barplot(marg.probs[(tot-count+1):tot], horiz=T, xlab="Marginal probability", ylab="Feature")
+  text((max(marg.probs[(tot-count+1):tot])/2), y, feats.strings[(tot-count+1):tot])
 }

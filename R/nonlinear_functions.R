@@ -30,7 +30,7 @@ cosi <- function(x) cos(x/180*pi)
 #' Exponential function of absolute values
 #'
 #' @param x The vector of values
-#' @return e^(abs(x))
+#' @return e^(-abs(x))
 #'
 #' @export expi
 expi <- function(x) exp(-abs(x))
@@ -58,6 +58,22 @@ sqroot <- function(x) abs(x)^(1/2)
 #'
 #' @export troot
 troot <- function(x) abs(x)^(1/3)
+
+#' To the 2.3  power function
+#'
+#' @param x The vector of values
+#' @return x^2.3
+#'
+#' @export troot
+to23 <- function(x) abs(x)^(2.3)
+
+#' To the 7/2  power function
+#'
+#' @param x The vector of values
+#' @return x^(7/2)
+#'
+#' @export troot
+to72 <- function(x) abs(x)^(7/2)
 
 #' Gaussian function
 #'

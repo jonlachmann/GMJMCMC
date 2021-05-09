@@ -10,7 +10,7 @@ gmjmcmc(
   loglik.alpha,
   transforms,
   T,
-  N,
+  N.init,
   N.final,
   probs,
   params,
@@ -30,9 +30,9 @@ and the rest of the columns should be the independent variables.}
 
 \item{T}{The number of population iterations}
 
-\item{N}{The number of iterations per population (total iterations = (T-1)*N+N.final)}
+\item{N.init}{The number of iterations per population (total iterations = (T-1)*N.init+N.final)}
 
-\item{N.final}{The number of iterations for the final population (total iterations = (T-1)*N+N.final)}
+\item{N.final}{The number of iterations for the final population (total iterations = (T-1)*N.init+N.final)}
 
 \item{probs}{A list of the various probability vectors to use}
 

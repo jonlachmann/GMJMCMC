@@ -41,7 +41,7 @@ mjmcmc <- function (data, loglik.pi, N, probs, params, sub=F) {
   progress <- 0
   for (i in 1:N) {
     if (N > 40 && i %% floor(N/40) == 0) progress <- print.progressbar(progress, 40)
-    proposal <- mjmcmc.prop(data, loglik.pi, model.cur, S, complex, probs, params, mliks)
+    proposal <- mjmcmc.prop(data, loglik.pi, model.cur, complex, probs, params, mliks)
     if (proposal$crit > best.crit) {
       best.crit <- proposal$crit
       cat(paste("\rNew best crit:", best.crit, "\n"))
@@ -95,11 +95,10 @@ mjmcmc <- function (data, loglik.pi, N, probs, params, sub=F) {
 #' @param data The data to use in the algorithm
 #' @param loglik.pi The the (log) density to explore
 #' @param model.cur The current model to make the proposal respective to
-#' @param features The features available
 #' @param probs A list of the various probability vectors to use
 #' @param params A list of the various parameters for all the parts of the algorithm
 #'
-mjmcmc.prop <- function (data, loglik.pi, model.cur, features, complex, probs, params, mliks=NULL) {
+mjmcmc.prop <- function (data, loglik.pi, model.cur, complex, probs, params, mliks=NULL) {
   l <- runif(1)
   if (l < probs$large) {
     ### Large jump
