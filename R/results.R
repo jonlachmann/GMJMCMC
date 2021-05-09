@@ -85,7 +85,8 @@ population.weigths <- function (results, pops.use) {
     for (pop in pops.use[[i]]) max.crits <- append(max.crits, results[[i]]$best.margs[[pop]])
   }
   max.crits <- unlist(max.crits)
-  return(exp(max.crits)/sum(exp(max.crits)))
+  max.crit <- max(max.crits)
+  return(exp(max.crits-max.crit)/sum(exp(max.crits-max.crit)))
 }
 
 #' Function to generate a function string for a model consisting of features
