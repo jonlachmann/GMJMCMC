@@ -138,13 +138,13 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N.init, N.fin
   accept <- lapply(accept, function (x) x / N.init)
   accept[[T]] <- accept[[T]]*N.init/N.final
   # Return formatted results
-  results <- list(models=models,          # All models per population
-                  populations=S,          # All features per population
-                  marg.probs=marg.probs,  # Marginal feature probabilities per population
-                  best.margs=best.margs,  # Best marginal model probability per population
-                  accept=accept,          # Acceptance rate per population
-                  accept.tot=accept.tot,  # Overall acceptance rate
-                  best=best.crit)         # Best marginal model probability throughout the run
+  results <- list(models=models,                # All models per population
+                  populations=S,                # All features per population
+                  marg.probs=marg.probs,        # Marginal feature probabilities per population
+                  best.margs=best.margs,        # Best marginal model probability per population
+                  accept=accept,                # Acceptance rate per population
+                  accept.tot=accept.tot,        # Overall acceptance rate
+                  best=max(unlist(best.margs))) # Best marginal model probability throughout the run
   attr(results, "class") <- "gmjmcmcresult"
   return(results)
 }

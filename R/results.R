@@ -21,6 +21,7 @@ merge.results <- function (results, populations="last", complex.measure=1, tol=0
   for (i in 1:res.count) res.lengths[[i]] <- length(results[[i]]$populations)
   if (populations=="last") pops.use <- res.lengths
   else if (populations=="all") pops.use <- lapply(res.lengths, function(x) 1:x)
+  else if (populations=="best") pops.use <- lapply(1:res.count, function(x) which.max(unlist(results[[x]]$best.marg)))
 
   # Collect all feature populations and save their lengths to be able to map back to the original populations
   pop.lengths <- vector("list")
@@ -135,6 +136,7 @@ plot.gmjmcmcresult <- function (results, count="all", pop="last") {
   # If this is a merged results the structure is one way
   if (is.null(results$populations)) {
     feats.strings <- sapply(results$features, print)
+    feats.strings <- paste0(feats.strings, ", ", results$count)
     marg.probs <- results$marg.probs
   } # If this is a result that is not merged, it is another way
   else {
