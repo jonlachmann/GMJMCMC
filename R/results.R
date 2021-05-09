@@ -23,29 +23,29 @@ merge.results <- function (results, populations="last", complex.measure=1, tol=0
   else if (populations=="all") pops.use <- lapply(res.lengths, function(x) 1:x)
   else if (populations=="best") pops.use <- lapply(1:res.count, function(x) which.max(unlist(results[[x]]$best.marg)))
 
-  # Collect all feature populations and save their lengths to be able to map back to the original populations
-  pop.lengths <- vector("list")
+  # Get the population weigths to be able to weight the features
+  pop.weights <- population.weigths(results, pops.use)
+
+  # Collect all features and their renormalized weighted values
   features <- vector("list")
+  renorms <- vector("list")
   for (i in 1:res.count) {
     for (pop in pops.use[[i]]) {
-      pop.lengths <- append(pop.lengths, length(results[[i]]$populations[[pop]]))
       features <- append(features, results[[i]]$populations[[pop]])
+      renorms <- append(renorms, pop.weights[i]*results[[i]]$marg.probs[[pop]])
     }
+  }
+  renorms <- unlist(renorms)
+  na.feats <- which(is.na(renorms))
+  if (length(na.feats) != 0) {
+    cat("Underflow occurred,", length(na.feats), "features removed.\n")
+    renorms <- renorms[-na.feats]
+    features <- features[-na.feats]
   }
   feat.count <- length(features)
 
   # Get complexity for all features
   complex <- complex.features(features)
-
-  # Get the population weigths to be able to weight the features
-  pop.weights <- population.weigths(results, pops.use)
-
-  # Get all the renormalized estimates, weighted by population
-  renorms <- vector("list")
-  for (i in 1:res.count) {
-    for (pop in pops.use[[i]]) renorms <- append(renorms, pop.weights[i]*results[[i]]$marg.probs[[pop]])
-  }
-  renorms <- unlist(renorms)
 
   ## Detect equivalent features
   # Generate mock data to compare features with
