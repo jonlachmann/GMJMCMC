@@ -118,7 +118,7 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N.init, N.fin
     # Add the models visited in the current population to the model list
     models[[t]] <- population.models
     # Calculate marginal likelihoods for current features
-    marg.probs[[t]] <- marginal.probs.renorm(population.models)
+    marg.probs[[t]] <- marginal.probs.renorm(c(population.models, population.lo.models))
     # Store best marginal model probability for current population
     best.margs[[t]] <- best.crit
     # Print the marginal posterior distribution of the features after MJMCMC
