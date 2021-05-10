@@ -128,7 +128,7 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N.init, N.fin
     if (params$rescale.large) prev.large <- params$large
     # Generate a new population of features for the next iteration (if this is not the last)
     if (t != T) {
-      S[[t+1]] <- gmjmcmc.transition(S[[t]], F.0, data, loglik.alpha, marg.probs[[t]], transforms, labels, probs, params$feat)
+      S[[t+1]] <- gmjmcmc.transition(S[[t]], F.0, data, loglik.alpha, marg.probs[[1]], marg.probs[[t]], transforms, labels, probs, params$feat)
       complex <- complex.features(S[[t+1]])
       if (params$rescale.large) params$large <- lapply(prev.large, function(x) x*length(S[[t+1]])/length(S[[t]]))
     }
@@ -163,12 +163,20 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N.init, N.fin
 #' @param params A list of the various parameters for all the parts of the algorithm
 #'
 #' @return The updated population of features, that becomes S.t+1
-gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs, transforms, labels, probs, params) {
+gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs.F.0, marg.probs, transforms, labels, probs, params) {
   # Sample which features to keep based on marginal inclusion below probs$filter
   feats.keep <- as.logical(rbinom(n = length(marg.probs), size = 1, prob = pmin(marg.probs/probs$filter, 1)))
 
   # Always keep original covariates if that setting is on
-  if (params$keep.org) feats.keep[1:length(F.0)] <- T
+  if (params$keep.org) {
+    if (params$prel.filter > 0) {
+      # Do preliminary filtering if turned on
+      feats.keep[(1:length(F.0))[marg.probs.F.0 > params$prel.filter]] <- T
+      #removed.count <- sum(marg.probs.F.0 <= params$prel.filter)
+      #cat("Preliminary filtering removed",removed.count,"features.")
+    } # Keep all if no preliminary filtering
+    else feats.keep[1:length(F.0)] <- T
+  }
 
   # Avoid removing too many features
   if (mean(feats.keep) < params$keep.min) {
