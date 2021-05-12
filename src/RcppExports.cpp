@@ -16,9 +16,24 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// vec_in_mat
+int vec_in_mat(NumericMatrix& mat, NumericVector& vec, int firstCol, int lastCol);
+RcppExport SEXP _GMJMCMC_vec_in_mat(SEXP matSEXP, SEXP vecSEXP, SEXP firstColSEXP, SEXP lastColSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix& >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type vec(vecSEXP);
+    Rcpp::traits::input_parameter< int >::type firstCol(firstColSEXP);
+    Rcpp::traits::input_parameter< int >::type lastCol(lastColSEXP);
+    rcpp_result_gen = Rcpp::wrap(vec_in_mat(mat, vec, firstCol, lastCol));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_GMJMCMC_set_alphas", (DL_FUNC) &_GMJMCMC_set_alphas, 1},
+    {"_GMJMCMC_vec_in_mat", (DL_FUNC) &_GMJMCMC_vec_in_mat, 4},
     {NULL, NULL, 0}
 };
 

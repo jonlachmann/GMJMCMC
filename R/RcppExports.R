@@ -5,3 +5,7 @@ set_alphas <- function(formula) {
     .Call('_GMJMCMC_set_alphas', PACKAGE = 'GMJMCMC', formula)
 }
 
+vec_in_mat <- function(mat, vec, firstCol = 0L, lastCol = 0L) {
+    .Call('_GMJMCMC_vec_in_mat', PACKAGE = 'GMJMCMC', mat, vec, firstCol, lastCol)
+}
+

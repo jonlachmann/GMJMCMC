@@ -4,7 +4,15 @@
 \alias{mjmcmc.prop}
 \title{Subalgorithm for generating a proposal and acceptance probability in (G)MJMCMC}
 \usage{
-mjmcmc.prop(data, loglik.pi, model.cur, complex, probs, params, mliks = NULL)
+mjmcmc.prop(
+  data,
+  loglik.pi,
+  model.cur,
+  complex,
+  probs,
+  params,
+  visited.models = NULL
+)
 }
 \arguments{
 \item{data}{The data to use in the algorithm}
@@ -16,6 +24,8 @@ mjmcmc.prop(data, loglik.pi, model.cur, complex, probs, params, mliks = NULL)
 \item{probs}{A list of the various probability vectors to use}
 
 \item{params}{A list of the various parameters for all the parts of the algorithm}
+
+\item{visited.models}{A list of the previously visited models to use when subsampling and avoiding recalculation}
 }
 \description{
 Subalgorithm for generating a proposal and acceptance probability in (G)MJMCMC

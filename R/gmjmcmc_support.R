@@ -71,7 +71,10 @@ loglik.pre <- function (loglik.pi, model, complex, data, params) {
   # Get the complexity measures for just this model
   complex <- list(width=complex$width[model], oc=complex$oc[model], depth=complex$depth[model])
   # Call the model estimator with the data and the model, note that we add the intercept to every model
-  return(loglik.pi(data[,1], data[,-1], c(T,model), complex, params))
+  crit <- loglik.pi(data[,1], data[,-1], c(T,model), complex, params)
+  # Check that the critical value is acceptable
+  if (!is.numeric(crit) || is.nan(crit)) crit <- -.Machine$double.xmax
+  return(crit)
 }
 
 #' Summarize results from GMJMCMC

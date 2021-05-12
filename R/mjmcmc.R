@@ -33,15 +33,14 @@ mjmcmc <- function (data, loglik.pi, N, probs, params, sub=F) {
   models <- vector("list", N)
   # Initialize a vector to contain local opt visited models
   lo.models <- vector("list", 0)
-  # If we are running a subsampling strategy, keep a list of best mliks for all models
-  if (sub) mliks <- vector("list", (2^(length(S))))
-  else mliks <- NULL
+  # Initialize list for keeping track of unique visited models
+  visited.models <- list(models=matrix(model.cur$model, 1, length(S)), crit=model.cur$crit, count=1)
 
   cat("\nMJMCMC begin.\n")
   progress <- 0
   for (i in 1:N) {
     if (N > 40 && i %% floor(N/40) == 0) progress <- print.progressbar(progress, 40)
-    proposal <- mjmcmc.prop(data, loglik.pi, model.cur, complex, probs, params, mliks)
+    proposal <- mjmcmc.prop(data, loglik.pi, model.cur, complex, probs, params, visited.models)
     if (proposal$crit > best.crit) {
       best.crit <- proposal$crit
       cat(paste("\rNew best crit:", best.crit, "\n"))
@@ -51,29 +50,31 @@ mjmcmc <- function (data, loglik.pi, N, probs, params, sub=F) {
     if (!is.null(proposal$models)) {
       lo.models <- c(lo.models, proposal$models)
       # If we are doing subsampling and want to update best mliks
-      if (!is.null(mliks)) {
+      if (sub) {
         for (mod in 1:length(proposal$models)) {
-          model_idx <- bitsToInt(proposal$models[[mod]]$model)
-          # This is a model we have seen before
-          if (!is.null(mliks[[model_idx]]) && mliks[[model_idx]] < proposal$models[[mod]]$crit) {
-            # This is a model which has worse mlik in the previous seen
-            mliks[[model_idx]] <- proposal$models[[mod]]$crit
-          } else if (is.null(mliks[[model_idx]])) {
-            mliks[[model_idx]] <- proposal$models[[mod]]$crit
-          }
+          # Check if we have seen this model before
+          mod.idx <- vec_in_mat(visited.models$models[1:visited.models$count,,drop=F], proposal$models[[mod]]$model)
+          if (mod.idx == 0) {
+            # If we have not seen the model before, add it
+            visited.models$count <- visited.models$count + 1
+            visited.models$crit <- c(visited.models$crit, proposal$models[[mod]]$crit)
+            visited.models$models <- rbind(visited.models$models, proposal$models[[mod]]$model)
+          } # This is a model seen before, set the best of the values available
+          else visited.models$crit[mod.idx] <- max(proposal$models[[mod]]$crit, visited.models$crit[mod.idx])
         }
       }
       proposal$models <- NULL
     }
-    if (!is.null(mliks)) {
-      model_idx <- bitsToInt(proposal$model)
-      # This is a model we have seen before
-      if (!is.null(mliks[[model_idx]]) && mliks[[model_idx]] < proposal$crit) {
-        # This is a model which has worse mlik in the previous seen
-        mliks[[model_idx]] <- proposal$crit
-      } else if (is.null(mliks[[model_idx]])) {
-        mliks[[model_idx]] <- proposal$crit
-      }
+    if (sub) {
+      # Check if we have seen this model before
+      mod.idx <- vec_in_mat(visited.models$models[1:visited.models$count,,drop=F], proposal$model)
+      if (mod.idx == 0) {
+        # If we have not seen the model before, add it
+        visited.models$count <- visited.models$count + 1
+        visited.models$crit <- c(visited.models$crit, proposal$crit)
+        visited.models$models <- rbind(visited.models$models, proposal$model)
+      } # This is a model seen before, set the best of the values available
+      else visited.models$crit[mod.idx] <- max (proposal$crit, visited.models$crit[mod.idx])
     }
 
     if (log(runif(1)) <= proposal$alpha) {
@@ -97,8 +98,9 @@ mjmcmc <- function (data, loglik.pi, N, probs, params, sub=F) {
 #' @param model.cur The current model to make the proposal respective to
 #' @param probs A list of the various probability vectors to use
 #' @param params A list of the various parameters for all the parts of the algorithm
+#' @param visited.models A list of the previously visited models to use when subsampling and avoiding recalculation
 #'
-mjmcmc.prop <- function (data, loglik.pi, model.cur, complex, probs, params, mliks=NULL) {
+mjmcmc.prop <- function (data, loglik.pi, model.cur, complex, probs, params, visited.models=NULL) {
   l <- runif(1)
   if (l < probs$large) {
     ### Large jump
@@ -156,13 +158,9 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, complex, probs, params, mli
   # TODO: update that list if our estimate is better, otherwise update our estimate.
   # TODO: Save all models visited by local optim, and update the best mliks if we see one during local optim.
   # If we are running with subsampling, check the list for a better mlik
-  if (!is.null(mliks)) {
-    model_idx <- bitsToInt(proposal$model)
-    # This is a model we have not seen before
-    if (!is.null(mliks[[model_idx]]) && mliks[[model_idx]] > proposal$crit) {
-      # This is a model which has better mlik in the previous seen
-      proposal$crit <- mliks[[model_idx]]
-    }
+  if (!is.null(visited.models)) {
+    mod.idx <- vec_in_mat(visited.models$models[1:visited.models$count,,drop=F], proposal$model)
+    if (mod.idx != 0) proposal$crit <- max (proposal$crit, visited.models$crit[mod.idx])
   }
 
   # Calculate acceptance probability for proposed model

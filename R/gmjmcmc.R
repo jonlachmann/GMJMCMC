@@ -64,15 +64,14 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N.init, N.fin
     population.models <- vector("list", N)
     # Initialize a vector to contain local opt visited models
     population.lo.models <- vector("list", 0)
-    # If we are running a subsampling strategy, keep a list of best mliks for all models
-    if (sub) mliks <- vector("list", (2^(length(S[[t]]))))
-    else mliks <- NULL
+    # Initialize list for keeping track of unique visited models
+    visited.models <- list(models=matrix(model.cur$model, 1, length(S[[t]])), crit=model.cur$crit, count=1)
 
     cat(paste("Population", t, "begin."))
     progress <- 0
     for (i in 1:N) {
       if (N > 40 && i %% floor(N/40) == 0) progress <- print.progressbar(progress, 40)
-      proposal <- mjmcmc.prop(data.t, loglik.pi, model.cur, complex, probs, params, mliks)
+      proposal <- mjmcmc.prop(data.t, loglik.pi, model.cur, complex, probs, params, visited.models)
       if (proposal$crit > best.crit) {
         best.crit <- proposal$crit
         cat(paste("\rNew best crit:", best.crit, "\n"))
@@ -82,29 +81,38 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N.init, N.fin
       if (!is.null(proposal$models)) {
         population.lo.models <- c(population.lo.models, proposal$models)
         # If we are doing subsampling and want to update best mliks
-        if (!is.null(mliks)) {
+        if (sub) {
           for (mod in 1:length(proposal$models)) {
-            model_idx <- bitsToInt(proposal$models[[mod]]$model)
-            # This is a model we have seen before
-            if (!is.null(mliks[[model_idx]]) && mliks[[model_idx]] < proposal$models[[mod]]$crit) {
-              # This is a model which has worse mlik in the previous seen
-              mliks[[model_idx]] <- proposal$models[[mod]]$crit
-            } else if (is.null(mliks[[model_idx]])) {
-              mliks[[model_idx]] <- proposal$models[[mod]]$crit
+            # Check if we have seen this model before
+            mod.idx <- vec_in_mat(visited.models$models[1:visited.models$count,,drop=F], proposal$models[[mod]]$model)
+            if (mod.idx == 0) {
+              # If we have not seen the model before, add it
+              #print("New model found")
+              #print(proposal$models[[mod]]$model)
+              visited.models$count <- visited.models$count + 1
+              visited.models$crit <- c(visited.models$crit, proposal$models[[mod]]$crit)
+              visited.models$models <- rbind(visited.models$models, proposal$models[[mod]]$model)
+            } # This is a model seen before, set the best of the values available
+            else {
+              visited.models$crit[mod.idx] <- max(proposal$models[[mod]]$crit, visited.models$crit[mod.idx])
+              #print("Model found estimated previously")
+              #print(mod.idx)
+              #print(proposal$models[[mod]]$model)
             }
           }
         }
         proposal$models <- NULL
       }
-      if (!is.null(mliks)) {
-        model_idx <- bitsToInt(proposal$model)
-        # This is a model we have seen before
-        if (!is.null(mliks[[model_idx]]) && mliks[[model_idx]] < proposal$crit) {
-          # This is a model which has worse mlik in the previous seen
-          mliks[[model_idx]] <- proposal$crit
-        } else if (is.null(mliks[[model_idx]])) {
-          mliks[[model_idx]] <- proposal$crit
-        }
+      if (sub) {
+        # Check if we have seen this model before
+        mod.idx <- vec_in_mat(visited.models$models[1:visited.models$count,,drop=F], proposal$model)
+        if (mod.idx == 0) {
+          # If we have not seen the model before, add it
+          visited.models$count <- visited.models$count + 1
+          visited.models$crit <- c(visited.models$crit, proposal$crit)
+          visited.models$models <- rbind(visited.models$models, proposal$model)
+        } # This is a model seen before, set the best of the values available
+        else visited.models$crit[mod.idx] <- max (proposal$crit, visited.models$crit[mod.idx])
       }
 
       if (log(runif(1)) <= proposal$alpha) {

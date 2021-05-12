@@ -9,6 +9,7 @@ gmjmcmc.transition(
   F.0,
   data,
   loglik.alpha,
+  marg.probs.F.0,
   marg.probs,
   transforms,
   labels,
