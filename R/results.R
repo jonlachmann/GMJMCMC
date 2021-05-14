@@ -11,9 +11,11 @@
 #' @param complex.measure The complex measure to use when finding the simplest equivalent feature,
 #' 1=total width, 2=operation count and 3=depth.
 #' @param tol The tolerance to use for the correlation when finding equivalent features, default is 0.
+#' @param data Data to use when comparing features, default is NULL meaning that mock data will be generated,
+#' if data is supplied it should be of the same form as is required by gmjmcmc, i.e. with both x, y and an intercept.
 #'
 #' @export merge.results
-merge.results <- function (results, populations="last", complex.measure=1, tol=0) {
+merge.results <- function (results, populations="last", complex.measure=1, tol=0, data=NULL) {
   res.count <- length(results)
 
   # Select populations to use
@@ -49,7 +51,8 @@ merge.results <- function (results, populations="last", complex.measure=1, tol=0
 
   ## Detect equivalent features
   # Generate mock data to compare features with
-  mock.data <- matrix(runif((feat.count+2)^2, -100, 100), ncol=feat.count+2)
+  if (is.null(data)) mock.data <- matrix(runif((feat.count+2)^2, -100, 100), ncol=feat.count+2)
+  else mock.data <- check.data(data)
   mock.data.precalc <- precalc.features(mock.data, features)[,-(1:2)]
 
   # Calculate the correlation to find equivalent features

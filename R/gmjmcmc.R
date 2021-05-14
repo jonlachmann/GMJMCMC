@@ -187,7 +187,8 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs.F.0, ma
   }
 
   # Avoid removing too many features
-  if (mean(feats.keep) < params$keep.min) {
+  # Possibly fixed!! TODO: Sometimes this happens: <simpleError in if (mean(feats.keep) < params$keep.min) {    feats.add.n <- round((params$keep.min - mean(feats.keep)) *         length(feats.keep))    feats.add <- sample(which(!feats.keep), feats.add.n)    feats.keep[feats.add] <- T}: missing value where TRUE/FALSE needed>
+  if (length(feats.keep) > 0 && mean(feats.keep) < params$keep.min) {
     feats.add.n <- round((params$keep.min - mean(feats.keep))*length(feats.keep))
     feats.add <- sample(which(!feats.keep), feats.add.n)
     feats.keep[feats.add] <- T
