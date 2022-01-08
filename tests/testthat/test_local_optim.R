@@ -9,9 +9,9 @@ library(GMJMCMC)
 test_that("Testing Greedy algorithm", {
   greedy_kern_test <- list(probs=c(0,0,0,0,1,0),
                       neigh.size=1, neigh.min=1, neigh.max=2)
-  greedy_params_test <- list(steps=8, kern=greedy_kern_test)
+  greedy_params_test <- list(steps=8, kern=greedy_kern_test, tries=10)
   # Dummy test likelihood function
-  loglik.tester <- function (data, model, formula, complex) {
+  loglik.tester <- function (x, y, model, formula, complex, params) {
     return(sum(model))
   }
   # Optimize empty model but dont allow all indices, should set all to true except disallowed

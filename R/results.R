@@ -62,7 +62,7 @@ merge.results <- function (results, populations="last", complex.measure=1, tol=0
   # row 1-3 are the simplest equivalent features based on three different complexity measures
   # row 4 is the total weighted density of those features
   feats.map <- matrix(1:feat.count, 4, feat.count, byrow=T)
-  for (i in 1:nrow(cors)) {
+  for (i in seq_len(nrow(cors))) {
     equiv.feats <- which(cors[i,] >= (1-tol))
     # Compare equivalent features complexity to find most simple
     equiv.complex <- list(width=complex$width[equiv.feats], oc=complex$oc[equiv.feats], depth=complex$depth[equiv.feats])
@@ -84,7 +84,7 @@ merge.results <- function (results, populations="last", complex.measure=1, tol=0
 # Function for calculating the weights of different populations based on best mlik
 population.weigths <- function (results, pops.use) {
   max.crits <- vector("list")
-  for (i in 1:length(results)) {
+  for (i in seq_along(results)) {
     for (pop in pops.use[[i]]) max.crits <- append(max.crits, results[[i]]$best.margs[[pop]])
   }
   max.crits <- unlist(max.crits)

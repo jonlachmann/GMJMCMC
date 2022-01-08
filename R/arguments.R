@@ -61,13 +61,14 @@ gen.params.list <- function (data, G=F) {
   greedy_params <- list(steps=20, tries=3, kern=greedy_kern)            # Greedy algorithm parameters (60 models default)
 
   ## MJMCMC parameters
+  burn_in <- 100                                                        # TODO
   large_params <- list(neigh.size=as.integer(ncov*0.35),
                        neigh.min=as.integer(ncov*0.25),
                        neigh.max=as.integer(ncov*0.45))                 # Large jump parameters
   random_params <- list(neigh.size=1, neigh.min=1, neigh.max=2)         # Small random jump parameters
   mh_params <- list(neigh.size=1, neigh.min=1, neigh.max=2)             # Regular MH parameters
   ## Compile the list and return
-  params <- list(mh=mh_params, large=large_params, random=random_params,
+  params <- list(burn_in=burn_in, mh=mh_params, large=large_params, random=random_params,
                  sa=sa_params, greedy=greedy_params, loglik=list())
 
   # Add GMJMCMC specific parameters

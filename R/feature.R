@@ -80,7 +80,7 @@ update.alphas <- function (feature, alphas, recurse=FALSE) {
       }
       # If we have a nested feature, recurse into it
       if (is.list(feature[[feat[i,2]]])) {
-        recur <- update.alphas(feature[[feat[i,2]]], alphas[alpha+1:length(alphas)], TRUE)
+        recur <- update.alphas(feature[[feat[i,2]]], alphas[alpha + seq_along(alphas)], TRUE)
         feature[[feat[i,2]]] <- recur$feature
         alpha <- alpha + recur$alpha
       }
@@ -115,7 +115,7 @@ print.feature <- function (feature, dataset=F, alphas=F, labels=F) {
       op <- "*"
       fString <- paste0(fString, "(")
     }
-    for (j in 1:nrow(feat)) {
+    for (j in seq_len(nrow(feat))) {
       # No plus or multiplication sign on the last one
       if (j == nrow(feat)) op <- ""
       # If this is an intercept just add it in

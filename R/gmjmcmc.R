@@ -51,7 +51,7 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N.init, N.fin
   ### Main algorithm loop - Iterate over T different populations
   for (t in 1:T) {
     # Set population iteration count
-    if (t!=T) N <- N.init
+    if (t != T) N <- N.init
     else N <- N.final
     # Precalculate covariates and put them in data.t
     if (t != 1) data.t <- precalc.features(data, S[[t]])
@@ -60,77 +60,20 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N.init, N.fin
     model.cur <- as.logical(rbinom(n = length(S[[t]]), size = 1, prob = 0.5))
     model.cur <- list(prob=0, model=model.cur, crit=loglik.pre(loglik.pi, model.cur, complex, data.t, params$loglik), alpha=0)
     best.crit <- model.cur$crit # Reset first best criteria value
-    # Initialize a vector to contain the models visited in this population
-    population.models <- vector("list", N)
-    # Initialize a vector to contain local opt visited models
-    population.lo.models <- vector("list", 0)
-    # Initialize list for keeping track of unique visited models
-    visited.models <- list(models=matrix(model.cur$model, 1, length(S[[t]])), crit=model.cur$crit, count=1)
 
+    # Run MJMCMC over the population
     cat(paste("Population", t, "begin."))
-    progress <- 0
-    for (i in 1:N) {
-      if (N > 40 && i %% floor(N/40) == 0) progress <- print.progressbar(progress, 40)
-      proposal <- mjmcmc.prop(data.t, loglik.pi, model.cur, complex, probs, params, visited.models)
-      if (proposal$crit > best.crit) {
-        best.crit <- proposal$crit
-        cat(paste("\rNew best crit:", best.crit, "\n"))
-      }
-
-      # If we did a large jump and visited models to save
-      if (!is.null(proposal$models)) {
-        population.lo.models <- c(population.lo.models, proposal$models)
-        # If we are doing subsampling and want to update best mliks
-        if (sub) {
-          for (mod in 1:length(proposal$models)) {
-            # Check if we have seen this model before
-            mod.idx <- vec_in_mat(visited.models$models[1:visited.models$count,,drop=F], proposal$models[[mod]]$model)
-            if (mod.idx == 0) {
-              # If we have not seen the model before, add it
-              #print("New model found")
-              #print(proposal$models[[mod]]$model)
-              visited.models$count <- visited.models$count + 1
-              visited.models$crit <- c(visited.models$crit, proposal$models[[mod]]$crit)
-              visited.models$models <- rbind(visited.models$models, proposal$models[[mod]]$model)
-            } # This is a model seen before, set the best of the values available
-            else {
-              visited.models$crit[mod.idx] <- max(proposal$models[[mod]]$crit, visited.models$crit[mod.idx])
-              #print("Model found estimated previously")
-              #print(mod.idx)
-              #print(proposal$models[[mod]]$model)
-            }
-          }
-        }
-        proposal$models <- NULL
-      }
-      if (sub) {
-        # Check if we have seen this model before
-        mod.idx <- vec_in_mat(visited.models$models[1:visited.models$count,,drop=F], proposal$model)
-        if (mod.idx == 0) {
-          # If we have not seen the model before, add it
-          visited.models$count <- visited.models$count + 1
-          visited.models$crit <- c(visited.models$crit, proposal$crit)
-          visited.models$models <- rbind(visited.models$models, proposal$model)
-        } # This is a model seen before, set the best of the values available
-        else visited.models$crit[mod.idx] <- max (proposal$crit, visited.models$crit[mod.idx])
-      }
-
-      if (log(runif(1)) <= proposal$alpha) {
-        model.cur <- proposal
-        accept[[t]] <- accept[[t]] + 1
-      }
-      # Add the current model to the list of visited models
-      population.models[[i]] <- model.cur
-    }
+    mjmcmc_res <- mjmcmc.loop(data.t, complex, loglik.pi, model.cur, N, probs, params, sub)
     cat(paste("\nPopulation", t, "done.\n"))
+
     # Add the models visited in the current population to the model list
-    models[[t]] <- population.models
+    models[[t]] <- mjmcmc_res$models
     # Calculate marginal likelihoods for current features
-    marg.probs[[t]] <- marginal.probs.renorm(c(population.models, population.lo.models))
+    marg.probs[[t]] <- marginal.probs.renorm(c(mjmcmc_res$models, mjmcmc_res$lo.models))
     # Store best marginal model probability for current population
-    best.margs[[t]] <- best.crit
+    best.margs[[t]] <- mjmcmc_res$best.crit
     # Print the marginal posterior distribution of the features after MJMCMC
-    cat(paste("\rCurrent best crit:", best.crit, "\n"))
+    cat(paste("\rCurrent best crit:", mjmcmc_res$best.crit, "\n"))
     cat("Feature importance:\n")
     print.dist(marg.probs[[t]], sapply(S[[t]], print.feature, labels=labels), probs$filter)
     if (params$rescale.large) prev.large <- params$large
@@ -179,11 +122,11 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs.F.0, ma
   if (params$keep.org) {
     if (params$prel.filter > 0) {
       # Do preliminary filtering if turned on
-      feats.keep[(1:length(F.0))[marg.probs.F.0 > params$prel.filter]] <- T
+      feats.keep[(seq_along(F.0))[marg.probs.F.0 > params$prel.filter]] <- T
       #removed.count <- sum(marg.probs.F.0 <= params$prel.filter)
       #cat("Preliminary filtering removed",removed.count,"features.")
     } # Keep all if no preliminary filtering
-    else feats.keep[1:length(F.0)] <- T
+    else feats.keep[seq_along(F.0)] <- T
   }
 
   # Avoid removing too many features

@@ -56,7 +56,7 @@ marginal.probs.renorm <- function (models) {
 precalc.features <- function (data, features) {
   precalc <- matrix(NA, nrow(data), length(features)+2)
   precalc[,1:2] <- data[,1:2]
-  for (f in 1:length(features)) {
+  for (f in seq_along(features)) {
     feature_string <- print.feature(features[[f]], dataset=T)
     precalc[,(f+2)] <- eval(parse(text=feature_string))
   }
@@ -87,7 +87,7 @@ summary.gmjresult <- function (results, population="last") {
   if (population=="last") pops <- length(results$models)
   else pops <- population
   feature_strings <- vector("list", length(results$populations[[pops]]))
-  for (i in 1:length(feature_strings)) {
+  for (i in seq_along(feature_strings)) {
     feature_strings[[i]] <- print.feature(results$populations[[pops]][[i]])
   }
   feature_importance <- marginal.probs.renorm(results$models[[pops]])
@@ -98,7 +98,7 @@ summary.gmjresult <- function (results, population="last") {
 print.model <- function (model, features, transforms) {
   # Create a list to store the features in
   model_print <- vector("list", sum(model$model))
-  for (i in 1:length(model$model)) {
+  for (i in seq_along(model$model)) {
     if (model$model[i]) model_print[[i]] <- print.feature(features[[i]])
   }
   return(model_print)

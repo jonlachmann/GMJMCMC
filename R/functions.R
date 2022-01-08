@@ -31,7 +31,7 @@ print.progressbar <- function (progress, size=40) {
 # Print a distribution as a horizontal histogram
 print.dist <- function(probs, labels, threshold, size=30) {
   threshold <- round((1-threshold)*size)
-  for (i in 1:length(probs)) {
+  for (i in seq_along(probs)) {
     for (p in 1:size-1) {
       if (p == threshold) cat("!")
       else if ((1-probs[i])*size <= p) cat("#")
@@ -45,4 +45,9 @@ print.dist <- function(probs, labels, threshold, size=30) {
 # Convert a logical vector to an integer
 bitsToInt <- function (x) {
     packBits(rev(c(rep(FALSE, 32-length(x)%%32), as.logical(x))), "integer") + 1
+}
+
+sample2 <- function(x, size, replace = F, prob = NULL) {
+  if (length(x) == 1) return(x)
+  base::sample(x, size = size, replace = replace, prob = prob)
 }
