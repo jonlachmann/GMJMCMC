@@ -82,3 +82,22 @@ linear.g.prior.loglik <- function (y, x, model, complex, params) {
   logmarglik <- 0.5*(log(1+params$g)*(n-p) - log(1+params$g*(1-rsquared))*(n-1))*(p!=1)
   return(logmarglik)
 }
+
+#' Log likelihood function for a VAR model
+#'
+#' @param y A matrix containing the dependent variables
+#' @param x The matrix containing the precalculated features
+#' @param model The model to estimate as a logical vector
+#' @param complex A list of complexity measures for the features
+#' @param params A list of parameters for the log likelihood, supplied by the user
+#'
+#' @export logistic.loglik
+var.loglik <- function (y, x, model, complex, params) {
+  # Rearrange the data as it is multivariate
+  y <- cbind(y, x[, seq_len(params$K-1)])
+  x <- x[, -seq_len(params$K-1)]
+  r <- 20/223
+  suppressWarnings({mod <- fastglm(as.matrix(x[,model]), y, family=binomial())})
+  ret <- (-(mod$deviance -2*log(r)*sum(complex$oc)))/2
+  return(ret)
+}

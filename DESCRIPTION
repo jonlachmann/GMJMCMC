@@ -10,7 +10,8 @@ Description: The package implements the GMJMCMC algorithm used to fit Bayesian G
 License: GPL-2
 Depends:
     fastglm,
-    GenSA
+    GenSA,
+    parallel
 Imports:
     Rcpp
 LinkingTo:
