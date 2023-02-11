@@ -31,11 +31,25 @@ merge.results <- function (results, populations="last", complex.measure=1, tol=0
   # Collect all features and their renormalized weighted values
   features <- vector("list")
   renorms <- vector("list")
+  weight_idx <- 1
   for (i in 1:res.count) {
+    results[[i]]$pop.weights <- rep(NA, length(results[[i]]$populations))
+    results[[i]]$model.probs <- list()
     for (pop in pops.use[[i]]) {
       features <- append(features, results[[i]]$populations[[pop]])
-      renorms <- append(renorms, pop.weights[i]*results[[i]]$marg.probs[[pop]])
+      renorms <- append(renorms, pop.weights[weight_idx] * results[[i]]$marg.probs[[pop]])
+      results[[i]]$pop.weights[pop] <- pop.weights[weight_idx]
+      weight_idx <- weight_idx + 1
+
+      model.probs <- marginal.probs.renorm(results[[i]]$models[[pop]], "models")
+      results[[i]]$model.probs[[pop]] <- model.probs$probs
+      results[[i]]$models[[pop]] <- results[[i]]$models[[pop]][model.probs$idx]
     }
+    accept.tot <- results[[i]]$accept.tot
+    best <- results[[i]]$best
+    results[[i]] <- lapply(results[[i]], function (x) x[pops.use[[i]]])
+    results[[i]]$accept.tot <- accept.tot
+    results[[i]]$best <- best
   }
   renorms <- unlist(renorms)
   na.feats <- which(is.na(renorms))
@@ -63,7 +77,7 @@ merge.results <- function (results, populations="last", complex.measure=1, tol=0
   # row 4 is the total weighted density of those features
   feats.map <- matrix(1:feat.count, 4, feat.count, byrow=T)
   for (i in seq_len(nrow(cors))) {
-    equiv.feats <- which(cors[i,] >= (1-tol))
+    equiv.feats <- which(cors[i, ] >= (1 - tol))
     # Compare equivalent features complexity to find most simple
     equiv.complex <- list(width=complex$width[equiv.feats], oc=complex$oc[equiv.feats], depth=complex$depth[equiv.feats])
     equiv.simplest <- lapply(equiv.complex, which.min)
@@ -71,13 +85,13 @@ merge.results <- function (results, populations="last", complex.measure=1, tol=0
     feats.map[4,equiv.feats] <- sum(renorms[equiv.feats])
   }
   # Select the simplest features based on the specified complexity measure and sort them
-  feats.simplest.ids <- feats.map[complex.measure,unique(feats.map[complex.measure,])]
-  feats.simplest.ids <- feats.simplest.ids[order(feats.map[4,feats.simplest.ids])]
+  feats.simplest.ids <- feats.map[complex.measure,unique(feats.map[complex.measure, ])]
+  feats.simplest.ids <- feats.simplest.ids[order(feats.map[4, feats.simplest.ids])]
   counts <- sapply(feats.simplest.ids, function(x) sum(feats.map[1,] == x))
   feats.simplest <- features[feats.simplest.ids]
-  importance <- feats.map[4,feats.simplest.ids]
-  merged <- list(features=feats.simplest, marg.probs=importance, counts=counts)
-  attr(merged, "class") <- "gmjmcmcresult"
+  importance <- feats.map[4, feats.simplest.ids]
+  merged <- list(features=feats.simplest, marg.probs=importance, counts=counts, results=results)
+  attr(merged, "class") <- "bgnlm"
   return(merged)
 }
 
@@ -115,14 +129,17 @@ model.string <- function (model, features, link) {
 summary.gmjmcmcresult <- function (results, pop="last") {
   if (pop=="last") pop <- length(results$models)
   # Get features as strings for printing
-  feats.strings <- sapply(results$populations[[pop]], print.feature)
+  feats.strings <- sapply(results$populations[[pop]], print.feature, round = 2)
   # Get marginal posterior of features
-  marg.probs <- marginal.probs.renorm(results$models[[pop]])
+  marg.probs <- marginal.probs.renorm(results$models[[pop]])$probs
   # Print the final distribution
   cat("                   Importance | Feature\n")
   print.dist(marg.probs, feats.strings, -1)
   # Print the best marginal likelihood
   cat("\nBest marginal likelihood: ", results$best, "\n")
+  
+  ord.marg = order(marg.probs[1,],decreasing = T)
+  return(data.frame(feats.strings = feats.strings[ord.marg], marg.probs = marg.probs[1,ord.marg]))
 }
 
 #' Function to plot the results, works both for results from gmjmcmc and

@@ -40,17 +40,27 @@ marginal.probs <- function (models) {
   return(probs)
 }
 
-# Function for calculating feature importance through renormalized model estimates
-marginal.probs.renorm <- function (models) {
+#' Function for calculating feature importance through renormalized model estimates
+#' @param models The models to use.
+#' @param type Select which probabilities are of interest, features or models
+marginal.probs.renorm <- function (models, type="features") {
+  models <- lapply(models, function (x) x[c("model", "crit")])
   model.size <- length(models[[1]]$model)
-  models.matrix <- matrix(unlist(models), ncol=model.size+3, byrow=T)
-  models.matrix <- models.matrix[(!duplicated(models.matrix[,2:(model.size+1)], dim=1, fromLast=T)),]
-  max_mlik <- max(models.matrix[,(model.size+2)])
-  crit.sum <- sum(exp(models.matrix[,(model.size+2)]-max_mlik))
-  probs <- matrix(NA,1,model.size)
-  for (i in 2:(model.size+1)) probs[i-1] <- sum(exp(models.matrix[as.logical(models.matrix[,i]),(model.size+2)]-max_mlik))/crit.sum
-  return(probs)
+  models.matrix <- matrix(unlist(models), ncol=model.size+1, byrow=T)
+  duplicates <- duplicated(models.matrix[,1:(model.size)], dim=1, fromLast=T)
+  models.matrix <- models.matrix[!duplicates, ]
+  max_mlik <- max(models.matrix[,(model.size+1)])
+  crit.sum <- sum(exp(models.matrix[,(model.size+1)]-max_mlik))
+  if (type == "features") {
+    probs <- matrix(NA,1,model.size)
+    for (i in 1:(model.size)) probs[i] <- sum(exp(models.matrix[as.logical(models.matrix[,i]),(model.size+1)]-max_mlik))/crit.sum
+  } else if (type =="models") {
+    probs <- matrix(NA,1, nrow(models.matrix))
+    for (i in seq_len(nrow(models.matrix))) probs[i] <- exp(models.matrix[i, ncol(models.matrix)]-max_mlik)/crit.sum
+  }
+  return(list(idx=which(!duplicates), probs=probs))
 }
+
 
 # Function for precalculating features for a new feature population
 precalc.features <- function (data, features) {
@@ -71,10 +81,10 @@ loglik.pre <- function (loglik.pi, model, complex, data, params) {
   # Get the complexity measures for just this model
   complex <- list(width=complex$width[model], oc=complex$oc[model], depth=complex$depth[model])
   # Call the model estimator with the data and the model, note that we add the intercept to every model
-  crit <- loglik.pi(data[,1], data[,-1], c(T,model), complex, params)
+  model.res <- loglik.pi(data[,1], data[,-1], c(T,model), complex, params)
   # Check that the critical value is acceptable
-  if (!is.numeric(crit) || is.nan(crit)) crit <- -.Machine$double.xmax
-  return(crit)
+  if (!is.numeric(model.res$crit) || is.nan(model.res$crit)) model.res$crit <- -.Machine$double.xmax
+  return(model.res)
 }
 
 #' Summarize results from GMJMCMC
@@ -88,9 +98,9 @@ summary.gmjresult <- function (results, population="last") {
   else pops <- population
   feature_strings <- vector("list", length(results$populations[[pops]]))
   for (i in seq_along(feature_strings)) {
-    feature_strings[[i]] <- print.feature(results$populations[[pops]][[i]])
+    feature_strings[[i]] <- print.feature(results$populations[[pops]][[i]], round = 2)
   }
-  feature_importance <- marginal.probs.renorm(results$models[[pops]])
+  feature_importance <- marginal.probs.renorm(results$models[[pops]])$probs
   return(list(features=feature_strings, importance=feature_importance))
 }
 
