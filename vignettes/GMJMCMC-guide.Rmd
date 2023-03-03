@@ -42,7 +42,7 @@ loglik.example <- function (y, x, model, complex, params) {
   r <- 20/223
   suppressWarnings({mod <- fastglm(as.matrix(x[,model]), y, family=binomial())})
   ret <- (-(mod$deviance -2*log(r)*sum(complex$width)))/2
-  return(ret)
+  return(list(crit=ret, coefs=mod$coefficients))
 }
 ```
 To be able to calculate the alphas when using for example strategy 3 as per Hubin et al., we need a function for the log likelihood, in this example we will use the function supplied by the package called `logistic.loglik.alpha`. With that function as a starting point, you can also create your own function for this. We also adjust our parameter list to use the third strategy.

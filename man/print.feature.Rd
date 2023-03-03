@@ -4,7 +4,7 @@
 \alias{print.feature}
 \title{Print method for "feature" class}
 \usage{
-\method{print}{feature}(feature, dataset = F, alphas = F, labels = F)
+\method{print}{feature}(feature, dataset = F, alphas = F, labels = F, round = F)
 }
 \arguments{
 \item{feature}{An object of class "feature"}
@@ -12,6 +12,10 @@
 \item{dataset}{Set the regular covariates as columns in a dataset}
 
 \item{alphas}{Print a "?" instead of actual alphas to prepare the output for alpha estimation}
+
+\item{labels}{Should the covariates be named, or just referred to as their place in the data.frame.}
+
+\item{round}{Should numbers be rounded when printing? Default is FALSE, otherwise it can be set to the number of decimal places.}
 
 \item{transforms}{The list of transforms to use}
 }
