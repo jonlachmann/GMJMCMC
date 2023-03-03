@@ -3,6 +3,7 @@
 #' @param cores The number of cores to run on
 #' @param ... Parameters to pass to mjmcmc
 #' @return Merged results from multiple mjmcmc runs
+#' @export
 mjmcmc.parallel <- function (runs, cores=getOption("mc.cores", 2L), ...) {
   results <- mclapply(seq_len(runs), function (x) { gmjmcmc(...) }, mc.cores=cores)
 }
@@ -13,6 +14,7 @@ mjmcmc.parallel <- function (runs, cores=getOption("mc.cores", 2L), ...) {
 #' @param cores The number of cores to run on
 #' @param ... Parameters to pass to gmjmcmc
 #' @return Results from multiple gmjmcmc runs
+#' @export
 gmjmcmc.parallel <- function (runs, cores=getOption("mc.cores", 2L), ...) {
   results <- mclapply(seq_len(runs), function (x) { gmjmcmc(...) }, mc.cores=cores)
 }
