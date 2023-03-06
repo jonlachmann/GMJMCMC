@@ -20,8 +20,10 @@ predict.bgnlm <- function (model, x, link=function(x) x, quantiles=c(0.025, 0.5,
       # Precalculate the features for the new data (c(0,1...) is because precalc features thinks there is an intercept and y col).
       x.precalc <- precalc.features(cbind(0, 1, x), features)[, -1]
 
-      yhat <- matrix(NA, nrow=nrow(x), ncol=length(models))
+      yhat <- matrix(0, nrow=nrow(x), ncol=length(models))
       for (k in seq_along(models)) {
+        # Models which have 0 weight are skipped since they may also be invalid, and would not influence the predictions.
+        if (models[[k]]$crit == -.Machine$double.xmax) next
         yhat[, k] <- link(x.precalc[, c(TRUE, models[[k]]$model), drop=FALSE] %*% models[[k]]$coefs)
       }
 
