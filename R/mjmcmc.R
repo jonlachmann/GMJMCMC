@@ -179,7 +179,7 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, complex, pip_estimate, prob
     # Select MH kernel
     q.g <- sample.int(n = 6, size = 1, prob = probs$mh)
     # Generate the proposal
-    proposal <- gen.proposal(model.cur$model, params$mh, q.g, NULL, pip_estimate, prob=T)
+    proposal <- gen.proposal(model.cur$model, params$mh, q.g, NULL, pip_estimate, prob = T)
     proposal$model <- xor(proposal$swap, model.cur$model)
 
     # Calculate current model probability given proposal
