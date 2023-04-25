@@ -14,9 +14,10 @@ set.transforms <- function (transforms) {
 }
 
 # Function to verify inputs and help the user find if they did anything wrong
+# TODO: Finish this!!
 verify.inputs <- function (data, loglik.pi, transforms, T, N, N.final, probs, params) {
   # Get information about the data
-  n.cov <- ncol(data)-1
+  n.cov <- ncol(data) - 1
   n.obs <- nrow(data)
 
   # Get information about the transforms
@@ -29,10 +30,12 @@ verify.inputs <- function (data, loglik.pi, transforms, T, N, N.final, probs, pa
   if (sum(probs$large.kern > 1 | probs$large.kern < 0) != 0) error <- c(error, "Large jump kernel probabilities must be in [0,1].")
 }
 
-# Function for calculating marginal inclusion probabilities of features given a list of models
+#' Function for calculating marginal inclusion probabilities of features given a list of models
+#' @param models The list of models to use.
+#' @export
 marginal.probs <- function (models) {
   mod.count <- length(models)
-  probs <- rep(0, length=length(models[[1]]$model))
+  probs <- rep(0, length = length(models[[1]]$model))
   for (i in 1:mod.count) {
     probs <- probs + models[[i]]$model
   }
@@ -46,29 +49,29 @@ marginal.probs <- function (models) {
 marginal.probs.renorm <- function (models, type="features") {
   models <- lapply(models, function (x) x[c("model", "crit")])
   model.size <- length(models[[1]]$model)
-  models.matrix <- matrix(unlist(models), ncol=model.size+1, byrow=T)
-  duplicates <- duplicated(models.matrix[,1:(model.size)], dim=1, fromLast=T)
+  models.matrix <- matrix(unlist(models), ncol = model.size + 1, byrow = TRUE)
+  duplicates <- duplicated(models.matrix[, 1:(model.size)], dim = 1, fromLast = TRUE)
   models.matrix <- models.matrix[!duplicates, ]
-  max_mlik <- max(models.matrix[,(model.size+1)])
-  crit.sum <- sum(exp(models.matrix[,(model.size+1)]-max_mlik))
+  max_mlik <- max(models.matrix[, (model.size + 1)])
+  crit.sum <- sum(exp(models.matrix[, (model.size + 1)] - max_mlik))
   if (type == "features") {
-    probs <- matrix(NA,1,model.size)
-    for (i in 1:(model.size)) probs[i] <- sum(exp(models.matrix[as.logical(models.matrix[,i]),(model.size+1)]-max_mlik))/crit.sum
-  } else if (type =="models") {
+    probs <- matrix(NA,1, model.size)
+    for (i in 1:(model.size)) probs[i] <- sum(exp(models.matrix[as.logical(models.matrix[, i]),(model.size + 1)] - max_mlik)) / crit.sum
+  } else if (type == "models") {
     probs <- matrix(NA,1, nrow(models.matrix))
-    for (i in seq_len(nrow(models.matrix))) probs[i] <- exp(models.matrix[i, ncol(models.matrix)]-max_mlik)/crit.sum
+    for (i in seq_len(nrow(models.matrix))) probs[i] <- exp(models.matrix[i, ncol(models.matrix)] - max_mlik) / crit.sum
   }
-  return(list(idx=which(!duplicates), probs=probs))
+  return(list(idx = which(!duplicates), probs = probs))
 }
 
 
 # Function for precalculating features for a new feature population
 precalc.features <- function (data, features) {
-  precalc <- matrix(NA, nrow(data), length(features)+2)
-  precalc[,1:2] <- data[,1:2]
+  precalc <- matrix(NA, nrow(data), length(features) + 2)
+  precalc[, 1:2] <- data[, 1:2]
   for (f in seq_along(features)) {
-    feature_string <- print.feature(features[[f]], dataset=T)
-    precalc[,(f+2)] <- eval(parse(text=feature_string))
+    feature_string <- print.feature(features[[f]], dataset = TRUE)
+    precalc[, (f + 2)] <- eval(parse(text = feature_string))
   }
   # Replace any -Inf and Inf values caused by under- or overflow
   precalc <- replace.infinite.data.frame(precalc)
@@ -79,9 +82,9 @@ precalc.features <- function (data, features) {
 # Function to call the model function
 loglik.pre <- function (loglik.pi, model, complex, data, params) {
   # Get the complexity measures for just this model
-  complex <- list(width=complex$width[model], oc=complex$oc[model], depth=complex$depth[model])
+  complex <- list(width = complex$width[model], oc = complex$oc[model], depth = complex$depth[model])
   # Call the model estimator with the data and the model, note that we add the intercept to every model
-  model.res <- loglik.pi(data[,1], data[,-1], c(T,model), complex, params)
+  model.res <- loglik.pi(data[, 1], data[, -1], c(T, model), complex, params)
   # Check that the critical value is acceptable
   if (!is.numeric(model.res$crit) || is.nan(model.res$crit)) model.res$crit <- -.Machine$double.xmax
   # Alpha cannot be calculated if the current and proposed models have crit which are -Inf or Inf
@@ -98,8 +101,8 @@ loglik.pre <- function (loglik.pi, model, complex, data, params) {
 #' @param populations A list of the populations to include in the summary, defaults to the last one
 #'
 #' @export summary.gmjresult
-summary.gmjresult <- function (results, population="last") {
-  if (population=="last") pops <- length(results$models)
+summary.gmjresult <- function (results, population = "last") {
+  if (population == "last") pops <- length(results$models)
   else pops <- population
   feature_strings <- vector("list", length(results$populations[[pops]]))
   for (i in seq_along(feature_strings)) {
@@ -109,8 +112,10 @@ summary.gmjresult <- function (results, population="last") {
   return(list(features=feature_strings, importance=feature_importance))
 }
 
-# Function to print all features in a model
-print.model <- function (model, features, transforms) {
+#' Function to print all features in a model
+#'
+#' @export
+print.model <- function (model, features) {
   # Create a list to store the features in
   model_print <- vector("list", sum(model$model))
   for (i in seq_along(model$model)) {
@@ -127,8 +132,8 @@ check.data <- function (data) {
     data <- as.matrix(data)
     cat("Data coerced to matrix type.\n")
   }
-  if (sum(data[,2] == 1) != nrow(data)) {
-    data <- cbind(data[,1],1,data[,-1])
+  if (sum(data[, 2] == 1) != nrow(data)) {
+    data <- cbind(data[, 1], 1, data[, -1])
     cat("Intercept added to data.\n")
   }
   return(data)

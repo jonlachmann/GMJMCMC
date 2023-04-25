@@ -29,7 +29,6 @@ mjmcmc <- function (data, loglik.pi, N, probs, params, sub=F) {
   model.cur <- as.logical(rbinom(n = length(S), size = 1, prob = 0.5))
   model.cur.res <- loglik.pre(loglik.pi, model.cur, complex, data, params$loglik)
   model.cur <- list(prob=0, model=model.cur, coefs=model.cur.res$coefs, crit=model.cur.res$crit, alpha=0)
-  best.crit <- model.cur$crit # Set first best criteria value
 
   cat("\nMJMCMC begin.\n")
   result <- mjmcmc.loop(data, complex, loglik.pi, model.cur, N, probs, params, sub)
@@ -152,18 +151,16 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, complex, pip_estimate, prob
     localopt <- local.optim(chi.0.star, data, loglik.pi, !large.jump$swap, complex, q.o, params) # Do local optimization
     chi.k.star <- localopt$model
 
-
     # Randomize around the mode
     proposal <- gen.proposal(chi.k.star, params$random, q.r, !large.jump$swap, pip_estimate, prob=T)
     proposal$model <- xor(chi.k.star, proposal$swap)
 
-    # Do a backwards large jump and add in the kernel used in local optim to use the same for backwars local optim.
+    # Do a backwards large jump and add in the kernel used in local optim to use the same for backwards local optim.
     chi.0 <- xor(proposal$model, large.jump$swap)
 
     # Do a backwards local optimization
     localopt2 <- local.optim(chi.0, data, loglik.pi, !large.jump$swap, complex, q.o, params, kern=localopt$kern)
     chi.k <- localopt2$model
-    # TODO: We could compare if chi.k is reached by optimising from gamma (model.cur) as "intended"
 
     ### Calculate acceptance probability
     # Set up the parameters that were used to generate the proposal

@@ -4,7 +4,7 @@
 \alias{print.feature}
 \title{Print method for "feature" class}
 \usage{
-\method{print}{feature}(feature, dataset = F, alphas = F, labels = F, round = F)
+\method{print}{feature}(feature, dataset = FALSE, alphas = FALSE, labels = FALSE, round = FALSE)
 }
 \arguments{
 \item{feature}{An object of class "feature"}

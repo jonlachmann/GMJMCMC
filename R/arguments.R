@@ -24,7 +24,7 @@ gen.probs.list <- function (transforms=F) {
                 random.kern=random.kern, mh=mh)
 
   ## Feature generation probabilities
-  if (transforms[1] != F) {
+  if (transforms[1] != FALSE) {
     transcount <- length(transforms)
     filter <- 0.6                           # filtration threshold
     gen <- rep(1/4, 4)                      # probability for different feature generation methods
@@ -85,6 +85,7 @@ gen.params.list <- function (data, G=F) {
                         max.proj.size = 15)                   # Maximum projection size
     params$feat <- feat_params
     params$rescale.large <- F
+    params$prel.filter <- NULL                                # Specify which covariates to keep in the first population. See Issue #15.
 
   }
 

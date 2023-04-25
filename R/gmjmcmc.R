@@ -9,6 +9,7 @@
 NULL
 
 #' Main algorithm for GMJMCMC
+#' TODO: More documentation - borrow from https://github.com/aliaksah/EMJMCMC2016/blob/master/man/EMJMCMC.Rd if applicable.
 #'
 #' @param data A matrix containing the data to use in the algorithm,
 #' first column should be the dependent variable, second should be the intercept
@@ -30,7 +31,7 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N.init, N.fin
   # Extract labels from column names in dataframe
   labels <- get.labels(data)
   # Set the transformations option
-  options("gmjmcmc-transformations"=transforms)
+  options("gmjmcmc-transformations" = transforms)
   # Acceptance probability per population
   accept <- vector("list", T)
   accept <- lapply(accept, function (x) x <- 0)
@@ -44,12 +45,16 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N.init, N.fin
   best.margs <- vector("list", T)
 
   # Create first population
-  F.0 <- gen.covariates(ncol(data)-2)
-  S[[1]] <- F.0
+  F.0 <- gen.covariates(ncol(data) - 2)
+  if (is.null(params$prel.filter))
+    S[[1]] <- F.0
+  else
+    S[[1]] <- F.0[params$prel.filter]
+
   complex <- complex.features(S[[1]])
 
   ### Main algorithm loop - Iterate over T different populations
-  for (t in 1:T) {
+  for (t in seq_len(T)) {
     # Set population iteration count
     if (t != T) N <- N.init
     else N <- N.final
@@ -59,7 +64,7 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N.init, N.fin
     # Initialize first model of population
     model.cur <- as.logical(rbinom(n = length(S[[t]]), size = 1, prob = 0.5))
     model.cur.res <- loglik.pre(loglik.pi, model.cur, complex, data.t, params$loglik)
-    model.cur <- list(prob=0, model=model.cur, coefs=model.cur.res$coefs, crit=model.cur.res$crit, alpha=0)
+    model.cur <- list(prob = 0, model = model.cur, coefs = model.cur.res$coefs, crit = model.cur.res$crit, alpha = 0)
     best.crit <- model.cur$crit # Reset first best criteria value
 
     # Run MJMCMC over the population
@@ -80,9 +85,9 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N.init, N.fin
     if (params$rescale.large) prev.large <- params$large
     # Generate a new population of features for the next iteration (if this is not the last)
     if (t != T) {
-      S[[t+1]] <- gmjmcmc.transition(S[[t]], F.0, data, loglik.alpha, marg.probs[[1]], marg.probs[[t]], transforms, labels, probs, params$feat)
-      complex <- complex.features(S[[t+1]])
-      if (params$rescale.large) params$large <- lapply(prev.large, function(x) x*length(S[[t+1]])/length(S[[t]]))
+      S[[t + 1]] <- gmjmcmc.transition(S[[t]], F.0, data, loglik.alpha, marg.probs[[1]], marg.probs[[t]], labels, probs, params$feat)
+      complex <- complex.features(S[[t + 1]])
+      if (params$rescale.large) params$large <- lapply(prev.large, function(x) x * length(S[[t + 1]]) / length(S[[t]]))
     }
   }
   # Calculate acceptance rate
@@ -109,15 +114,14 @@ gmjmcmc <- function (data, loglik.pi, loglik.alpha, transforms, T, N.init, N.fin
 #' @param data The data used in the model, here we use it to generate alphas for new features
 #' @param loglik.alpha The log likelihood function to optimize the alphas for
 #' @param marg.probs The marginal inclusion probabilities of the current features
-#' @param transforms The nonlinear transformations available
 #' @param labels Variable labels for printing
 #' @param probs A list of the various probability vectors to use
 #' @param params A list of the various parameters for all the parts of the algorithm
 #'
 #' @return The updated population of features, that becomes S.t+1
-gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs.F.0, marg.probs, transforms, labels, probs, params) {
+gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs.F.0, marg.probs, labels, probs, params) {
   # Sample which features to keep based on marginal inclusion below probs$filter
-  feats.keep <- as.logical(rbinom(n = length(marg.probs), size = 1, prob = pmin(marg.probs/probs$filter, 1)))
+  feats.keep <- as.logical(rbinom(n = length(marg.probs), size = 1, prob = pmin(marg.probs / probs$filter, 1)))
 
   # Always keep original covariates if that setting is on
   if (params$keep.org) {
@@ -131,9 +135,8 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs.F.0, ma
   }
 
   # Avoid removing too many features
-  # Possibly fixed!! TODO: Sometimes this happens: <simpleError in if (mean(feats.keep) < params$keep.min) {    feats.add.n <- round((params$keep.min - mean(feats.keep)) *         length(feats.keep))    feats.add <- sample(which(!feats.keep), feats.add.n)    feats.keep[feats.add] <- T}: missing value where TRUE/FALSE needed>
   if (length(feats.keep) > 0 && mean(feats.keep) < params$keep.min) {
-    feats.add.n <- round((params$keep.min - mean(feats.keep))*length(feats.keep))
+    feats.add.n <- round((params$keep.min - mean(feats.keep)) * length(feats.keep))
     feats.add <- sample(which(!feats.keep), feats.add.n)
     feats.keep[feats.add] <- T
   }
@@ -149,7 +152,7 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs.F.0, ma
   for (i in feats.replace) {
     prev.size <- length(S.t)
     prev.feat.string <- print.feature(S.t[[i]], labels=labels, round = 2)
-    S.t[[i]] <- gen.feature(c(F.0, S.t), marg.probs.use, data, loglik.alpha, transforms, probs, length(F.0), params)
+    S.t[[i]] <- gen.feature(c(F.0, S.t), marg.probs.use, data, loglik.alpha, probs, length(F.0), params)
     if (prev.size > length(S.t)) {
       cat("Removed feature", prev.feat.string, "\n")
       cat("Population shrinking, returning.\n")
@@ -164,7 +167,7 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs.F.0, ma
   if (length(S.t) < params$pop.max) {
     for (i in (length(S.t)+1):params$pop.max) {
       prev.size <- length(S.t)
-      S.t[[i]] <- gen.feature(c(F.0, S.t), marg.probs.use, data, loglik.alpha, transforms, probs, length(F.0), params)
+      S.t[[i]] <- gen.feature(c(F.0, S.t), marg.probs.use, data, loglik.alpha, probs, length(F.0), params)
       if (prev.size == length(S.t)) {
         cat("Population not growing, returning.\n")
         return(S.t)

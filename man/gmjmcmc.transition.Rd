@@ -11,7 +11,6 @@ gmjmcmc.transition(
   loglik.alpha,
   marg.probs.F.0,
   marg.probs,
-  transforms,
   labels,
   probs,
   params
@@ -27,8 +26,6 @@ gmjmcmc.transition(
 \item{loglik.alpha}{The log likelihood function to optimize the alphas for}
 
 \item{marg.probs}{The marginal inclusion probabilities of the current features}
-
-\item{transforms}{The nonlinear transformations available}
 
 \item{labels}{Variable labels for printing}
 

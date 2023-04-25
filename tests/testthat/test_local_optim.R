@@ -12,7 +12,7 @@ test_that("Testing Greedy algorithm", {
   greedy_params_test <- list(steps=8, kern=greedy_kern_test, tries=10)
   # Dummy test likelihood function
   loglik.tester <- function (x, y, model, formula, complex, params) {
-    return(sum(model))
+    return(list(crit=sum(model)))
   }
   # Optimize empty model but dont allow all indices, should set all to true except disallowed
   optmod <- greedy.optim(c(F,F,F,F,F,F,F,F,F,F),

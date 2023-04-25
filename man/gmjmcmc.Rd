@@ -2,7 +2,8 @@
 % Please edit documentation in R/gmjmcmc.R
 \name{gmjmcmc}
 \alias{gmjmcmc}
-\title{Main algorithm for GMJMCMC}
+\title{Main algorithm for GMJMCMC
+TODO: More documentation - borrow from https://github.com/aliaksah/EMJMCMC2016/blob/master/man/EMJMCMC.Rd if applicable.}
 \usage{
 gmjmcmc(
   data,
@@ -42,4 +43,5 @@ and the rest of the columns should be the independent variables.}
 }
 \description{
 Main algorithm for GMJMCMC
+TODO: More documentation - borrow from https://github.com/aliaksah/EMJMCMC2016/blob/master/man/EMJMCMC.Rd if applicable.
 }

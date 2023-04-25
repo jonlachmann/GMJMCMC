@@ -34,25 +34,25 @@ alpha_2 <- function (feature) {
 #' @param loglik log likelihood function to use
 alpha_3 <- function (feature, data, loglik) {
   # Create the string representation of the feature with variable alphas
-  featfun <- print.feature(feature, dataset = T, alphas = T)
+  featfun <- print.feature(feature, dataset = TRUE, alphas = TRUE)
   featfun <- set_alphas(featfun)
   # Return if there are no alphas to set
-  if(featfun$count == 0) return(feature)
+  if (featfun$count == 0) return(feature)
 
   # Set initial range for Simulated Annealing
   cat("Generating alphas\n")
   range <- 10
   done <- FALSE
-  while(!done) {
+  while (!done) {
     # Run simulated annealing on current range
     sares <- GenSA(rnorm(featfun$count), loglik,
-                      rep(-range/2,featfun$count), rep(range/2,featfun$count),
-                      control=list(max.call=5e3), data, featfun$formula)
+                      rep(-range / 2, featfun$count), rep(range / 2, featfun$count),
+                      control = list(max.call = 5e3), data, featfun$formula)
     # Check if any estimate is on the edge of the range, if so, extend the range and run again
-    if (sum((sares$par==(-range/2))+(sares$par==(range/2))) != 0) range <- range*2
+    if (sum((sares$par == (-range / 2)) + (sares$par == (range / 2))) != 0) range <- range*2
     else done <- TRUE
   }
-  if (sum(sares$par==0) == featfun$count) {
+  if (sum(sares$par == 0) == featfun$count) {
     cat("All zero feature occured.\n")
     return(NULL)
   }

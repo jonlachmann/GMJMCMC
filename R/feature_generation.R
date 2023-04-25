@@ -5,7 +5,7 @@
 
 # Generate a multiplication feature
 gen.multiplication <- function (features, marg.probs) {
-  # generate two features to be multiplied
+  # Sample two features to be multiplied
   feats <- sample.int(n = length(features), size = 2, prob = marg.probs, replace = T)
   create.feature(0, features[feats])
 }
@@ -22,7 +22,7 @@ gen.projection <- function (features, marg.probs, trans.probs, max.width, max.si
   if (!is.null(max.size)) {
     max.width <- min(max.width, max.size + 1)
   }
-  feat.count <- sample.int(n = (min(max.width, (length(features)))-1), size = 1) # TODO: Should be a specific distribution?
+  feat.count <- sample.int(n = (min(max.width, (length(features)))-1), size = 1)
   feats <- sample.int(n = length(features), size = feat.count, prob = marg.probs)
   trans <- sample.int(n = length(trans.probs), size = 1, prob = trans.probs)
   # TODO: Generate alphas properly using various methods
@@ -30,14 +30,14 @@ gen.projection <- function (features, marg.probs, trans.probs, max.width, max.si
   create.feature(trans, features[feats], alphas)
 }
 
-# Generate a new features from the initial covariates
+# Generate new features from the initial covariates
 gen.new <- function (features, F.0.size) {
   covariate <- sample.int(n = F.0.size, size = 1)
   return(features[[covariate]])
 }
 
 # Select a feature to generate and generate it
-gen.feature <- function (features, marg.probs, data, loglik.alpha, transforms, probs, F.0.size, params) {
+gen.feature <- function (features, marg.probs, data, loglik.alpha, probs, F.0.size, params) {
   tries <- 0
   feat.ok <- F
   while (!feat.ok && tries < 50) {
@@ -55,7 +55,7 @@ gen.feature <- function (features, marg.probs, data, loglik.alpha, transforms, p
       if (!is.null(feat)) {
         # Check for linear dependence of new the feature
         if (length(features) == F.0.size) feats <- list()
-        else feats <- features[(F.0.size+1):length(features)]
+        else feats <- features[(F.0.size + 1):length(features)]
         if (params$check.col && !check.collinearity(feat, feats, F.0.size))
           feat.ok <- T
         else if (!params$check.col)
@@ -63,26 +63,27 @@ gen.feature <- function (features, marg.probs, data, loglik.alpha, transforms, p
       }
     }
     tries <- tries + 1
-    params$eps <- min(params$eps+0.01, 0.5)
-    marg.probs <- pmin(pmax(marg.probs, params$eps), (1-params$eps))
+    params$eps <- min(params$eps + 0.01, 0.5)
+    marg.probs <- pmin(pmax(marg.probs, params$eps), (1 - params$eps))
   }
   if (!feat.ok) return(NULL)
   else return(feat)
 }
 
+# Check if there is collinearity present in the current set of features
 check.collinearity <- function (proposal, features, F.0.size) {
   # Add the proposal to the feature list for evaluation
-  features[[length(features)+1]] <- proposal
+  features[[length(features) + 1]] <- proposal
   # Generate mock data to test with (avoiding too costly computations)
-  mock.data <- matrix(c(runif((F.0.size*2), -100, 100), rep(1,F.0.size*2),
-                        runif((F.0.size*2)*(F.0.size), -100, 100)), F.0.size*2, F.0.size+2)
+  mock.data <- matrix(c(runif((F.0.size * 2), -100, 100), rep(1, F.0.size * 2),
+                        runif((F.0.size * 2) * (F.0.size), -100, 100)), F.0.size * 2, F.0.size + 2)
   # Use the mock data to precalc the features
   mock.data.precalc <- precalc.features(mock.data, features)
   # Fit a linear model with the mock data precalculated features
   linearmod <- lm(as.data.frame(mock.data.precalc[,-2]))
   # Check if all coefficients were possible to calculate
-  if (sum(is.na(linearmod$coefficients)) == 0) return(F)
-  else return(T)
+  if (sum(is.na(linearmod$coefficients)) == 0) return(FALSE)
+  else return(TRUE)
 }
 
 # Generate features to represent the covariates, just takes the count needed

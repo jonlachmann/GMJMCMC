@@ -126,8 +126,8 @@ model.string <- function (model, features, link) {
 #' @param pop The population to print for, defaults to last
 #'
 #' @export
-summary.gmjmcmcresult <- function (results, pop="last") {
-  if (pop=="last") pop <- length(results$models)
+summary.gmjmcmcresult <- function (results, pop = "last") {
+  if (pop == "last") pop <- length(results$models)
   # Get features as strings for printing
   feats.strings <- sapply(results$populations[[pop]], print.feature, round = 2)
   # Get marginal posterior of features
@@ -138,7 +138,7 @@ summary.gmjmcmcresult <- function (results, pop="last") {
   # Print the best marginal likelihood
   cat("\nBest marginal likelihood: ", results$best, "\n")
   
-  ord.marg = order(marg.probs[1,],decreasing = T)
+  ord.marg <- order(marg.probs[1,],decreasing = T)
   return(data.frame(feats.strings = feats.strings[ord.marg], marg.probs = marg.probs[1,ord.marg]))
 }
 

@@ -21,8 +21,6 @@
 #' @param transform A numeric denoting the transform type
 #' @param features A list of features to include
 #' @param alphas A numeric vector denoting the alphas to use
-#'
-#' @export create.feature
 create.feature <- function (transform, features, alphas=NULL) {
   # Given no alphas, assume no intercept and unit coefficients
   if (is.null(alphas)) alphas <- c(0, rep(1, length(features)))
@@ -101,9 +99,9 @@ update.alphas <- function (feature, alphas, recurse=FALSE) {
 #' @param round Should numbers be rounded when printing? Default is FALSE, otherwise it can be set to the number of decimal places.
 #'
 #' @export
-print.feature <- function (feature, dataset=F, alphas=F, labels=F, round=F) {
+print.feature <- function (feature, dataset = FALSE, alphas = FALSE, labels = FALSE, round = FALSE) {
   transforms <- getOption("gmjmcmc-transformations")
-  if(is.null(transforms)) stop("Please set the gmjmcmc-transformations option to your non-linear functions (see ?set.transforms).")
+  if (is.null(transforms)) stop("Please set the gmjmcmc-transformations option to your non-linear functions (see ?set.transforms).")
   fString <- ""
   feat <- feature[[length(feature)]]
   # This is a more complex feature

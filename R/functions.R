@@ -11,7 +11,7 @@ ind.to.log <- function (ind, length) {
 }
 
 # Replace non-finite elements of a data frame
-replace.infinite.data.frame <- function(df, replacewith=c(.Machine$double.xmin, .Machine$double.xmax)){
+replace.infinite.data.frame <- function(df, replacewith = c(.Machine$double.xmin, .Machine$double.xmax)){
   df[df == "-Inf"] <- replacewith[1]
   df[df == "Inf"] <- replacewith[2]
   return(df)
@@ -30,23 +30,19 @@ print.progressbar <- function (progress, size=40) {
 
 # Print a distribution as a horizontal histogram
 print.dist <- function(probs, labels, threshold, size=30) {
-  threshold <- round((1-threshold)*size)
+  threshold <- round((1 - threshold) * size)
   for (i in seq_along(probs)) {
-    for (p in 1:size-1) {
+    for (p in 1:size - 1) {
       if (p == threshold) cat("!")
-      else if ((1-probs[i])*size <= p) cat("#")
+      else if ((1 - probs[i]) * size <= p) cat("#")
       else cat(" ")
     }
     cat("| ")
-    cat(labels[i],"\n")
+    cat(labels[i], "\n")
   }
 }
 
-# Convert a logical vector to an integer
-bitsToInt <- function (x) {
-    packBits(rev(c(rep(FALSE, 32-length(x)%%32), as.logical(x))), "integer") + 1
-}
-
+# A more intuitive sample function which does not change behaviour when length(x) == 1.
 sample2 <- function(x, size, replace = F, prob = NULL) {
   if (length(x) == 1) return(x)
   base::sample(x, size = size, replace = replace, prob = prob)
