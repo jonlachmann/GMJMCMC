@@ -178,12 +178,12 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, complex, pip_estimate, prob
     chi.0 <- xor(proposal$model, large.jump$swap)
 
     # Do a backwards local optimization
-    localopt2 <- local.optim(chi.0, data, loglik.pi, !large.jump$swap, complex, q.o, params, kern=localopt$kern)
+    localopt2 <- local.optim(chi.0, data, loglik.pi, !large.jump$swap, complex, q.o, params, kernel = localopt$kern)
     chi.k <- localopt2$model
 
     ### Calculate acceptance probability
     # Set up the parameters that were used to generate the proposal
-    prop.params <- list(neigh.min=params$random$min, neigh.max=params$random$max, neigh.size=proposal$S)
+    prop.params <- list(neigh.min = params$random$min, neigh.max = params$random$max, neigh.size = proposal$S)
 
     # Calculate current model probability given proposal
     model.cur$prob <- prob.proposal(proposal$model, chi.k, q.r, prop.params, pip_estimate) # Get probability of gamma given chi.k

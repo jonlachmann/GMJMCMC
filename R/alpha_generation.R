@@ -45,7 +45,7 @@ alpha_3 <- function (feature, data, loglik) {
   done <- FALSE
   while (!done) {
     # Run simulated annealing on current range
-    sares <- GenSA(rnorm(featfun$count), loglik,
+    sares <- GenSA::GenSA(rnorm(featfun$count), loglik,
                       rep(-range / 2, featfun$count), rep(range / 2, featfun$count),
                       control = list(max.call = 5e3), data, featfun$formula)
     # Check if any estimate is on the edge of the range, if so, extend the range and run again

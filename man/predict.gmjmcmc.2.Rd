@@ -6,7 +6,7 @@
 Produces slightly different results from the fun above since this is using all lo.models too.}
 \usage{
 \method{predict}{gmjmcmc.2}(
-  model,
+  object,
   x,
   link = function(x) x,
   quantiles = c(0.025, 0.5, 0.975),

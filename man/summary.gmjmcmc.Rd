@@ -4,10 +4,10 @@
 \alias{summary.gmjmcmc}
 \title{Function to print a quick summary of the results}
 \usage{
-\method{summary}{gmjmcmc}(results, pop = "last", tol = 1e-04)
+\method{summary}{gmjmcmc}(object, pop = "last", tol = 1e-04)
 }
 \arguments{
-\item{results}{The results to use}
+\item{object}{The results to use}
 
 \item{pop}{The population to print for, defaults to last}
 }

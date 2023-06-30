@@ -1,14 +1,14 @@
 #' @export
-predict.gmjmcmc <- function (model, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975)) {
-  merged <- merge.results(list(model))
+predict.gmjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975)) {
+  merged <- merge.results(list(object))
   return(predict.gmjmcmc_merged(merged, x, link, quantiles))
 }
 
 #' New idea for a more streamlined function...
 #' Produces slightly different results from the fun above since this is using all lo.models too.
-predict.gmjmcmc.2 <- function (model, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = 1) {
+predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = 1) {
 
-  mmodel <- lapply(model[1:8], function (x) x[[pop]])
+  mmodel <- lapply(object[1:8], function (x) x[[pop]])
 
   # Precalculate the features for the new data (c(0,1...) is because precalc features thinks there is an intercept and y col).
   x.precalc <- precalc.features(cbind(0, 1, x), mmodel$populations)[, -1]
@@ -17,22 +17,22 @@ predict.gmjmcmc.2 <- function (model, x, link = function(x) x, quantiles = c(0.0
 
 #' Predict using a BGNLM model.
 #'
-#' @param model The model to use.
+#' @param object The model to use.
 #' @param x The new data to use for the prediction, a matrix where each row is an observation.
 #' @param link The link function to use
 #' @param quantiles The quantiles to calculate credible intervals for the posterior moddes (in model space).
 #'
 #' @export
-predict.gmjmcmc_merged <- function (model, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975)) {
+predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975)) {
   x <- as.matrix(x)
   preds <- list()
-  for (i in seq_along(model$results)) {
+  for (i in seq_along(object$results)) {
     preds[[i]] <- list()
-    for (j in seq_along(model$results[[i]]$populations)) {
+    for (j in seq_along(object$results[[i]]$populations)) {
       # Select the models and features to predict from at this iteration
-      models <- model$results[[i]]$models[[j]]
-      features <- model$results[[i]]$populations[[j]]
-      model.probs <- model$results[[i]]$model.probs[[j]]
+      models <- object$results[[i]]$models[[j]]
+      features <- object$results[[i]]$populations[[j]]
+      model.probs <- object$results[[i]]$model.probs[[j]]
 
       # Precalculate the features for the new data (c(0,1...) is because precalc features thinks there is an intercept and y col).
       x.precalc <- precalc.features(cbind(0, 1, x), features)[, -1]
@@ -47,7 +47,7 @@ predict.gmjmcmc_merged <- function (model, x, link = function(x) x, quantiles = 
       mean.pred <- rowSums(yhat %*% diag(as.numeric(model.probs)))
       pred.quant <- apply(yhat, 1, weighted.quantiles, weights=model.probs, prob=quantiles)
 
-      preds[[i]][[j]] <- list(mean=mean.pred, quantiles=pred.quant, weight=model$results[[i]]$pop.weights[j])
+      preds[[i]][[j]] <- list(mean=mean.pred, quantiles=pred.quant, weight=object$results[[i]]$pop.weights[j])
     }
   }
 
@@ -56,8 +56,8 @@ predict.gmjmcmc_merged <- function (model, x, link = function(x) x, quantiles = 
   aggr$quantiles <- 0 * preds[[1]][[1]]$quantiles
   for (i in seq_along(preds)) {
     for (j in seq_along(preds[[i]])) {
-      aggr$mean <- aggr$mean + preds[[i]][[j]]$mean * model$results[[i]]$pop.weights[j]
-      aggr$quantiles <- aggr$quantiles + preds[[i]][[j]]$quantiles * model$results[[i]]$pop.weights[j]
+      aggr$mean <- aggr$mean + preds[[i]][[j]]$mean * object$results[[i]]$pop.weights[j]
+      aggr$quantiles <- aggr$quantiles + preds[[i]][[j]]$quantiles * object$results[[i]]$pop.weights[j]
     }
   }
 
@@ -65,9 +65,9 @@ predict.gmjmcmc_merged <- function (model, x, link = function(x) x, quantiles = 
 }
 
 #' @export
-predict.mjmcmc <- function (model, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975)) {
+predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975)) {
   # Select the models and features to predict from at this iteration
-  models <- c(model$models, model$lo.models)[model$model.probs.idx]
+  models <- c(object$models, object$lo.models)[object$model.probs.idx]
 
   yhat <- matrix(0, nrow=nrow(x), ncol=length(models))
   for (k in seq_along(models)) {
@@ -76,24 +76,24 @@ predict.mjmcmc <- function (model, x, link = function(x) x, quantiles = c(0.025,
     yhat[, k] <- link(x[, c(TRUE, models[[k]]$model), drop=FALSE] %*% models[[k]]$coefs)
   }
 
-  mean.pred <- rowSums(yhat %*% diag(as.numeric(model$model.probs)))
-  pred.quant <- apply(yhat, 1, weighted.quantiles, weights = model$model.probs, prob = quantiles)
+  mean.pred <- rowSums(yhat %*% diag(as.numeric(object$model.probs)))
+  pred.quant <- apply(yhat, 1, weighted.quantiles, weights = object$model.probs, prob = quantiles)
 
   return(list(mean = mean.pred, quantiles = pred.quant))
 }
 
 #' @export
-predict.mjmcmc_parallel <- function (results, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975)) {
+predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975)) {
   max.crits <- numeric()
-  for (i in seq_along(results)) {
-    max.crits <- c(max.crits, results[[i]]$best.crit)
+  for (i in seq_along(object)) {
+    max.crits <- c(max.crits, object[[i]]$best.crit)
   }
   max.crit <- max(max.crits)
   result.weights <- exp(max.crits - max.crit) / sum(exp(max.crits - max.crit))
 
   preds <- list()
-  for (i in seq_along(results)) {
-    preds[[i]] <- predict.mjmcmc(results[[i]], x, link, quantiles)
+  for (i in seq_along(object)) {
+    preds[[i]] <- predict.mjmcmc(object[[i]], x, link, quantiles)
   }
 
   aggr <- list()
@@ -108,9 +108,9 @@ predict.mjmcmc_parallel <- function (results, x, link = function(x) x, quantiles
 }
 
 #' @export
-predict.gmjmcmc_parallel <- function (results, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
-  merged <- merge.results(results, ...)
-  predict.bgnlm(merged, x, link, quantiles)
+predict.gmjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
+  merged <- merge.results(object, ...)
+  predict.gmjmcmc_merged(merged, x, link, quantiles)
 }
 
 #' Calculate weighted quantiles

@@ -23,8 +23,8 @@
 #'
 #' @docType data
 #' @keywords datasets
-#' @name UCI.BCD.Wisconsin
-#' @usage data(UCI.BCD.Wisconsin)
+#' @name breastcancer
+#' @usage data(breastcancer)
 #' @format A data frame with 569 rows and 32 variables
 #' @source Dataset downloaded from the UCI Machine Learning Repository.
 #' \url{http://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+(Diagnostic)}

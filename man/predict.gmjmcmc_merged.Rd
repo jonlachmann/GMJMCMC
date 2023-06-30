@@ -4,10 +4,10 @@
 \alias{predict.gmjmcmc_merged}
 \title{Predict using a BGNLM model.}
 \usage{
-\method{predict}{gmjmcmc_merged}(model, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975))
+\method{predict}{gmjmcmc_merged}(object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975))
 }
 \arguments{
-\item{model}{The model to use.}
+\item{object}{The model to use.}
 
 \item{x}{The new data to use for the prediction, a matrix where each row is an observation.}
 

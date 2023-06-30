@@ -2,17 +2,19 @@ Package: GMJMCMC
 Type: Package
 Title: Genetically Modified Mode Jumping MCMC
 Version: 1.0
-Date: 2021-02-10
+Date: 2023-06-30
 Encoding: UTF-8
 Author: Jon Lachamnn
 Maintainer: Jon Lachmann <jon@lachmann.nu>
-Description: The package implements the GMJMCMC algorithm used to fit Bayesian Generalized Non-Linear Models (BGNLM)
+Description: Implements the GMJMCMC and MJMCMC algorithms used to fit Bayesian Generalized Non-Linear Models (BGNLM).
 License: GPL-2
 Depends:
     R (>= 3.5.0),
     fastglm,
     GenSA,
-    parallel
+    parallel,
+    stats,
+    graphics
 Imports:
     Rcpp
 LinkingTo:

@@ -4,10 +4,10 @@
 \alias{summary.mjmcmc}
 \title{Function to print a quick summary of the results}
 \usage{
-\method{summary}{mjmcmc}(results, tol = 1e-04)
+\method{summary}{mjmcmc}(object, tol = 1e-04)
 }
 \arguments{
-\item{results}{The results to use}
+\item{object}{The results to use}
 }
 \description{
 Function to print a quick summary of the results

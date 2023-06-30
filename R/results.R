@@ -130,43 +130,43 @@ model.string <- function (model, features, link) {
 
 #' Function to print a quick summary of the results
 #'
-#' @param results The results to use
+#' @param object The results to use
 #' @param pop The population to print for, defaults to last
 #'
 #' @export
-summary.gmjmcmc <- function (results, pop = "last", tol = 0.0001) {
-  if (pop == "last") pop <- length(results$models)
-  summary.mjmcmc(list(best = results$best, models = results$models[[pop]], populations = results$populations[[pop]]),tol = tol)
+summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001) {
+  if (pop == "last") pop <- length(object$models)
+  summary.mjmcmc(list(best = object$best, models = object$models[[pop]], populations = object$populations[[pop]]), tol = tol)
 }
 
 #' @export
-summary.gmjmcmc_merged <- function (x, tol = 0.0001) {
-  best <- max(sapply(x$results, function (y) y$best))
-  feats.strings <- sapply(x$features, print)
-  summary_internal(best, feats.strings, x$marg.probs, tol = tol)
-}
-
-#' Function to print a quick summary of the results
-#'
-#' @param results The results to use
-#'
-#' @export
-summary.mjmcmc <- function (results, tol = 0.0001) {
-  return(summary.mjmcmc_parallel(list(results),tol = tol))
+summary.gmjmcmc_merged <- function (object, tol = 0.0001) {
+  best <- max(sapply(object$results, function (y) y$best))
+  feats.strings <- sapply(object$features, print)
+  summary_internal(best, feats.strings, object$marg.probs, tol = tol)
 }
 
 #' Function to print a quick summary of the results
 #'
-#' @param results The results to use
+#' @param object The results to use
 #'
 #' @export
-summary.mjmcmc_parallel <- function (results , tol = 0.0001) {
+summary.mjmcmc <- function (object, tol = 0.0001) {
+  return(summary.mjmcmc_parallel(list(object), tol = tol))
+}
+
+#' Function to print a quick summary of the results
+#'
+#' @param object The results to use
+#'
+#' @export
+summary.mjmcmc_parallel <- function (object, tol = 0.0001) {
   # Get features as strings for printing
-  feats.strings <- sapply(results[[1]]$populations, print.feature, round = 2)
+  feats.strings <- sapply(object[[1]]$populations, print.feature, round = 2)
   # Get marginal posterior of features
-  models <- unlist(lapply(results, function (x) x$models), recursive = FALSE)
+  models <- unlist(lapply(object, function (x) x$models), recursive = FALSE)
   marg.probs <- marginal.probs.renorm(models)$probs
-  best <- max(sapply(results, function (x) x$best))
+  best <- max(sapply(object, function (x) x$best))
   return(summary_internal(best, feats.strings, marg.probs, tol = tol))
 }
 
@@ -191,19 +191,19 @@ summary_internal <- function (best, feats.strings, marg.probs, tol = 0.0001) {
 #' Function to plot the results, works both for results from gmjmcmc and
 #' merged results from merge.results
 #'
-#' @param results The results to use
+#' @param x The results to use
 #' @param count The number of features to plot, defaults to all
 #' @param pop The population to plot, defaults to last
 #'
 #' @export
-plot.gmjmcmc <- function (results, count="all", pop="last") {
-  if (pop == "last") pop <- length(results$populations)
-  if (is.null(results$populations)) {
-    pops <- results$features
-    marg.probs <- results$marg.probs
+plot.gmjmcmc <- function (x, count="all", pop="last") {
+  if (pop == "last") pop <- length(x$populations)
+  if (is.null(x$populations)) {
+    pops <- x$features
+    marg.probs <- x$marg.probs
   } else {
-    pops <- results$populations[[pop]]
-    marg.probs <- results$marg.probs[[pop]]
+    pops <- x$populations[[pop]]
+    marg.probs <- x$marg.probs[[pop]]
   }
   plot.mjmcmc(list(populations = pops, marg.probs = marg.probs), count)
 }
@@ -211,21 +211,21 @@ plot.gmjmcmc <- function (results, count="all", pop="last") {
 #' Function to plot the results, works both for results from gmjmcmc and
 #' merged results from merge.results
 #'
-#' @param results The results to use
+#' @param x The results to use
 #' @param count The number of features to plot, defaults to all
 #'
 #' @export
-plot.mjmcmc <- function (results, count = "all") {
+plot.mjmcmc <- function (x, count = "all") {
   ## Get features as strings for printing and marginal posteriors
   # If this is a merged results the structure is one way
-  if (is.null(results$populations)) {
-    feats.strings <- sapply(results$features, print)
-    feats.strings <- paste0(feats.strings, ", ", results$count)
-    marg.probs <- results$marg.probs
+  if (is.null(x$populations)) {
+    feats.strings <- sapply(x$features, print)
+    feats.strings <- paste0(feats.strings, ", ", x$count)
+    marg.probs <- x$marg.probs
   } # If this is a result that is not merged, it is another way
   else {
-    feats.strings <- sapply(results$populations, print)
-    marg.probs <- results$marg.probs
+    feats.strings <- sapply(x$populations, print)
+    marg.probs <- x$marg.probs
   }
 
   marg.prob.plot(feats.strings, marg.probs, count)

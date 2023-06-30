@@ -5,10 +5,10 @@
 \title{Function to plot the results, works both for results from gmjmcmc and
 merged results from merge.results}
 \usage{
-\method{plot}{gmjmcmc}(results, count = "all", pop = "last")
+\method{plot}{gmjmcmc}(x, count = "all", pop = "last")
 }
 \arguments{
-\item{results}{The results to use}
+\item{x}{The results to use}
 
 \item{count}{The number of features to plot, defaults to all}
 
