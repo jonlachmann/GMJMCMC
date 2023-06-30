@@ -4,7 +4,7 @@
 \alias{mjmcmc}
 \title{Main algorithm for MJMCMC}
 \usage{
-mjmcmc(data, loglik.pi, N, probs, params, sub = F)
+mjmcmc(data, loglik.pi, N = 100, probs = NULL, params = NULL, sub = FALSE)
 }
 \arguments{
 \item{data}{A matrix containing the data to use in the algorithm,

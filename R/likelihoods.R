@@ -14,7 +14,7 @@
 #' @param params A list of parameters for the log likelihood, supplied by the user
 #'
 #' @export logistic.loglik
-logistic.loglik <- function (y, x, model, complex, params) {
+logistic.loglik <- function (y, x, model, complex, params = list(r = 1)) {
   suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = binomial())})
   ret <- (-(mod$deviance -2 * log(params$r) * sum(complex$oc))) / 2
   return(list(crit=ret, coefs=mod$coefficients))
@@ -44,8 +44,12 @@ logistic.loglik.alpha <- function (a, data, mu_func) {
 #'
 #' @export gaussian.loglik
 gaussian.loglik <- function (y, x, model, complex, params) {
-  suppressWarnings({mod <- fastglm(as.matrix(x[,model]), y, family=gaussian())})
-  ret <- (-(mod$deviance + 2*log(length(y))*(mod$rank-1) - 2*log(params$r)*(sum(complex$oc))))/2
+  
+  if(length(params) == 0)
+    params = list(r = 1/dim(x)[1])
+  
+  suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())})
+  ret <- (-(mod$deviance + 2 * log(length(y)) * (mod$rank - 1) - 2 * log(params$r) * (sum(complex$oc)))) / 2
   return(list(crit=ret, coefs=mod$coefficients))
 }
 
@@ -73,7 +77,7 @@ gaussian.loglik.alpha <- function (a, data, mu_func) {
 #' @param params A list of parameters for the log likelihood, supplied by the user
 #'
 #' @export gaussian.loglik.bic.irlssgd
-gaussian.loglik.bic.irlssgd <- function (y, x, model, complex, params) {
+gaussian.loglik.bic.irlssgd <- function (y, x, model, complex, params = list(r = 1, subs = 0.5)) {
   mod <- irls.sgd(as.matrix(x[,model]), y, gaussian(),
             irls.control=list(subs=params$subs, maxit=20, tol=1e-7, cooling = c(1,0.9,0.75), expl = c(3,1.5,1)),
             sgd.control=list(subs=params$subs, maxit=250, alpha=0.001, decay=0.99, histfreq=10))
@@ -90,11 +94,13 @@ gaussian.loglik.bic.irlssgd <- function (y, x, model, complex, params) {
 #' @param params A list of parameters for the log likelihood, supplied by the user
 #'
 #' @export linear.g.prior.loglik
-linear.g.prior.loglik <- function (y, x, model, complex, params) {
-  out <- lm.fit(as.matrix(x[,model]),y)
-  rsquared <- 1-sum(var(out$residuals))/sum(var(y))
+linear.g.prior.loglik <- function (y, x, model, complex, params = list(g = 4)) {
+  out <- lm.fit(as.matrix(x[, model]), y)
+  rsquared <- 1 - sum(var(out$residuals)) / sum(var(y))
   p <- out$rank
   n <- nrow(x)
-  logmarglik <- 0.5*(log(1+params$g)*(n-p) - log(1+params$g*(1-rsquared))*(n-1))*(p!=1)
+  logmarglik <- 0.5 * (log(1 + params$g) * (n - p) - log(1 + params$g * (1 - rsquared)) * (n - 1)) * (p != 1)
   return(logmarglik)
 }
+
+

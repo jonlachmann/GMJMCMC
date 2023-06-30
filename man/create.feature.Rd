@@ -4,7 +4,7 @@
 \alias{create.feature}
 \title{Create method for "feature" class}
 \usage{
-create.feature(transform, features, alphas = NULL)
+create.feature(transform, features, trans.priors, alphas = NULL)
 }
 \arguments{
 \item{transform}{A numeric denoting the transform type}

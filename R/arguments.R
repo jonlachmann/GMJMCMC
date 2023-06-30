@@ -3,15 +3,10 @@
 # Created by: jonlachmann
 # Created on: 2021-02-19
 
-#' Generate a probability list for (G)MJMCMC
+#' Generate a probability list for MJMCMC
 #'
-#' @param transforms A list of the transformations used (to get the count),
-#' default is false and gives a MJMCMC prob list.
-#'
-#' @export gen.probs.list
-gen.probs.list <- function (transforms=F) {
-  ### Create a probability list for algorithm
-
+#' @export gen.probs.mjmcmc
+gen.probs.mjmcmc <- function () {
   ## Mode jumping algorithm probabilities
   large <- 0.05                         # probability of a large jump
   large.kern <- c(0, 0, 0, 1)           # probability for type of large jump, only allow type 1-4
@@ -23,28 +18,49 @@ gen.probs.list <- function (transforms=F) {
   probs <- list(large=large, large.kern=large.kern, localopt.kern=localopt.kern,
                 random.kern=random.kern, mh=mh)
 
-  ## Feature generation probabilities
-  if (transforms[1] != FALSE) {
-    transcount <- length(transforms)
-    filter <- 0.6                           # filtration threshold
-    gen <- rep(1/4, 4)                      # probability for different feature generation methods
-    trans <- rep(1/transcount, transcount)  # probability for each different nonlinear transformation
+  return(probs)
+}
 
-    probs$filter <- filter
-    probs$gen <- gen
-    probs$trans <- trans
-  }
+#' Generate a probability list for GMJMCMC
+#'
+#' @param transforms A list of the transformations used (to get the count).
+#'
+#' @export gen.probs.gmjmcmc
+gen.probs.gmjmcmc <- function (transforms) {
+  if (class(transforms) != "character")
+    stop("The argument transforms must be a character vector specifying the transformations.")
+
+  # Get probs for mjmcmc
+  probs <- gen.probs.mjmcmc()
+
+  ## Feature generation probabilities
+  transcount <- length(transforms)
+  filter <- 0.6                             # filtration threshold
+  gen <- c(0.40,0.40,0.10,0.10)             # probability for different feature generation methods
+  trans <- rep(1 / transcount, transcount)  # probability for each different nonlinear transformation
+  trans_priors <- rep(1, transcount)        # Default values assigned to each transformation to be used as "operation count".
+
+  probs$filter <- filter
+  probs$gen <- gen
+  probs$trans <- trans
+  probs$trans_priors <- trans_priors
 
   return(probs)
 }
 
-#' Generate a parameter list for (G)MJMCMC
+#' Generate a parameter list for MJMCMC
 #'
 #' @param data The dataset that will be used in the algorithm
-#' @param G True if we want parameters for GMJMCMC, false for MJMCMC
 #'
-#' @export gen.params.list
-gen.params.list <- function (data, G=F) {
+#' @return A list of parameters to use when running the MJMCMC algorithm.
+#'
+#' TODO: WRITE MORE
+#'
+#' Note that the $loglik item is an empty list, which is passed to the log likelihood function of the model,
+#' intended to store parameters that the estimator function should use.
+#'
+#' @export gen.params.mjmcmc
+gen.params.mjmcmc <- function (data) {
   ### Create a list of parameters for the algorithm
 
   ## Get the dimensions of the data to set parameters based on it
@@ -62,32 +78,45 @@ gen.params.list <- function (data, G=F) {
 
   ## MJMCMC parameters
   burn_in <- 100                                                        # TODO
-  large_params <- list(neigh.size=as.integer(ncov*0.35),
-                       neigh.min=as.integer(ncov*0.25),
-                       neigh.max=as.integer(ncov*0.45))                 # Large jump parameters
-  random_params <- list(neigh.size=1, neigh.min=1, neigh.max=2)         # Small random jump parameters
-  mh_params <- list(neigh.size=1, neigh.min=1, neigh.max=2)             # Regular MH parameters
+
+  # Large jump parameters
+  large_params <- list(
+    neigh.size = as.integer(ncov * 0.35),
+    neigh.min = as.integer(ncov * 0.25),
+    neigh.max = as.integer(ncov * 0.45)
+  )
+  random_params <- list(neigh.size = 1, neigh.min = 1, neigh.max = 2)  # Small random jump parameters
+  mh_params <- list(neigh.size = 1, neigh.min = 1, neigh.max = 2)      # Regular MH parameters
   ## Compile the list and return
   params <- list(burn_in=burn_in, mh=mh_params, large=large_params, random=random_params,
                  sa=sa_params, greedy=greedy_params, loglik=list())
 
-  # Add GMJMCMC specific parameters
-  if (G) {
-    ## GM parameters
-    feat_params <- list(D = 5, L = 15,                        # Hard limits on feature complexity
-                        alpha = 0,                            # alpha strategy (0=None, 1,2,3=strategies as per Hubin et al.) TODO: Fully Bayesian
-                        pop.max = as.integer(ncov * 1.5),     # Max features population size
-                        keep.org = F,                         # Always keep original covariates in every population
-                        prel.filter = 0,                      # Filtration threshold for first population (i.e. filter covariates even if keep.org=T)
-                        keep.min = 0.8,                       # Minimum proportion of features to always keep [0,1]
-                        eps = 0.05,                           # Inclusion probability limit for feature generation
-                        check.col = T,                        # Whether the colinearity should be checked
-                        max.proj.size = 15)                   # Maximum projection size
-    params$feat <- feat_params
-    params$rescale.large <- F
-    params$prel.filter <- NULL                                # Specify which covariates to keep in the first population. See Issue #15.
+  return(params)
+}
 
-  }
+#' Generate a parameter list for GMJMCMC
+#'
+#' @param data The dataset that will be used in the algorithm
+#'
+#' @export gen.params.gmjmcmc
+gen.params.gmjmcmc <- function (data) {
+  # Get mjmcmc params
+  params <- gen.params.mjmcmc(data)
+
+  ncov <- ncol(data) - 2
+
+  feat_params <- list(D = 5, L = 15,                        # Hard limits on feature complexity
+                      alpha = 0,                            # alpha strategy (0 = None, 1,2,3 = strategies as per Hubin et al.) TODO: Fully Bayesian
+                      pop.max = as.integer(ncov * 1.5),     # Max features population size
+                      keep.org = F,                         # Always keep original covariates in every population
+                      prel.filter = NULL,                      # Filtration threshold for first population (i.e. filter covariates even if keep.org=T)
+                      keep.min = 0.8,                       # Minimum proportion of features to always keep [0,1]
+                      eps = 0.05,                           # Inclusion probability limit for feature generation
+                      check.col = T,                        # Whether the colinearity should be checked
+                      max.proj.size = 15)                   # Maximum projection size
+  params$feat <- feat_params
+  params$rescale.large <- F
+  params$prel.filter <- NULL                                # Specify which covariates to keep in the first population. See Issue #15.
 
   return(params)
 }

@@ -6,7 +6,7 @@
 This function is created as an example of how to create an estimator that is used
 to calculate the marginal likelihood of a model.}
 \usage{
-logistic.loglik(y, x, model, complex, params)
+logistic.loglik(y, x, model, complex, params = list(r = 1))
 }
 \arguments{
 \item{y}{A vector containing the dependent variable}

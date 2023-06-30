@@ -4,7 +4,13 @@
 \alias{gaussian.loglik.bic.irlssgd}
 \title{Log likelihood function for gaussian regression with a prior p(m)=r*sum(total_width), using subsampling.}
 \usage{
-gaussian.loglik.bic.irlssgd(y, x, model, complex, params)
+gaussian.loglik.bic.irlssgd(
+  y,
+  x,
+  model,
+  complex,
+  params = list(r = 1, subs = 0.5)
+)
 }
 \arguments{
 \item{y}{A vector containing the dependent variable}

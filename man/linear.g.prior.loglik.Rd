@@ -4,7 +4,7 @@
 \alias{linear.g.prior.loglik}
 \title{Log likelihood function for linear regression using Zellners g-prior}
 \usage{
-linear.g.prior.loglik(y, x, model, complex, params)
+linear.g.prior.loglik(y, x, model, complex, params = list(g = 4))
 }
 \arguments{
 \item{y}{A vector containing the dependent variable}

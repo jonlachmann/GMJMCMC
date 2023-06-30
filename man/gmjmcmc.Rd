@@ -7,15 +7,15 @@ TODO: More documentation - borrow from https://github.com/aliaksah/EMJMCMC2016/b
 \usage{
 gmjmcmc(
   data,
-  loglik.pi,
-  loglik.alpha,
+  loglik.pi = gaussian.loglik,
+  loglik.alpha = gaussian.loglik.alpha,
   transforms,
-  T,
-  N.init,
-  N.final,
-  probs,
-  params,
-  sub = F
+  P = 10,
+  N.init = 100,
+  N.final = 100,
+  probs = NULL,
+  params = NULL,
+  sub = FALSE
 )
 }
 \arguments{
@@ -27,9 +27,12 @@ and the rest of the columns should be the independent variables.}
 
 \item{loglik.alpha}{The likelihood function to use for alpha calculation}
 
-\item{transforms}{A list of the available nonlinear transformations for feature generation}
+\item{transforms}{A Character vector including the names of the non-linear functions to be used by the modification 
+and the projection operator.}
 
-\item{T}{The number of population iterations}
+\item{P}{The number of generations for GMJMCMC. 
+The default value is $P = 10$.
+A larger value like $P = 50$ might be more realistic for more complicated examples where one expects a lot of non-linear structures.}
 
 \item{N.init}{The number of iterations per population (total iterations = (T-1)*N.init+N.final)}
 

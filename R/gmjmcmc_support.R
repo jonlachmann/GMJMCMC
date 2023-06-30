@@ -46,7 +46,7 @@ marginal.probs <- function (models) {
 #' Function for calculating feature importance through renormalized model estimates
 #' @param models The models to use.
 #' @param type Select which probabilities are of interest, features or models
-marginal.probs.renorm <- function (models, type="features") {
+marginal.probs.renorm <- function (models, type = "features") {
   models <- lapply(models, function (x) x[c("model", "crit")])
   model.size <- length(models[[1]]$model)
   models.matrix <- matrix(unlist(models), ncol = model.size + 1, byrow = TRUE)
@@ -54,14 +54,23 @@ marginal.probs.renorm <- function (models, type="features") {
   models.matrix <- models.matrix[!duplicates, ]
   max_mlik <- max(models.matrix[, (model.size + 1)])
   crit.sum <- sum(exp(models.matrix[, (model.size + 1)] - max_mlik))
-  if (type == "features") {
-    probs <- matrix(NA,1, model.size)
-    for (i in 1:(model.size)) probs[i] <- sum(exp(models.matrix[as.logical(models.matrix[, i]),(model.size + 1)] - max_mlik)) / crit.sum
-  } else if (type == "models") {
-    probs <- matrix(NA,1, nrow(models.matrix))
-    for (i in seq_len(nrow(models.matrix))) probs[i] <- exp(models.matrix[i, ncol(models.matrix)] - max_mlik) / crit.sum
+  if (type == "features" || type == "both") {
+    probs.f <- matrix(NA,1, model.size)
+    for (i in 1:(model.size)) probs.f[i] <- sum(exp(models.matrix[as.logical(models.matrix[, i]),(model.size + 1)] - max_mlik)) / crit.sum
   }
-  return(list(idx = which(!duplicates), probs = probs))
+  if (type == "models" || type == "both") {
+    probs.m <- matrix(NA,1, nrow(models.matrix))
+    for (i in seq_len(nrow(models.matrix))) probs.m[i] <- exp(models.matrix[i, ncol(models.matrix)] - max_mlik) / crit.sum
+  }
+
+  if (type == "features") {
+    result <- list(idx = which(!duplicates), probs = probs.f)
+  } else if (type == "models") {
+    result <- list(idx = which(!duplicates), probs = probs.m)
+  } else {
+    result <- list(idx = which(!duplicates), probs.f = probs.f, probs.m = probs.m)
+  }
+  return(result)
 }
 
 
@@ -80,7 +89,7 @@ precalc.features <- function (data, features) {
 
 # TODO: Compare to previous mliks here instead, also add a flag to do that in full likelihood estimation scenarios.
 # Function to call the model function
-loglik.pre <- function (loglik.pi, model, complex, data, params) {
+loglik.pre <- function (loglik.pi, model, complex, data, params = NULL) {
   # Get the complexity measures for just this model
   complex <- list(width = complex$width[model], oc = complex$oc[model], depth = complex$depth[model])
   # Call the model estimator with the data and the model, note that we add the intercept to every model
@@ -93,35 +102,6 @@ loglik.pre <- function (loglik.pi, model, complex, data, params) {
     else model.res$crit <- -.Machine$double.xmax
   }
   return(model.res)
-}
-
-#' Summarize results from GMJMCMC
-#'
-#' @param results The results from GMJMCMC
-#' @param populations A list of the populations to include in the summary, defaults to the last one
-#'
-#' @export summary.gmjresult
-summary.gmjresult <- function (results, population = "last") {
-  if (population == "last") pops <- length(results$models)
-  else pops <- population
-  feature_strings <- vector("list", length(results$populations[[pops]]))
-  for (i in seq_along(feature_strings)) {
-    feature_strings[[i]] <- print.feature(results$populations[[pops]][[i]], round = 2)
-  }
-  feature_importance <- marginal.probs.renorm(results$models[[pops]])$probs
-  return(list(features=feature_strings, importance=feature_importance))
-}
-
-#' Function to print all features in a model
-#'
-#' @export
-print.model <- function (model, features) {
-  # Create a list to store the features in
-  model_print <- vector("list", sum(model$model))
-  for (i in seq_along(model$model)) {
-    if (model$model[i]) model_print[[i]] <- print.feature(features[[i]])
-  }
-  return(model_print)
 }
 
 # Function to check the data

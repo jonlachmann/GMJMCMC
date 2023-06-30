@@ -15,9 +15,14 @@
 #' @param sub An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)
 #'
 #' @export mjmcmc
-mjmcmc <- function (data, loglik.pi, N, probs, params, sub=F) {
+mjmcmc <- function (data, loglik.pi, N = 100, probs = NULL, params = NULL, sub = FALSE) {
   # Verify that data is well-formed
   data <- check.data(data)
+
+  # Generate default probabilities and parameters if there are none supplied.
+  if (is.null(probs)) probs <- gen.probs.mjmcmc()
+  if (is.null(params)) params <- gen.params.mjmcmc(data)
+
   # Acceptance probability
   accept <- 0
 
@@ -36,7 +41,9 @@ mjmcmc <- function (data, loglik.pi, N, probs, params, sub=F) {
   # Calculate acceptance rate
   result$accept <- result$accept / N
   result$populations <- S
+
   # Return formatted results
+  class(result) <- "mjmcmc"
   return(result)
 }
 
@@ -119,7 +126,19 @@ mjmcmc.loop <- function (data, complex, loglik.pi, model.cur, N, probs, params, 
     # Add the current model to the list of visited models
     models[[i]] <- model.cur
   }
-  return(list(models=models, accept=accept, lo.models=lo.models, best.crit=best.crit))
+
+  # Calculate and store the marginal inclusion probabilities and the model probabilities
+  marg.probs <- marginal.probs.renorm(c(models, lo.models), type = "both")
+
+  return(list(
+    models = models,
+    accept = accept,
+    lo.models = lo.models,
+    best.crit = best.crit,
+    marg.probs = marg.probs$probs.f,
+    model.probs = marg.probs$probs.m,
+    model.probs.idx = marg.probs$idx
+  ))
 }
 
 #' Subalgorithm for generating a proposal and acceptance probability in (G)MJMCMC
