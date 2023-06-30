@@ -1,12 +1,12 @@
 #' @export
-predict.gmjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975)) {
+predict.gmjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
   merged <- merge.results(list(object))
   return(predict.gmjmcmc_merged(merged, x, link, quantiles))
 }
 
 #' New idea for a more streamlined function...
 #' Produces slightly different results from the fun above since this is using all lo.models too.
-predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = 1) {
+predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = 1, ...) {
 
   mmodel <- lapply(object[1:8], function (x) x[[pop]])
 
@@ -23,7 +23,7 @@ predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.
 #' @param quantiles The quantiles to calculate credible intervals for the posterior moddes (in model space).
 #'
 #' @export
-predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975)) {
+predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
   x <- as.matrix(x)
   preds <- list()
   for (i in seq_along(object$results)) {
@@ -65,7 +65,7 @@ predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles =
 }
 
 #' @export
-predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975)) {
+predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
   # Select the models and features to predict from at this iteration
   models <- c(object$models, object$lo.models)[object$model.probs.idx]
 
@@ -83,7 +83,7 @@ predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025
 }
 
 #' @export
-predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975)) {
+predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
   max.crits <- numeric()
   for (i in seq_along(object)) {
     max.crits <- c(max.crits, object[[i]]$best.crit)
@@ -120,7 +120,7 @@ predict.gmjmcmc_parallel <- function (object, x, link = function(x) x, quantiles
 #' @param prob The probabilities of the quantiles to use
 #'
 #' @return Weighted quantiles
-weighted.quantiles <- function (values, weights, prob=c(0.025, 0.975)) {
+weighted.quantiles <- function (values, weights, prob = c(0.025, 0.975)) {
   ordered <- order(values)
   P <- cumsum(weights[ordered])
 

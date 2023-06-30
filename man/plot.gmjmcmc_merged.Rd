@@ -4,7 +4,7 @@
 \alias{plot.gmjmcmc_merged}
 \title{Plot a gmjmcmc_merged run}
 \usage{
-\method{plot}{gmjmcmc_merged}(x, count = "all")
+\method{plot}{gmjmcmc_merged}(x, count = "all", ...)
 }
 \description{
 Plot a gmjmcmc_merged run

@@ -4,10 +4,12 @@
 \alias{summary.mjmcmc}
 \title{Function to print a quick summary of the results}
 \usage{
-\method{summary}{mjmcmc}(object, tol = 1e-04)
+\method{summary}{mjmcmc}(object, tol = 1e-04, ...)
 }
 \arguments{
 \item{object}{The results to use}
+
+\item{tol}{The tolerance to use as a threshold when reporting the results.}
 }
 \description{
 Function to print a quick summary of the results

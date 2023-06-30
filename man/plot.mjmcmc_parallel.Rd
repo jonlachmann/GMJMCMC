@@ -4,7 +4,7 @@
 \alias{plot.mjmcmc_parallel}
 \title{Plot a mjmcmc_parallel run}
 \usage{
-\method{plot}{mjmcmc_parallel}(x, count = "all")
+\method{plot}{mjmcmc_parallel}(x, count = "all", ...)
 }
 \description{
 Plot a mjmcmc_parallel run

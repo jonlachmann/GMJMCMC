@@ -132,15 +132,21 @@ model.string <- function (model, features, link) {
 #'
 #' @param object The results to use
 #' @param pop The population to print for, defaults to last
+#' @param tol The tolerance to use as a threshold when reporting the results.
 #'
 #' @export
-summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001) {
+summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, ...) {
   if (pop == "last") pop <- length(object$models)
   summary.mjmcmc(list(best = object$best, models = object$models[[pop]], populations = object$populations[[pop]]), tol = tol)
 }
 
+#' Function to print a quick summary of the results
+#'
+#' @param object The results to use
+#' @param tol The tolerance to use as a threshold when reporting the results.
+#'
 #' @export
-summary.gmjmcmc_merged <- function (object, tol = 0.0001) {
+summary.gmjmcmc_merged <- function (object, tol = 0.0001, ...) {
   best <- max(sapply(object$results, function (y) y$best))
   feats.strings <- sapply(object$features, print)
   summary_internal(best, feats.strings, object$marg.probs, tol = tol)
@@ -149,18 +155,20 @@ summary.gmjmcmc_merged <- function (object, tol = 0.0001) {
 #' Function to print a quick summary of the results
 #'
 #' @param object The results to use
+#' @param tol The tolerance to use as a threshold when reporting the results.
 #'
 #' @export
-summary.mjmcmc <- function (object, tol = 0.0001) {
+summary.mjmcmc <- function (object, tol = 0.0001, ...) {
   return(summary.mjmcmc_parallel(list(object), tol = tol))
 }
 
 #' Function to print a quick summary of the results
 #'
 #' @param object The results to use
+#' @param tol The tolerance to use as a threshold when reporting the results.
 #'
 #' @export
-summary.mjmcmc_parallel <- function (object, tol = 0.0001) {
+summary.mjmcmc_parallel <- function (object, tol = 0.0001, ...) {
   # Get features as strings for printing
   feats.strings <- sapply(object[[1]]$populations, print.feature, round = 2)
   # Get marginal posterior of features
@@ -196,7 +204,7 @@ summary_internal <- function (best, feats.strings, marg.probs, tol = 0.0001) {
 #' @param pop The population to plot, defaults to last
 #'
 #' @export
-plot.gmjmcmc <- function (x, count="all", pop="last") {
+plot.gmjmcmc <- function (x, count = "all", pop = "last", ...) {
   if (pop == "last") pop <- length(x$populations)
   if (is.null(x$populations)) {
     pops <- x$features
@@ -215,7 +223,7 @@ plot.gmjmcmc <- function (x, count="all", pop="last") {
 #' @param count The number of features to plot, defaults to all
 #'
 #' @export
-plot.mjmcmc <- function (x, count = "all") {
+plot.mjmcmc <- function (x, count = "all", ...) {
   ## Get features as strings for printing and marginal posteriors
   # If this is a merged results the structure is one way
   if (is.null(x$populations)) {
@@ -231,7 +239,7 @@ plot.mjmcmc <- function (x, count = "all") {
   marg.prob.plot(feats.strings, marg.probs, count)
 }
 
-marg.prob.plot <- function (feats.strings, marg.probs, count = "all") {
+marg.prob.plot <- function (feats.strings, marg.probs, count = "all", ...) {
   # Plot the distribution
   feats.strings <- feats.strings[order(marg.probs)]
   marg.probs <- sort(marg.probs)
@@ -243,7 +251,7 @@ marg.prob.plot <- function (feats.strings, marg.probs, count = "all") {
 
 #' Plot a mjmcmc_parallel run
 #' @export
-plot.mjmcmc_parallel <- function (x, count = "all") {
+plot.mjmcmc_parallel <- function (x, count = "all", ...) {
   merged <- merge.mjmcmc_parallel(x)
   marg.prob.plot(merged$features, merged$marg.probs, count)
 }
@@ -272,6 +280,6 @@ run.weigths <- function (results) {
 
 #' Plot a gmjmcmc_merged run
 #' @export
-plot.gmjmcmc_merged <- function (x, count = "all") {
+plot.gmjmcmc_merged <- function (x, count = "all", ...) {
   marg.prob.plot(sapply(x$features, print), x$marg.probs, count = count)
 }

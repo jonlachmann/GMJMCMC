@@ -10,7 +10,8 @@ Produces slightly different results from the fun above since this is using all l
   x,
   link = function(x) x,
   quantiles = c(0.025, 0.5, 0.975),
-  pop = 1
+  pop = 1,
+  ...
 )
 }
 \description{

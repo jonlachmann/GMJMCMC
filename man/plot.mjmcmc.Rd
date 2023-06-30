@@ -5,7 +5,7 @@
 \title{Function to plot the results, works both for results from gmjmcmc and
 merged results from merge.results}
 \usage{
-\method{plot}{mjmcmc}(x, count = "all")
+\method{plot}{mjmcmc}(x, count = "all", ...)
 }
 \arguments{
 \item{x}{The results to use}
