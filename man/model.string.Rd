@@ -4,7 +4,7 @@
 \alias{model.string}
 \title{Function to generate a function string for a model consisting of features}
 \usage{
-model.string(model, features, link)
+model.string(model, features, link = "I", round = 2)
 }
 \arguments{
 \item{model}{A logical vector indicating which features to include}
@@ -12,6 +12,8 @@ model.string(model, features, link)
 \item{features}{The population of features}
 
 \item{link}{The link function to use, as a string}
+
+\item{round}{Rounding error for the features in the printed format}
 }
 \description{
 Function to generate a function string for a model consisting of features

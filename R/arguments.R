@@ -81,9 +81,9 @@ gen.params.mjmcmc <- function (data) {
 
   # Large jump parameters
   large_params <- list(
-    neigh.size = as.integer(ncov * 0.35),
-    neigh.min = as.integer(ncov * 0.25),
-    neigh.max = as.integer(ncov * 0.45)
+    neigh.size = min(as.integer(ncov * 0.35),35),
+    neigh.min = min(as.integer(ncov * 0.25),25),
+    neigh.max = min(as.integer(ncov * 0.45),45)
   )
   random_params <- list(neigh.size = 1, neigh.min = 1, neigh.max = 2)  # Small random jump parameters
   mh_params <- list(neigh.size = 1, neigh.min = 1, neigh.max = 2)      # Regular MH parameters

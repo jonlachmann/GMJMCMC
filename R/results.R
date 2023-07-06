@@ -34,8 +34,25 @@ merge.results <- function (results, populations = NULL, complex.measure = NULL, 
   else if (populations == "best") pops.use <- lapply(1:res.count, function(x) which.max(unlist(results[[x]]$best.marg)))
 
   # Get the population weigths to be able to weight the features
-  pop.weights <- population.weigths(results, pops.use)
-
+  pw <- population.weigths(results, pops.use)
+  pop.weights <- pw$weights
+  
+ 
+  crit.best <- -Inf
+  pop.best <- 1
+  thread.best <- 1
+  for (i in seq_along(results)) {
+    for (pop in 1:(length(results[[1]]$populations))) 
+      if(results[[i]]$best.margs[[pop]] > crit.best)
+      {
+        print(results[[i]]$best.margs[[pop]])
+        crit.best <- results[[i]]$best.margs[[pop]]
+        pop.best <- pop
+        thread.best <- i
+      }
+  }
+  
+  
   # Collect all features and their renormalized weighted values
   features <- vector("list")
   renorms <- vector("list")
@@ -98,7 +115,8 @@ merge.results <- function (results, populations = NULL, complex.measure = NULL, 
   counts <- sapply(feats.simplest.ids, function(x) sum(feats.map[1,] == x))
   feats.simplest <- features[feats.simplest.ids]
   importance <- feats.map[4, feats.simplest.ids, drop = FALSE]
-  merged <- list(features = feats.simplest, marg.probs = importance, counts = counts, results = results)
+  merged <- list(features = feats.simplest, marg.probs = importance, counts = counts, results = results, pop.best = pop.best, thread.best = thread.best, crit.best = crit.best, 
+                 reported = pw$best, rep.pop = pw$pop.best, rep.thread = pw$thread.best)
   attr(merged, "class") <- "gmjmcmc_merged"
   return(merged)
 }
@@ -106,12 +124,25 @@ merge.results <- function (results, populations = NULL, complex.measure = NULL, 
 # Function for calculating the weights of different populations based on best mlik
 population.weigths <- function (results, pops.use) {
   max.crits <- vector("list")
+  max.crit <- -Inf
+  pop.best <- 1
+  thread.best <- 1
   for (i in seq_along(results)) {
-    for (pop in pops.use[[i]]) max.crits <- append(max.crits, results[[i]]$best.margs[[pop]])
+    for (pop in pops.use[[i]]) 
+    {
+      max.crits <- append(max.crits, results[[i]]$best.margs[[pop]])
+      if(results[[i]]$best.margs[[pop]] > max.crit)
+      {
+        max.crit <- results[[i]]$best.margs[[pop]]
+        pop.best <- pop
+        thread.best <- i
+      }
+    }
+      
   }
   max.crits <- unlist(max.crits)
-  max.crit <- max(max.crits)
-  return(exp(max.crits-max.crit) / sum(exp(max.crits-max.crit)))
+
+  return(list(weights = exp(max.crits-max.crit) / sum(exp(max.crits-max.crit)), best = max.crit, thread.best = thread.best, pop.best = pop.best))
 }
 
 #' Function to generate a function string for a model consisting of features
@@ -119,9 +150,10 @@ population.weigths <- function (results, pops.use) {
 #' @param model A logical vector indicating which features to include
 #' @param features The population of features
 #' @param link The link function to use, as a string
+#' @param round Rounding error for the features in the printed format
 #'
 #' @export model.string
-model.string <- function (model, features, link) {
+model.string <- function (model, features, link = "I",  round = 2) {
   modelstring <- paste0(sapply(features[model], print.feature, alphas=T), collapse="+")
   modelfun <- set_alphas(modelstring)
   modelfun$formula <- paste0(link, "(", modelfun$formula, ")")
@@ -137,7 +169,11 @@ model.string <- function (model, features, link) {
 #' @export
 summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, ...) {
   if (pop == "last") pop <- length(object$models)
-  summary.mjmcmc(list(best = object$best, models = object$models[[pop]], populations = object$populations[[pop]]), tol = tol)
+  else if (pop == "best") pop <- which.max(unlist(object$best.margs))
+  feats.strings <- sapply(object$populations[[pop]], print.feature, round = 2)
+  
+  summary_internal(best = object$best,
+  marg.probs = object$marg.probs[[pop]],  feats.strings =  feats.strings,best.pop = which.max(unlist(result$best.margs)), reported = object$best.margs[[pop]], rep.pop = pop, tol = tol)
 }
 
 #' Function to print a quick summary of the results
@@ -149,7 +185,9 @@ summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, ...) {
 summary.gmjmcmc_merged <- function (object, tol = 0.0001, ...) {
   best <- max(sapply(object$results, function (y) y$best))
   feats.strings <- sapply(object$features, print)
-  summary_internal(best, feats.strings, object$marg.probs, tol = tol)
+  summary_internal(best = object$crit.best, feats.strings, object$marg.probs, 
+                   best.pop = object$pop.best, thread.best = object$thread.best,  
+                   reported = object$reported, rep.pop = object$rep.pop, rep.thread = object$rep.thread, tol = tol)
 }
 
 #' Function to print a quick summary of the results
@@ -178,15 +216,29 @@ summary.mjmcmc_parallel <- function (object, tol = 0.0001, ...) {
   return(summary_internal(best, feats.strings, marg.probs, tol = tol))
 }
 
-summary_internal <- function (best, feats.strings, marg.probs, tol = 0.0001) {
+summary_internal <- function (best, feats.strings, marg.probs, tol = 0.0001, best.pop = NULL,reported = NULL, rep.pop = NULL, rep.thread = NULL, thread.best = NULL) {
   # Print the final distribution
   keep <- which(marg.probs[1, ] > tol)
   cat("                   Importance | Feature\n")
   print.dist(marg.probs[keep], feats.strings[keep], -1)
-  # Print the best marginal likelihood
-  cat("\nBest marginal likelihood: ", best, "\n")
+  # Print the best log marginal posterior
+  if(length(best.pop) > 0){
+    
+    if(length(thread.best) > 0)
+    {
+      cat("\nBest   population:", best.pop, " thread:", thread.best,  " log marginal posterior:", best,"\n")
+      cat("Report population:", rep.pop," thread:", rep.thread,  " log marginal posterior:", reported,"\n")
+      
+    }else{
+      cat("\nBest   population:", best.pop,  " log marginal posterior:", best,"\n")
+      cat("Report population:", rep.pop,  " log marginal posterior:", reported,"\n")
+    }
+  }else
+  {
+    cat("\nBest log marginal posterior: ", best,"\n")
+  }
   
-  
+  cat("\n")
   feats.strings <- feats.strings[keep]
   marg.probs <- marg.probs[1,keep]
   
@@ -194,6 +246,30 @@ summary_internal <- function (best, feats.strings, marg.probs, tol = 0.0001) {
   
   
   return(data.frame(feats.strings = feats.strings[ord.marg], marg.probs = marg.probs[ord.marg]))
+}
+
+#' Function to get a character respresentation of a list of features 
+#' A list or a population of features in a character representation
+#'
+#' @param x A list of feature objects
+#' @param round Rounding precision for parameters of the features
+#' @export
+string.population <- function(x, round = 2)
+{
+  cbind(sapply(x, print.feature, round = round))
+}
+
+#' Function to get a character respresentation of a list of models
+#' A list of models in a character representation
+#'
+#' @param features A list of feature objects on which the models are build
+#' @param models A list of model objects
+#' @param round Rounding precision for parameters of the features
+#' @param link The link function to use, as a string
+#' @export
+string.population.models <- function(features, models, round = 2, link = "I")
+{
+  cbind(sapply(1:length(models), FUN = function(x) model.string(features = features,model = (models[[x]]$model),round = round, link = "I")))
 }
 
 #' Function to plot the results, works both for results from gmjmcmc and
