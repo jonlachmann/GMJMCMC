@@ -20,9 +20,9 @@ merge.results <- function (results, populations = NULL, complex.measure = NULL, 
   if (is.null(populations))
     populations <- "last"
   if (is.null(complex.measure))
-    complex.measure <- 1
+    complex.measure <- 2
   if (is.null(tol))
-    tol <- 0
+    tol <- 0.0000001
 
   res.count <- length(results)
 
@@ -110,9 +110,9 @@ merge.results <- function (results, populations = NULL, complex.measure = NULL, 
     feats.map[4,equiv.feats] <- sum(renorms[equiv.feats])
   }
   # Select the simplest features based on the specified complexity measure and sort them
-  feats.simplest.ids <- feats.map[complex.measure,unique(feats.map[complex.measure, ])]
+  feats.simplest.ids <- unique(feats.map[complex.measure, ])
   feats.simplest.ids <- feats.simplest.ids[order(feats.map[4, feats.simplest.ids])]
-  counts <- sapply(feats.simplest.ids, function(x) sum(feats.map[1,] == x))
+  counts <- sapply(feats.simplest.ids, function(x) sum(feats.map[complex.measure,] == x))
   feats.simplest <- features[feats.simplest.ids]
   importance <- feats.map[4, feats.simplest.ids, drop = FALSE]
   merged <- list(features = feats.simplest, marg.probs = importance, counts = counts, results = results, pop.best = pop.best, thread.best = thread.best, crit.best = crit.best, 
