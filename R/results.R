@@ -8,14 +8,15 @@
 #' and merge the results together, simplifying by merging equivalent features (having high correlation).
 #'
 #' @param results A list containing multiple results from GMJMCMC.
+#' @param populations Which populations should be merged from the results, can be "all", "last" (default) or "best".
 #' @param complex.measure The complex measure to use when finding the simplest equivalent feature,
 #' 1=total width, 2=operation count and 3=depth.
 #' @param tol The tolerance to use for the correlation when finding equivalent features, default is 0.
 #' @param data Data to use when comparing features, default is NULL meaning that mock data will be generated,
 #' if data is supplied it should be of the same form as is required by gmjmcmc, i.e. with both x, y and an intercept.
 #'
-#' @export merge.results
-merge.results <- function (results, populations = NULL, complex.measure = NULL, tol = NULL, data = NULL) {
+#' @export merge_results
+merge_results <- function (results, populations = NULL, complex.measure = NULL, tol = NULL, data = NULL) {
   # Default values
   if (is.null(populations))
     populations <- "last"
@@ -153,8 +154,8 @@ population.weigths <- function (results, pops.use) {
 #' @param round Rounding error for the features in the printed format
 #'
 #' @export model.string
-model.string <- function (model, features, link = "I",  round = 2) {
-  modelstring <- paste0(sapply(features[model], print.feature, alphas=T), collapse="+")
+model.string <- function (model, features, link = "I", round = 2) {
+  modelstring <- paste0(sapply(features[model], print.feature, alphas = TRUE, round = round), collapse="+")
   modelfun <- set_alphas(modelstring)
   modelfun$formula <- paste0(link, "(", modelfun$formula, ")")
   return(modelfun)
@@ -165,6 +166,7 @@ model.string <- function (model, features, link = "I",  round = 2) {
 #' @param object The results to use
 #' @param pop The population to print for, defaults to last
 #' @param tol The tolerance to use as a threshold when reporting the results.
+#' @param ... Not used.
 #'
 #' @export
 summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, ...) {
@@ -172,14 +174,22 @@ summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, ...) {
   else if (pop == "best") pop <- which.max(unlist(object$best.margs))
   feats.strings <- sapply(object$populations[[pop]], print.feature, round = 2)
   
-  summary_internal(best = object$best,
-  marg.probs = object$marg.probs[[pop]],  feats.strings =  feats.strings,best.pop = which.max(unlist(result$best.margs)), reported = object$best.margs[[pop]], rep.pop = pop, tol = tol)
+  summary_internal(
+    best = object$best,
+    marg.probs = object$marg.probs[[pop]],
+    feats.strings = feats.strings,
+    best.pop = which.max(unlist(object$best.margs)),
+    reported = object$best.margs[[pop]],
+    rep.pop = pop,
+    tol = tol
+  )
 }
 
 #' Function to print a quick summary of the results
 #'
 #' @param object The results to use
 #' @param tol The tolerance to use as a threshold when reporting the results.
+#' @param ... Not used.
 #'
 #' @export
 summary.gmjmcmc_merged <- function (object, tol = 0.0001, ...) {
@@ -194,6 +204,7 @@ summary.gmjmcmc_merged <- function (object, tol = 0.0001, ...) {
 #'
 #' @param object The results to use
 #' @param tol The tolerance to use as a threshold when reporting the results.
+#' @param ... Not used.
 #'
 #' @export
 summary.mjmcmc <- function (object, tol = 0.0001, ...) {
@@ -204,6 +215,7 @@ summary.mjmcmc <- function (object, tol = 0.0001, ...) {
 #'
 #' @param object The results to use
 #' @param tol The tolerance to use as a threshold when reporting the results.
+#' @param ... Not used.
 #'
 #' @export
 summary.mjmcmc_parallel <- function (object, tol = 0.0001, ...) {
@@ -254,8 +266,7 @@ summary_internal <- function (best, feats.strings, marg.probs, tol = 0.0001, bes
 #' @param x A list of feature objects
 #' @param round Rounding precision for parameters of the features
 #' @export
-string.population <- function(x, round = 2)
-{
+string.population <- function(x, round = 2) {
   cbind(sapply(x, print.feature, round = round))
 }
 
@@ -267,9 +278,8 @@ string.population <- function(x, round = 2)
 #' @param round Rounding precision for parameters of the features
 #' @param link The link function to use, as a string
 #' @export
-string.population.models <- function(features, models, round = 2, link = "I")
-{
-  cbind(sapply(1:length(models), FUN = function(x) model.string(features = features,model = (models[[x]]$model),round = round, link = "I")))
+string.population.models <- function(features, models, round = 2, link = "I") {
+  cbind(sapply(seq_along(models), FUN = function(x) model.string(features = features, model = (models[[x]]$model), round = round, link = "I")))
 }
 
 #' Function to plot the results, works both for results from gmjmcmc and
@@ -278,6 +288,7 @@ string.population.models <- function(features, models, round = 2, link = "I")
 #' @param x The results to use
 #' @param count The number of features to plot, defaults to all
 #' @param pop The population to plot, defaults to last
+#' @param ... Not used.
 #'
 #' @export
 plot.gmjmcmc <- function (x, count = "all", pop = "last", ...) {
@@ -297,6 +308,7 @@ plot.gmjmcmc <- function (x, count = "all", pop = "last", ...) {
 #'
 #' @param x The results to use
 #' @param count The number of features to plot, defaults to all
+#' @param ... Not used.
 #'
 #' @export
 plot.mjmcmc <- function (x, count = "all", ...) {
@@ -326,6 +338,7 @@ marg.prob.plot <- function (feats.strings, marg.probs, count = "all", ...) {
 }
 
 #' Plot a mjmcmc_parallel run
+#' @inheritParams plot.mjmcmc
 #' @export
 plot.mjmcmc_parallel <- function (x, count = "all", ...) {
   merged <- merge.mjmcmc_parallel(x)
@@ -355,6 +368,7 @@ run.weigths <- function (results) {
 }
 
 #' Plot a gmjmcmc_merged run
+#' @inheritParams plot.gmjmcmc
 #' @export
 plot.gmjmcmc_merged <- function (x, count = "all", ...) {
   marg.prob.plot(sapply(x$features, print), x$marg.probs, count = count)

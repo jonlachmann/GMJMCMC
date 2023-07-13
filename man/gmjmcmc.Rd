@@ -27,10 +27,10 @@ and the rest of the columns should be the independent variables.}
 
 \item{loglik.alpha}{The likelihood function to use for alpha calculation}
 
-\item{transforms}{A Character vector including the names of the non-linear functions to be used by the modification 
+\item{transforms}{A Character vector including the names of the non-linear functions to be used by the modification
 and the projection operator.}
 
-\item{P}{The number of generations for GMJMCMC. 
+\item{P}{The number of generations for GMJMCMC.
 The default value is $P = 10$.
 A larger value like $P = 50$ might be more realistic for more complicated examples where one expects a lot of non-linear structures.}
 

@@ -12,11 +12,12 @@ Dataset downloaded from the Open Exoplanet Catalogue Repository.
 \url{https://github.com/OpenExoplanetCatalogue/oec_tables/}
 
 Creators:
-
-1. Prof. Hanno Rein, Department for Physical and Environmental Sciences.
+\enumerate{
+\item Prof. Hanno Rein, Department for Physical and Environmental Sciences.
 University of Toronto at Scarborough
 Toronto, Ontario M1C 1A4
 hanno.rein 'at' utoronto.ca
+}
 }
 \usage{
 data(exoplanet)

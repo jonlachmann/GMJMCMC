@@ -6,6 +6,13 @@
 \usage{
 \method{plot}{mjmcmc_parallel}(x, count = "all", ...)
 }
+\arguments{
+\item{x}{The results to use}
+
+\item{count}{The number of features to plot, defaults to all}
+
+\item{...}{Not used.}
+}
 \description{
 Plot a mjmcmc_parallel run
 }

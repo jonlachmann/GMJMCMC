@@ -12,6 +12,8 @@
 \item{pop}{The population to print for, defaults to last}
 
 \item{tol}{The tolerance to use as a threshold when reporting the results.}
+
+\item{...}{Not used.}
 }
 \description{
 Function to print a quick summary of the results

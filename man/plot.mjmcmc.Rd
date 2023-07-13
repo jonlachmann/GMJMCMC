@@ -11,6 +11,8 @@ merged results from merge.results}
 \item{x}{The results to use}
 
 \item{count}{The number of features to plot, defaults to all}
+
+\item{...}{Not used.}
 }
 \description{
 Function to plot the results, works both for results from gmjmcmc and

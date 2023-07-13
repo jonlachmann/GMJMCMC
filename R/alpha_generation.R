@@ -11,17 +11,15 @@ gen.alphas <- function (strategy, feature, data, loglik) {
 }
 
 #' Alpha generator using strategy 1 as per Hubin et. al.
-#' TODO: Implement me
+#' TODO: This is just a placeholder.
 #' @param feature The feature to generate alphas for
-#' @param transforms The transforms used
 alpha_1 <- function (feature) {
   return(feature)
 }
 
 #' Alpha generator using strategy 2 as per Hubin et. al.
-#' TODO: Implement me
+#' TODO: This is just a placeholder.
 #' @param feature The feature to generate alphas for
-#' @param transforms The transforms used
 alpha_2 <- function (feature) {
   return(feature)
 }
@@ -30,7 +28,6 @@ alpha_2 <- function (feature) {
 #'
 #' @param feature The feature to generate alphas for
 #' @param data The dataset used
-#' @param transforms The transforms used
 #' @param loglik log likelihood function to use
 alpha_3 <- function (feature, data, loglik) {
   # Create the string representation of the feature with variable alphas

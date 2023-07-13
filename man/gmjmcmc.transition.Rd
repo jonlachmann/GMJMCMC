@@ -25,6 +25,8 @@ gmjmcmc.transition(
 
 \item{loglik.alpha}{The log likelihood function to optimize the alphas for}
 
+\item{marg.probs.F.0}{The marginal inclusion probabilities of the initial population of features}
+
 \item{marg.probs}{The marginal inclusion probabilities of the current features}
 
 \item{labels}{Variable labels for printing}

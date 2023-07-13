@@ -12,8 +12,6 @@ alpha_3(feature, data, loglik)
 \item{data}{The dataset used}
 
 \item{loglik}{log likelihood function to use}
-
-\item{transforms}{The transforms used}
 }
 \description{
 Alpha generator using strategy 3 as per Hubin et. al.

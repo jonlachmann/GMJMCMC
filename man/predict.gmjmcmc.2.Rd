@@ -14,6 +14,19 @@ Produces slightly different results from the fun above since this is using all l
   ...
 )
 }
+\arguments{
+\item{object}{The model to use.}
+
+\item{x}{The new data to use for the prediction, a matrix where each row is an observation.}
+
+\item{link}{The link function to use}
+
+\item{quantiles}{The quantiles to calculate credible intervals for the posterior moddes (in model space).}
+
+\item{pop}{The population to use.}
+
+\item{...}{Not used.}
+}
 \description{
 New idea for a more streamlined function...
 Produces slightly different results from the fun above since this is using all lo.models too.

@@ -12,19 +12,18 @@ Dataset downloaded from the UCI Machine Learning Repository.
 \url{http://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+(Diagnostic)}
 
 Creators:
-
-1. Dr. William H. Wolberg, General Surgery Dept.
+\enumerate{
+\item Dr. William H. Wolberg, General Surgery Dept.
 University of Wisconsin, Clinical Sciences Center
 Madison, WI 53792
 wolberg 'at' eagle.surgery.wisc.edu
-
-2. W. Nick Street, Computer Sciences Dept.
+\item W. Nick Street, Computer Sciences Dept.
 University of Wisconsin, 1210 West Dayton St., Madison, WI 53706
 street 'at' cs.wisc.edu 608-262-6619
-
-3. Olvi L. Mangasarian, Computer Sciences Dept.
+\item Olvi L. Mangasarian, Computer Sciences Dept.
 University of Wisconsin, 1210 West Dayton St., Madison, WI 53706
 olvi 'at' cs.wisc.edu
+}
 
 Donor: Nick Street
 }
@@ -37,14 +36,14 @@ They describe characteristics of the cell nuclei present in the image.
 }
 \details{
 Separating plane described above was obtained using Multisurface Method-Tree (MSM-T)
-[K. P. Bennett, "Decision Tree Construction Via Linear Programming." Proceedings of the 4th Midwest Artificial
-Intelligence and Cognitive Science Society, pp. 97-101, 1992], a classification method which uses linear programming to
+(K. P. Bennett, "Decision Tree Construction Via Linear Programming." Proceedings of the 4th Midwest Artificial
+Intelligence and Cognitive Science Society, pp. 97-101, 1992), a classification method which uses linear programming to
 construct a decision tree. Relevant features were selected using an exhaustive search in the space of 1-4 features
 and 1-3 separating planes.
 
 The actual linear program used to obtain the separating plane in the 3-dimensional space is that described in:
-[K. P. Bennett and O. L. Mangasarian: "Robust Linear Programming Discrimination of Two Linearly Inseparable Sets",
-Optimization Methods and Software 1, 1992, 23-34].
+(K. P. Bennett and O. L. Mangasarian: "Robust Linear Programming Discrimination of Two Linearly Inseparable Sets",
+Optimization Methods and Software 1, 1992, 23-34).
 
 The variables are as follows:
 
@@ -58,7 +57,7 @@ The variables are as follows:
 W.N. Street, W.H. Wolberg and O.L. Mangasarian. Nuclear feature extraction for breast tumor diagnosis.
 IS&T/SPIE 1993 International Symposium on Electronic Imaging: Science and Technology, volume 1905, pages 861-870, San Jose, CA, 1993.
 
-Lichman, M. (2013). UCI Machine Learning Repository [\url{http://archive.ics.uci.edu/ml}].
+Lichman, M. (2013). UCI Machine Learning Repository \url{http://archive.ics.uci.edu/ml}.
 Irvine, CA: University of California, School of Information and Computer Science.
 }
 \keyword{datasets}

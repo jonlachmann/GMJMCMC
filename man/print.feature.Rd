@@ -4,10 +4,10 @@
 \alias{print.feature}
 \title{Print method for "feature" class}
 \usage{
-\method{print}{feature}(feature, dataset = FALSE, alphas = FALSE, labels = FALSE, round = FALSE)
+\method{print}{feature}(x, dataset = FALSE, alphas = FALSE, labels = FALSE, round = FALSE, ...)
 }
 \arguments{
-\item{feature}{An object of class "feature"}
+\item{x}{An object of class "feature"}
 
 \item{dataset}{Set the regular covariates as columns in a dataset}
 
@@ -17,7 +17,7 @@
 
 \item{round}{Should numbers be rounded when printing? Default is FALSE, otherwise it can be set to the number of decimal places.}
 
-\item{transforms}{The list of transforms to use}
+\item{...}{Not used.}
 }
 \description{
 Print method for "feature" class

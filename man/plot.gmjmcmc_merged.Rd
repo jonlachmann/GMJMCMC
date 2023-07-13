@@ -6,6 +6,13 @@
 \usage{
 \method{plot}{gmjmcmc_merged}(x, count = "all", ...)
 }
+\arguments{
+\item{x}{The results to use}
+
+\item{count}{The number of features to plot, defaults to all}
+
+\item{...}{Not used.}
+}
 \description{
 Plot a gmjmcmc_merged run
 }

@@ -11,7 +11,7 @@ mjmcmc.parallel(runs, cores = getOption("mc.cores", 2L), ...)
 
 \item{cores}{The number of cores to run on}
 
-\item{...}{Parameters to pass to mjmcmc}
+\item{...}{Further params passed to mjmcmc.}
 }
 \value{
 Merged results from multiple mjmcmc runs

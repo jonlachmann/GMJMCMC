@@ -1,11 +1,13 @@
 #' @export
 predict.gmjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
-  merged <- merge.results(list(object))
+  merged <- merge_results(list(object))
   return(predict.gmjmcmc_merged(merged, x, link, quantiles))
 }
 
 #' New idea for a more streamlined function...
 #' Produces slightly different results from the fun above since this is using all lo.models too.
+#' @inheritParams predict.gmjmcmc_merged
+#' @param pop The population to use.
 predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = 1, ...) {
 
   mmodel <- lapply(object[1:8], function (x) x[[pop]])
@@ -21,6 +23,7 @@ predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.
 #' @param x The new data to use for the prediction, a matrix where each row is an observation.
 #' @param link The link function to use
 #' @param quantiles The quantiles to calculate credible intervals for the posterior moddes (in model space).
+#' @param ... Not used.
 #'
 #' @export
 predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
@@ -109,7 +112,7 @@ predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles 
 
 #' @export
 predict.gmjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
-  merged <- merge.results(object, ...)
+  merged <- merge_results(object, ...)
   predict.gmjmcmc_merged(merged, x, link, quantiles)
 }
 

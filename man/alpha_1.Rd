@@ -3,16 +3,14 @@
 \name{alpha_1}
 \alias{alpha_1}
 \title{Alpha generator using strategy 1 as per Hubin et. al.
-TODO: Implement me}
+TODO: This is just a placeholder.}
 \usage{
 alpha_1(feature)
 }
 \arguments{
 \item{feature}{The feature to generate alphas for}
-
-\item{transforms}{The transforms used}
 }
 \description{
 Alpha generator using strategy 1 as per Hubin et. al.
-TODO: Implement me
+TODO: This is just a placeholder.
 }

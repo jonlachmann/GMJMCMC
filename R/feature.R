@@ -20,6 +20,7 @@
 #'
 #' @param transform A numeric denoting the transform type
 #' @param features A list of features to include
+#' @param trans.priors A vector of prior inclusion penalties for the different transformations.
 #' @param alphas A numeric vector denoting the alphas to use
 create.feature <- function (transform, features, trans.priors, alphas=NULL) {
   # Given no alphas, assume no intercept and unit coefficients
@@ -92,17 +93,17 @@ update.alphas <- function (feature, alphas, recurse=FALSE) {
 
 #' Print method for "feature" class
 #'
-#' @param feature An object of class "feature"
-#' @param transforms The list of transforms to use
+#' @param x An object of class "feature"
 #' @param dataset Set the regular covariates as columns in a dataset
 #' @param alphas Print a "?" instead of actual alphas to prepare the output for alpha estimation
 #' @param labels Should the covariates be named, or just referred to as their place in the data.frame.
 #' @param round Should numbers be rounded when printing? Default is FALSE, otherwise it can be set to the number of decimal places.
+#' @param ... Not used.
 #'
 #' @export
-print.feature <- function (feature, dataset = FALSE, alphas = FALSE, labels = FALSE, round = FALSE) {
+print.feature <- function (x, dataset = FALSE, alphas = FALSE, labels = FALSE, round = FALSE, ...) {
   fString <- ""
-  feat <- feature[[length(feature)]]
+  feat <- x[[length(x)]]
   # This is a more complex feature
   if (is.matrix(feat)) {
     transforms <- getOption("gmjmcmc-transformations")
@@ -136,7 +137,7 @@ print.feature <- function (feature, dataset = FALSE, alphas = FALSE, labels = FA
           if (alphas) fString <- paste0(fString, "?*")
           else fString <- paste0(fString, feat[j,3], "*")
         }
-        fString <- paste0(fString, print.feature(feature[[feat[j,2]]], dataset, alphas, labels, round), op)
+        fString <- paste0(fString, print.feature(x[[feat[j, 2]]], dataset, alphas, labels, round), op)
       }
     }
     fString <- paste0(fString, ")")

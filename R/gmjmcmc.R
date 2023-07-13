@@ -138,6 +138,7 @@ gmjmcmc <- function (data, loglik.pi = gaussian.loglik, loglik.alpha = gaussian.
 #' @param data The data used in the model, here we use it to generate alphas for new features
 #' @param loglik.alpha The log likelihood function to optimize the alphas for
 #' @param marg.probs The marginal inclusion probabilities of the current features
+#' @param marg.probs.F.0 The marginal inclusion probabilities of the initial population of features
 #' @param labels Variable labels for printing
 #' @param probs A list of the various probability vectors to use
 #' @param params A list of the various parameters for all the parts of the algorithm

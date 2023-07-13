@@ -11,6 +11,8 @@ create.feature(transform, features, trans.priors, alphas = NULL)
 
 \item{features}{A list of features to include}
 
+\item{trans.priors}{A vector of prior inclusion penalties for the different transformations.}
+
 \item{alphas}{A numeric vector denoting the alphas to use}
 }
 \description{

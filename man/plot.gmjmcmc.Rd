@@ -13,6 +13,8 @@ merged results from merge.results}
 \item{count}{The number of features to plot, defaults to all}
 
 \item{pop}{The population to plot, defaults to last}
+
+\item{...}{Not used.}
 }
 \description{
 Function to plot the results, works both for results from gmjmcmc and

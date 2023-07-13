@@ -10,7 +10,7 @@ p0pm2(x)
 \item{x}{The vector of values}
 }
 \value{
-p0(x)*sign(x)*(abs(x)+.Machine$double.eps)^(-2)
+p0(x)\emph{sign(x)}(abs(x)+.Machine$double.eps)^(-2)
 }
 \description{
 p0pm2 polynomial term
