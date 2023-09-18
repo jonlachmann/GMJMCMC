@@ -56,7 +56,7 @@ gen.feature <- function (features, marg.probs, data, loglik.alpha, probs, F.0.si
         # Check for linear dependence of new the feature
         if (length(features) == F.0.size) feats <- list()
         else feats <- features[(F.0.size + 1):length(features)]
-        if (params$check.col && !check.collinearity(feat, feats, F.0.size))
+        if (params$check.col && !check.collinearity(feat, feats, F.0.size,data = data))
           feat.ok <- T
         else if (!params$check.col)
           feat.ok <- T
@@ -71,12 +71,15 @@ gen.feature <- function (features, marg.probs, data, loglik.alpha, probs, F.0.si
 }
 
 # Check if there is collinearity present in the current set of features
-check.collinearity <- function (proposal, features, F.0.size) {
+check.collinearity <- function (proposal, features, F.0.size,data) {
   # Add the proposal to the feature list for evaluation
   features[[length(features) + 1]] <- proposal
   # Generate mock data to test with (avoiding too costly computations)
-  mock.data <- matrix(c(runif((F.0.size * 2), -100, 100), rep(1, F.0.size * 2),
+  if(is.null(data))
+    mock.data <- matrix(c(runif((F.0.size * 2), -100, 100), rep(1, F.0.size * 2),
                         runif((F.0.size * 2) * (F.0.size), -100, 100)), F.0.size * 2, F.0.size + 2)
+  else
+    mock.data <- cbind(data[1:min(F.0.size,dim(data)[1]),1],rep(1, F.0.size * 2),data[1:min(F.0.size,dim(data)[1]),-1])
   # Use the mock data to precalc the features
   mock.data.precalc <- precalc.features(mock.data, features)
   # Fit a linear model with the mock data precalculated features
