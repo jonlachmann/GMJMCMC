@@ -79,7 +79,7 @@ check.collinearity <- function (proposal, features, F.0.size,data) {
     mock.data <- matrix(c(runif((F.0.size * 2), -100, 100), rep(1, F.0.size * 2),
                         runif((F.0.size * 2) * (F.0.size), -100, 100)), F.0.size * 2, F.0.size + 2)
   else
-    mock.data <- cbind(data[1:min(F.0.size,dim(data)[1]),1],rep(1, F.0.size * 2),data[1:min(F.0.size,dim(data)[1]),-1])
+    mock.data <- check.data(data[1:min(F.0.size*2,dim(data)[1]),]) #cbind(runif(min(F.0.size*2,dim(data)[1]), -100, 100),rep(1, min(F.0.size*2,dim(data)[1])),data[,-1])
   # Use the mock data to precalc the features
   mock.data.precalc <- precalc.features(mock.data, features)
   # Fit a linear model with the mock data precalculated features
