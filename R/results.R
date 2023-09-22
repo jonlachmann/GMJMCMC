@@ -166,13 +166,14 @@ model.string <- function (model, features, link = "I", round = 2) {
 #' @param object The results to use
 #' @param pop The population to print for, defaults to last
 #' @param tol The tolerance to use as a threshold when reporting the results.
+#' @param labels Should the covariates be named, or just referred to as their place in the data.frame.
 #' @param ... Not used.
 #'
 #' @export
-summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, ...) {
+summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001,labels = F, ...) {
   if (pop == "last") pop <- length(object$models)
   else if (pop == "best") pop <- which.max(unlist(object$best.margs))
-  feats.strings <- sapply(object$populations[[pop]], print.feature, round = 2)
+  feats.strings <- sapply(object$populations[[pop]], FUN = function(x) print.feature(x = x, labels = labels, round = 2))
   
   summary_internal(
     best = object$best,
@@ -189,12 +190,13 @@ summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, ...) {
 #'
 #' @param object The results to use
 #' @param tol The tolerance to use as a threshold when reporting the results.
+#' @param labels Should the covariates be named, or just referred to as their place in the data.frame.
 #' @param ... Not used.
 #'
 #' @export
-summary.gmjmcmc_merged <- function (object, tol = 0.0001, ...) {
+summary.gmjmcmc_merged <- function (object, tol = 0.0001,labels = F, ...) {
   best <- max(sapply(object$results, function (y) y$best))
-  feats.strings <- sapply(object$features, print)
+  feats.strings <- sapply(object$features, FUN = function(x) print.feature(x = x, labels = labels, round = 2))
   summary_internal(best = object$crit.best, feats.strings, object$marg.probs, 
                    best.pop = object$pop.best, thread.best = object$thread.best,  
                    reported = object$reported, rep.pop = object$rep.pop, rep.thread = object$rep.thread, tol = tol)
@@ -215,12 +217,13 @@ summary.mjmcmc <- function (object, tol = 0.0001, ...) {
 #'
 #' @param object The results to use
 #' @param tol The tolerance to use as a threshold when reporting the results.
+#' @param labels Should the covariates be named, or just referred to as their place in the data.frame.
 #' @param ... Not used.
 #'
 #' @export
-summary.mjmcmc_parallel <- function (object, tol = 0.0001, ...) {
+summary.mjmcmc_parallel <- function (object, tol = 0.0001, labels = F, ...) {
   # Get features as strings for printing
-  feats.strings <- sapply(object[[1]]$populations, print.feature, round = 2)
+  feats.strings <- sapply(object[[1]]$populations, FUN = function(x) print.feature(x = x, labels = labels, round = 2))
   # Get marginal posterior of features
   models <- unlist(lapply(object, function (x) x$models), recursive = FALSE)
   marg.probs <- marginal.probs.renorm(models)$probs

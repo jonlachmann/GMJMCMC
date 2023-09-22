@@ -1,3 +1,5 @@
 .idea
 test
 .DS_Store
+^.*\.Rproj$
+^\.Rproj\.user$
