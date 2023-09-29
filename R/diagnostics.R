@@ -42,7 +42,7 @@ plot.diagn <- function (res, FUN = median, conf = 0.95, burnin = 0, window = 100
   ub <- sr + qnorm(p = 1-(1-conf)/2)*sds
   lb <- sr - qnorm(p = 1-(1-conf)/2)*sds
   
-  plot(y = sr,x = (burnin+1):(dim(matrix.results)[1]), type = "l",col = 1,ylim = c(min(lb), max(ub)), main = "Convergence", xlab = "Epoch", ylab = "Summary")
+  plot(y = sr,x = (burnin+1):(dim(matrix.results)[1]), type = "l",col = 1,ylim = c(min(lb), max(ub)), main = "Convergence", xlab = "Population", ylab = "Summary")
   lines(y = ub,x = (burnin+1):(dim(matrix.results)[1]),col = 1,lty = 2)
   lines(y = lb,x = (burnin+1):(dim(matrix.results)[1]),col = 1,lty = 2)
   
