@@ -38,19 +38,21 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
   pw <- population.weigths(results, pops.use)
   pop.weights <- pw$weights
   
- 
+  bests <- matrix(data = 0, ncol = length(results), nrow = length(results[[1]]$populations))
   crit.best <- -Inf
   pop.best <- 1
   thread.best <- 1
   for (i in seq_along(results)) {
     for (pop in 1:(length(results[[1]]$populations))) 
+    {
+      bests[pop,i] <- results[[i]]$best.margs[[pop]]
       if(results[[i]]$best.margs[[pop]] > crit.best)
       {
-        print(results[[i]]$best.margs[[pop]])
         crit.best <- results[[i]]$best.margs[[pop]]
         pop.best <- pop
         thread.best <- i
       }
+    }
   }
   
   
@@ -117,7 +119,7 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
   feats.simplest <- features[feats.simplest.ids]
   importance <- feats.map[4, feats.simplest.ids, drop = FALSE]
   merged <- list(features = feats.simplest, marg.probs = importance, counts = counts, results = results, pop.best = pop.best, thread.best = thread.best, crit.best = crit.best, 
-                 reported = pw$best, rep.pop = pw$pop.best, rep.thread = pw$thread.best)
+                 reported = pw$best, rep.pop = pw$pop.best, best.log.posteriors = bests, rep.thread = pw$thread.best)
   attr(merged, "class") <- "gmjmcmc_merged"
   return(merged)
 }
