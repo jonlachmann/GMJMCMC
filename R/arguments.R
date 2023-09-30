@@ -112,7 +112,8 @@ gen.params.gmjmcmc <- function (data) {
                       prel.filter = NULL,                           # Filtration threshold for first population (i.e. filter covariates even if keep.org=T)
                       keep.min = 0.8,                               # Minimum proportion of features to always keep [0,1]
                       eps = 0.05,                                   # Inclusion probability limit for feature generation
-                      check.col = T,                                # Whether the colinearity should be checked
+                      check.col = TRUE,                             # Whether the colinearity should be checked
+                      col.check.mock.data = FALSE,                  # Use mock data when checking for colinearity during feature generation
                       max.proj.size = 15)                           # Maximum projection size
   params$feat <- feat_params
   params$rescale.large <- F

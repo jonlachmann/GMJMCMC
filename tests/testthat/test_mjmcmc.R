@@ -18,7 +18,7 @@ test_that("Testing MJMCMC algorithm", {
 
   data <- matrix(rnorm(600), 100)
   resm <- mjmcmc(data, loglik.tester)
-  summary(resm)
+  summary(resm, labels = c("a", "b", "c", "d", "e"))
   plot(resm)
   predm <- predict(resm, cbind(1, data[, -1, drop = FALSE]))
 

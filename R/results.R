@@ -172,7 +172,7 @@ model.string <- function (model, features, link = "I", round = 2) {
 #' @param ... Not used.
 #'
 #' @export
-summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001,labels = F, ...) {
+summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, labels = F, ...) {
   if (pop == "last") pop <- length(object$models)
   else if (pop == "best") pop <- which.max(unlist(object$best.margs))
   feats.strings <- sapply(object$populations[[pop]], FUN = function(x) print.feature(x = x, labels = labels, round = 2))
@@ -208,11 +208,12 @@ summary.gmjmcmc_merged <- function (object, tol = 0.0001,labels = F, ...) {
 #'
 #' @param object The results to use
 #' @param tol The tolerance to use as a threshold when reporting the results.
+#' @param labels Should the covariates be named, or just referred to as their place in the data.frame.
 #' @param ... Not used.
 #'
 #' @export
-summary.mjmcmc <- function (object, tol = 0.0001, ...) {
-  return(summary.mjmcmc_parallel(list(object), tol = tol))
+summary.mjmcmc <- function (object, tol = 0.0001, labels = FALSE, ...) {
+  return(summary.mjmcmc_parallel(list(object), tol = tol, labels = labels))
 }
 
 #' Function to print a quick summary of the results
@@ -223,7 +224,7 @@ summary.mjmcmc <- function (object, tol = 0.0001, ...) {
 #' @param ... Not used.
 #'
 #' @export
-summary.mjmcmc_parallel <- function (object, tol = 0.0001, labels = F, ...) {
+summary.mjmcmc_parallel <- function (object, tol = 0.0001, labels = FALSE, ...) {
   # Get features as strings for printing
   feats.strings <- sapply(object[[1]]$populations, FUN = function(x) print.feature(x = x, labels = labels, round = 2))
   # Get marginal posterior of features
