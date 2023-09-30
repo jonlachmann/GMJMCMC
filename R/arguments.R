@@ -27,7 +27,7 @@ gen.probs.mjmcmc <- function () {
 #'
 #' @export gen.probs.gmjmcmc
 gen.probs.gmjmcmc <- function (transforms) {
-  if (class(transforms) != "character")
+  if (!is.character(transforms))
     stop("The argument transforms must be a character vector specifying the transformations.")
 
   # Get probs for mjmcmc

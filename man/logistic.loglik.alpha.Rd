@@ -13,7 +13,7 @@ logistic.loglik.alpha(a, data, mu_func)
 \item{data}{The data to be used for calculation}
 
 \item{mu_func}{The function linking the mean to the covariates,
-as a string with the alphas as a\link{i}.}
+as a string with the alphas as a[i].}
 }
 \description{
 Log likelihood function for logistic regression for alpha calculation

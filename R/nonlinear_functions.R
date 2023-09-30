@@ -16,24 +16,24 @@ sigmoid <- function(x)  1 / (1 - exp(-x))
 #' @param x The vector of values in degrees
 #' @return The sine of x
 #'
-#' @export sin.rad
-sin.rad <- function(x) sin(x/180*pi)
+#' @export sin_deg
+sin_deg <- function(x) sin(x / 180 * pi)
 
 #' Cosine function for degrees
 #'
 #' @param x The vector of values in degrees
 #' @return The cosine of x
 #'
-#' @export cos.rad
-cos.rad <- function(x) cos(x/180*pi)
+#' @export cos_deg
+cos_deg <- function(x) cos(x / 180 * pi)
 
 #' Double exponential function
 #'
 #' @param x The vector of values
 #' @return e^(-abs(x))
 #'
-#' @export exp.dbl
-exp.dbl <- function(x) exp(-abs(x))
+#' @export exp_dbl
+exp_dbl <- function(x) exp(-abs(x))
 
 
 #' Square root function

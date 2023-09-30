@@ -4,7 +4,7 @@
 \alias{plot.diagn}
 \title{Plot convergence of best/median/mean/other summary log posteriors in time}
 \usage{
-\method{plot}{diagn}(res, FUN = median, conf = 0.95, burnin = 6, window = 5)
+\method{plot}{diagn}(res, FUN = median, conf = 0.95, burnin = 0, window = 10000)
 }
 \arguments{
 \item{res}{Object corresponding gmjmcmc output}

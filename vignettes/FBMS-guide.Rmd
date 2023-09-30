@@ -1,13 +1,13 @@
 ---
-title: "GMJMCMC - Genetically Modified Mode Jumping MCMC"
+title: "FBMS - Flexible Bayesian Model Selection and Model Averaging"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{GMJMCMC - Genetically Modified Mode Jumping MCMC}
+  %\VignetteIndexEntry{FBMS - Flexible Bayesian Model Selection and Model Averaging}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-  %\VignetteDepends{fastglm,GMJMCMC}
+  %\VignetteDepends{fastglm, FBMS}
 ---
-The `GMJMCMC` package provides functions to estimate Bayesian Generalized nonlinear models (BGNLMs) through a Genetically Modified Mode Jumping MCMC algorithm.
+The `FBMS` package provides functions for Flexible Bayesian Model Selection and Model Averaging.
 
 
 ```{r, include = FALSE}
@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 # Examples
 Below are provided examples on how to run the algorithm and what the results tell us, we begin by loading the package and a supplied dataset
 ```{r setup}
-library(GMJMCMC)
+library(FBMS)
 library(GenSA)
 library(fastglm)
 data("breastcancer")
@@ -29,7 +29,7 @@ We need some nonlinear transformations for the algorithm to use, the package off
 ```{r}
 to3 <- function(x) x^3
 
-transforms <- c("sigmoid","sin.rad","exp.dbl","p0","troot","to3")
+transforms <- c("sigmoid","sin_deg","exp_dbl","p0","troot","to3")
 ```
 By calling two functions in the package, a list of probabilities for various parts of the algorithm, as well as a list of parameters are created. The list of probabilities needs the list of transformations to be able to create the vector of probabilities for the different transformations
 ```{r}

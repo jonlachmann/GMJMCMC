@@ -1,12 +1,14 @@
-Package: GMJMCMC
+Package: FBMS
 Type: Package
-Title: Genetically Modified Mode Jumping MCMC
+Title: Flexible Bayesian Model Selection and Model Averaging
 Version: 1.0
-Date: 2023-06-30
+Date: 2023-09-30
 Encoding: UTF-8
-Author: Jon Lachamnn
-Maintainer: Jon Lachmann <jon@lachmann.nu>
-Description: Implements the GMJMCMC and MJMCMC algorithms used to fit Bayesian Generalized Non-Linear Models (BGNLM).
+Authors@R: c(
+    person("Jon", "Lachmann", email = "jon@lachmann.nu", role = c("cre", "aut")),
+    person("Aliaksandr", "Hubin", email = "aliaksah@math.uio.no", role = "aut")
+    )
+Description: Implements the GMJMCMC and MJMCMC algorithms for Flexible Bayesian Model Selection and Model Averaging.
 License: GPL-2
 Depends:
     R (>= 3.5.0),

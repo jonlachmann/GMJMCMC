@@ -4,7 +4,7 @@
 \alias{summary.mjmcmc_parallel}
 \title{Function to print a quick summary of the results}
 \usage{
-\method{summary}{mjmcmc_parallel}(object, tol = 1e-04, labels = F, ...)
+\method{summary}{mjmcmc_parallel}(object, tol = 1e-04, labels = FALSE, ...)
 }
 \arguments{
 \item{object}{The results to use}

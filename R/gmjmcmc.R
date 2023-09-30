@@ -4,7 +4,7 @@
 # Created on: 2021-02-11
 
 # Allow the package to access Rcpp functions
-#' @useDynLib GMJMCMC
+#' @useDynLib FBMS
 #' @importFrom Rcpp sourceCpp
 NULL
 
