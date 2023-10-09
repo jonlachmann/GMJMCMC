@@ -95,6 +95,7 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
   # Generate mock data to compare features with
   if (is.null(data)) mock.data <- matrix(runif((feat.count+2)^2, -100, 100), ncol=feat.count+2)
   else mock.data <- check.data(data)
+  
   mock.data.precalc <- precalc.features(mock.data, features)[,-(1:2)]
 
   # Calculate the correlation to find equivalent features

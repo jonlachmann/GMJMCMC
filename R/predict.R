@@ -1,6 +1,6 @@
 #' @export
 predict.gmjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
-  merged <- merge_results(list(object))
+  merged <- merge_results(list(object),data = cbind(1,x))
   return(predict.gmjmcmc_merged(merged, x, link, quantiles))
 }
 
@@ -112,7 +112,7 @@ predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles 
 
 #' @export
 predict.gmjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
-  merged <- merge_results(object, ...)
+  merged <- merge_results(object,data = cbind(1,x), ...)
   predict.gmjmcmc_merged(merged, x, link, quantiles)
 }
 

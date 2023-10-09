@@ -30,7 +30,7 @@ gmjmcmc.iact <- function (x) {
 #' @param window sliding window for computing the standard deviation
 #' @return summary statistics with given confidence intervals
 #'
-plot.diagn <- function (res, FUN = median, conf = 0.95, burnin = 0, window = 10000) {
+diagn_plot <- function (res, FUN = median, conf = 0.95, burnin = 0, window = 10000) {
   
   if(length(res$thread.best)>0)
     matrix.results <- res$best.log.posteriors
