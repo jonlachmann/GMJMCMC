@@ -43,7 +43,7 @@ print.dist <- function(probs, labels, threshold, size=30) {
 }
 
 # A more intuitive sample function which does not change behaviour when length(x) == 1.
-sample2 <- function(x, size, replace = F, prob = NULL) {
+sample2 <- function(x, size, replace = FALSE, prob = NULL) {
   if (length(x) == 1) return(x)
   base::sample(x, size = size, replace = replace, prob = prob)
 }

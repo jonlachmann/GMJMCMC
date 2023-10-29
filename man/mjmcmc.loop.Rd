@@ -4,7 +4,7 @@
 \alias{mjmcmc.loop}
 \title{The main loop for the MJMCMC algorithm, used in both MJMCMC and GMJMCMC}
 \usage{
-mjmcmc.loop(data, complex, loglik.pi, model.cur, N, probs, params, sub = F)
+mjmcmc.loop(data, complex, loglik.pi, model.cur, N, probs, params, sub = FALSE)
 }
 \arguments{
 \item{data}{The data to use}

@@ -4,7 +4,7 @@
 \alias{summary.gmjmcmc_merged}
 \title{Function to print a quick summary of the results}
 \usage{
-\method{summary}{gmjmcmc_merged}(object, tol = 1e-04, labels = F, ...)
+\method{summary}{gmjmcmc_merged}(object, tol = 1e-04, labels = FALSE, ...)
 }
 \arguments{
 \item{object}{The results to use}

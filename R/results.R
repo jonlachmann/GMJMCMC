@@ -104,7 +104,7 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
   # A map to link equivalent features together,
   # row 1-3 are the simplest equivalent features based on three different complexity measures
   # row 4 is the total weighted density of those features
-  feats.map <- matrix(1:feat.count, 4, feat.count, byrow=T)
+  feats.map <- matrix(1:feat.count, 4, feat.count, byrow = TRUE)
   for (i in seq_len(nrow(cors))) {
     equiv.feats <- which(cors[i, ] >= (1 - tol))
     # Compare equivalent features complexity to find most simple
@@ -173,7 +173,7 @@ model.string <- function (model, features, link = "I", round = 2) {
 #' @param ... Not used.
 #'
 #' @export
-summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, labels = F, ...) {
+summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, labels = FALSE, ...) {
   if (pop == "last") pop <- length(object$models)
   else if (pop == "best") pop <- which.max(unlist(object$best.margs))
   feats.strings <- sapply(object$populations[[pop]], FUN = function(x) print.feature(x = x, labels = labels, round = 2))
@@ -197,7 +197,7 @@ summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, labels = F, ...
 #' @param ... Not used.
 #'
 #' @export
-summary.gmjmcmc_merged <- function (object, tol = 0.0001,labels = F, ...) {
+summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, ...) {
   best <- max(sapply(object$results, function (y) y$best))
   feats.strings <- sapply(object$features, FUN = function(x) print.feature(x = x, labels = labels, round = 2))
   summary_internal(best = object$crit.best, feats.strings, object$marg.probs, 
@@ -261,7 +261,7 @@ summary_internal <- function (best, feats.strings, marg.probs, tol = 0.0001, bes
   feats.strings <- feats.strings[keep]
   marg.probs <- marg.probs[1,keep]
   
-  ord.marg <- order(marg.probs, decreasing = T) 
+  ord.marg <- order(marg.probs, decreasing = TRUE)
   
   
   return(data.frame(feats.strings = feats.strings[ord.marg], marg.probs = marg.probs[ord.marg]))
@@ -340,7 +340,7 @@ marg.prob.plot <- function (feats.strings, marg.probs, count = "all", ...) {
   marg.probs <- sort(marg.probs)
   tot <- length(marg.probs)
   if (count=="all") count <- tot
-  y <- barplot(marg.probs[(tot - count + 1):tot], horiz = T, xlab = "Marginal probability", ylab = "Feature")
+  y <- barplot(marg.probs[(tot - count + 1):tot], horiz = TRUE, xlab = "Marginal probability", ylab = "Feature")
   text((max(marg.probs[(tot - count + 1):tot]) / 2), y, feats.strings[(tot - count + 1):tot])
 }
 

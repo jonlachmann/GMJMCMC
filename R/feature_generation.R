@@ -6,7 +6,7 @@
 # Generate a multiplication feature
 gen.multiplication <- function (features, marg.probs) {
   # Sample two features to be multiplied
-  feats <- sample.int(n = length(features), size = 2, prob = marg.probs, replace = T)
+  feats <- sample.int(n = length(features), size = 2, prob = marg.probs, replace = TRUE)
   create.feature(0, features[feats])
 }
 

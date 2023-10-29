@@ -145,7 +145,7 @@ print.feature <- function (x, dataset = FALSE, alphas = FALSE, labels = FALSE, r
   # This is a plain covariate
   else if (is.numeric(feat)) {
     if (dataset) fString <- paste0("data[,", feat+2, "]")
-    else if (labels[1] != F) fString <- labels[feat]
+    else if (labels[1] != FALSE) fString <- labels[feat]
     else fString <- paste0("x", feat)
   } else stop("Invalid feature structure")
   return(fString)

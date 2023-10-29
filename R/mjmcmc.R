@@ -60,7 +60,7 @@ mjmcmc <- function (data, loglik.pi, N = 100, probs = NULL, params = NULL, sub =
 #'
 #' @return A list containing the visited models, the models visited during local optimisation,
 #' the acceptance count and the best critical value encountered.
-mjmcmc.loop <- function (data, complex, loglik.pi, model.cur, N, probs, params, sub=F) {
+mjmcmc.loop <- function (data, complex, loglik.pi, model.cur, N, probs, params, sub = FALSE) {
   # Acceptance count
   accept <- 0
   # Number of covariates or features
@@ -94,7 +94,7 @@ mjmcmc.loop <- function (data, complex, loglik.pi, model.cur, N, probs, params, 
       if (sub) {
         for (mod in seq_along(proposal$models)) {
           # Check if we have seen this model before
-          mod.idx <- vec_in_mat(visited.models$models[1:visited.models$count,,drop=F], proposal$models[[mod]]$model)
+          mod.idx <- vec_in_mat(visited.models$models[1:visited.models$count,,drop=FALSE], proposal$models[[mod]]$model)
           if (mod.idx == 0) {
             # If we have not seen the model before, add it
             visited.models$count <- visited.models$count + 1
@@ -108,7 +108,7 @@ mjmcmc.loop <- function (data, complex, loglik.pi, model.cur, N, probs, params, 
     }
     if (sub) {
       # Check if we have seen this model before
-      mod.idx <- vec_in_mat(visited.models$models[1:visited.models$count,,drop=F], proposal$model)
+      mod.idx <- vec_in_mat(visited.models$models[1:visited.models$count,,drop=FALSE], proposal$model)
       if (mod.idx == 0) {
         # If we have not seen the model before, add it
         visited.models$count <- visited.models$count + 1
@@ -171,7 +171,7 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, complex, pip_estimate, prob
     chi.k.star <- localopt$model
 
     # Randomize around the mode
-    proposal <- gen.proposal(chi.k.star, params$random, q.r, !large.jump$swap, pip_estimate, prob=T)
+    proposal <- gen.proposal(chi.k.star, params$random, q.r, !large.jump$swap, pip_estimate, prob=TRUE)
     proposal$model <- xor(chi.k.star, proposal$swap)
 
     # Do a backwards large jump and add in the kernel used in local optim to use the same for backwards local optim.
@@ -195,7 +195,7 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, complex, pip_estimate, prob
     # Select MH kernel
     q.g <- sample.int(n = 6, size = 1, prob = probs$mh)
     # Generate the proposal
-    proposal <- gen.proposal(model.cur$model, params$mh, q.g, NULL, pip_estimate, prob = T)
+    proposal <- gen.proposal(model.cur$model, params$mh, q.g, NULL, pip_estimate, prob = TRUE)
     proposal$model <- xor(proposal$swap, model.cur$model)
 
     # Calculate current model probability given proposal
@@ -210,7 +210,7 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, complex, pip_estimate, prob
   # TODO: Save all models visited by local optim, and update the best mliks if we see one during local optim.
   # If we are running with subsampling, check the list for a better mlik
   if (!is.null(visited.models)) {
-    mod.idx <- vec_in_mat(visited.models$models[1:visited.models$count,,drop=F], proposal$model)
+    mod.idx <- vec_in_mat(visited.models$models[1:visited.models$count,,drop=FALSE], proposal$model)
     if (mod.idx != 0) proposal$crit <- max(proposal$crit, visited.models$crit[mod.idx])
   }
 
