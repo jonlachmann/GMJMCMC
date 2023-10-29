@@ -2,7 +2,7 @@
 % Please edit documentation in R/mjmcmc.R
 \name{mjmcmc}
 \alias{mjmcmc}
-\title{Main algorithm for MJMCMC}
+\title{Main algorithm for MJMCMC (Genetically Modified MJMCMC)}
 \usage{
 mjmcmc(data, loglik.pi, N = 100, probs = NULL, params = NULL, sub = FALSE)
 }
@@ -22,5 +22,5 @@ and the rest of the columns should be the independent variables.}
 \item{sub}{An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)}
 }
 \description{
-Main algorithm for MJMCMC
+Main algorithm for MJMCMC (Genetically Modified MJMCMC)
 }

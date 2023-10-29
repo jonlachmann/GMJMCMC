@@ -2,10 +2,10 @@
 % Please edit documentation in R/arguments.R
 \name{gen.probs.mjmcmc}
 \alias{gen.probs.mjmcmc}
-\title{Generate a probability list for MJMCMC}
+\title{Generate a probability list for MJMCMC (Mode Jumping MCMC)}
 \usage{
 gen.probs.mjmcmc()
 }
 \description{
-Generate a probability list for MJMCMC
+Generate a probability list for MJMCMC (Mode Jumping MCMC)
 }

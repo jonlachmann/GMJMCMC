@@ -2,7 +2,7 @@
 % Please edit documentation in R/arguments.R
 \name{gen.params.mjmcmc}
 \alias{gen.params.mjmcmc}
-\title{Generate a parameter list for MJMCMC}
+\title{Generate a parameter list for MJMCMC (Mode Jumping MCMC)}
 \usage{
 gen.params.mjmcmc(data)
 }
@@ -12,11 +12,9 @@ gen.params.mjmcmc(data)
 \value{
 A list of parameters to use when running the MJMCMC algorithm.
 
-TODO: WRITE MORE
-
 Note that the $loglik item is an empty list, which is passed to the log likelihood function of the model,
 intended to store parameters that the estimator function should use.
 }
 \description{
-Generate a parameter list for MJMCMC
+Generate a parameter list for MJMCMC (Mode Jumping MCMC)
 }
