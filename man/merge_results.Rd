@@ -27,6 +27,20 @@ merge_results(
 \item{data}{Data to use when comparing features, default is NULL meaning that mock data will be generated,
 if data is supplied it should be of the same form as is required by gmjmcmc, i.e. with both x, y and an intercept.}
 }
+\value{
+An object of class "gmjmcmc_merged" containing the following elements:
+\item{features}{The features where equivalent features are represented in their simplest form.}
+\item{marg.probs}{Importance of features.}
+\item{counts}{Counts of how many versions that were present of each feature.}
+\item{results}{Results as they were passed to the function.}
+\item{pop.best}{The population in the results which contained the model with the highest log marginal posterior.}
+\item{thread.best}{The thread in the results which contained the model with the highest log marginal posterior.}
+\item{crit.best}{The highest log marginal posterior for any model in the results.}
+\item{reported}{The highest log marginal likelihood for the reported populations as defined in the populations argument.}
+\item{rep.pop}{The index of the population which contains reported.}
+\item{best.log.posteriors}{A matrix where the first column contains the population indices and the second column contains the model with the highest log marginal posterior within that population.}
+\item{rep.thread}{The index of the thread which contains reported.}
+}
 \description{
 Merge a list of multiple results from many runs
 This function will weight the features based on the best mlik in that population

@@ -21,6 +21,17 @@ and the rest of the columns should be the independent variables.}
 
 \item{sub}{An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)}
 }
+\value{
+A list containing the following elements:
+\item{models}{All visited models.}
+\item{accept}{Average acceptance rate of the chain.}
+\item{lo.models}{All models visited during local optimization.}
+\item{best.crit}{The highest log marginal probability of the visited models.}
+\item{marg.probs}{Marginal probabilities of the features.}
+\item{model.probs}{Marginal probabilities of all of the visited models.}
+\item{model.probs.idx}{Indices of unique visited models.}
+\item{populations}{The covariates represented as a list of features.}
+}
 \description{
 Main algorithm for MJMCMC (Genetically Modified MJMCMC)
 }

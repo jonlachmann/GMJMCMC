@@ -18,7 +18,7 @@ diagn_plot(res, FUN = median, conf = 0.95, burnin = 0, window = 10000)
 \item{window}{sliding window for computing the standard deviation}
 }
 \value{
-summary statistics with given confidence intervals
+A list of summary statistics for checking convergence with given confidence intervals
 }
 \description{
 Plot convergence of best/median/mean/other summary log posteriors in time

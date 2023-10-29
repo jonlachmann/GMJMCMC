@@ -13,6 +13,8 @@
 #' @param complex A list of complexity measures for the features
 #' @param params A list of parameters for the log likelihood, supplied by the user
 #'
+#' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
+#'
 #' @export logistic.loglik
 logistic.loglik <- function (y, x, model, complex, params = list(r = 1)) {
   if (length(params) == 0)
@@ -30,6 +32,8 @@ logistic.loglik <- function (y, x, model, complex, params = list(r = 1)) {
 #' @param mu_func The function linking the mean to the covariates,
 #' as a string with the alphas as a\[i\].
 #'
+#' @return A numeric with the log likelihood.
+#'
 #' @export logistic.loglik.alpha
 logistic.loglik.alpha <- function (a, data, mu_func) {
   m <- 1 / (1 + exp(-eval(parse(text = mu_func))))
@@ -43,6 +47,8 @@ logistic.loglik.alpha <- function (a, data, mu_func) {
 #' @param model The model to estimate as a logical vector
 #' @param complex A list of complexity measures for the features
 #' @param params A list of parameters for the log likelihood, supplied by the user
+#'
+#' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 #'
 #' @export gaussian.loglik
 gaussian.loglik <- function (y, x, model, complex, params) {
@@ -63,6 +69,8 @@ gaussian.loglik <- function (y, x, model, complex, params) {
 #' @param mu_func The function linking the mean to the covariates,
 #' as a string with the alphas as a\[i\].
 #'
+#' @return A numeric with the log likelihood.
+#'
 #' @export gaussian.loglik.alpha
 gaussian.loglik.alpha <- function (a, data, mu_func) {
   m <- eval(parse(text=mu_func))
@@ -76,6 +84,8 @@ gaussian.loglik.alpha <- function (a, data, mu_func) {
 #' @param model The model to estimate as a logical vector
 #' @param complex A list of complexity measures for the features
 #' @param params A list of parameters for the log likelihood, supplied by the user
+#'
+#' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 #'
 #' @export linear.g.prior.loglik
 linear.g.prior.loglik <- function (y, x, model, complex, params = list(g = 4)) {

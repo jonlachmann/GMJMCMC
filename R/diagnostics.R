@@ -3,23 +3,7 @@
 # Created by: jonlachmann
 # Created on: 2021-02-24
 
-# TODO: We do not really know if this works as intended...
-# TODO: It should be investigated how to properly calculate acf for binary vectors
-#' Integrated Auto-Correlation Time
-#'
-#' @param x A matrix where each row is a model
-#'
-#' @export gmjmcmc.iact
-gmjmcmc.iact <- function (x) {
-  xlen <- nrow(x)
-  tmp <- acf(as.numeric(x), lag.max = xlen, plot = FALSE)$acf
-  li <- min(which(tmp < 0.05))
-  out <- 1 + 2 * sum(tmp[1:(li - 1)])
-  out
-}
-
 # TODO: Inter-thread variance comparison of the marginal log posterior of the best found model.
-
 
 #' Plot convergence of best/median/mean/other summary log posteriors in time 
 #'
@@ -28,8 +12,8 @@ gmjmcmc.iact <- function (x) {
 #' @param conf which confidence intervals to plot
 #' @param burnin how many first populations to skip
 #' @param window sliding window for computing the standard deviation
-#' @return summary statistics with given confidence intervals
 #'
+#' @return A list of summary statistics for checking convergence with given confidence intervals
 diagn_plot <- function (res, FUN = median, conf = 0.95, burnin = 0, window = 10000) {
   
   if(length(res$thread.best)>0)

@@ -15,6 +15,19 @@
 #' @param data Data to use when comparing features, default is NULL meaning that mock data will be generated,
 #' if data is supplied it should be of the same form as is required by gmjmcmc, i.e. with both x, y and an intercept.
 #'
+#' @return An object of class "gmjmcmc_merged" containing the following elements:
+#' \item{features}{The features where equivalent features are represented in their simplest form.}
+#' \item{marg.probs}{Importance of features.}
+#' \item{counts}{Counts of how many versions that were present of each feature.}
+#' \item{results}{Results as they were passed to the function.}
+#' \item{pop.best}{The population in the results which contained the model with the highest log marginal posterior.}
+#' \item{thread.best}{The thread in the results which contained the model with the highest log marginal posterior.}
+#' \item{crit.best}{The highest log marginal posterior for any model in the results.}
+#' \item{reported}{The highest log marginal likelihood for the reported populations as defined in the populations argument.}
+#' \item{rep.pop}{The index of the population which contains reported.}
+#' \item{best.log.posteriors}{A matrix where the first column contains the population indices and the second column contains the model with the highest log marginal posterior within that population.}
+#' \item{rep.thread}{The index of the thread which contains reported.}
+#'
 #' @export merge_results
 merge_results <- function (results, populations = NULL, complex.measure = NULL, tol = NULL, data = NULL) {
   # Default values
@@ -43,18 +56,15 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
   pop.best <- 1
   thread.best <- 1
   for (i in seq_along(results)) {
-    for (pop in 1:(length(results[[1]]$populations))) 
-    {
-      bests[pop,i] <- results[[i]]$best.margs[[pop]]
-      if(results[[i]]$best.margs[[pop]] > crit.best)
-      {
+    for (pop in 1:(length(results[[1]]$populations))) {
+      bests[pop, i] <- results[[i]]$best.margs[[pop]]
+      if (results[[i]]$best.margs[[pop]] > crit.best) {
         crit.best <- results[[i]]$best.margs[[pop]]
         pop.best <- pop
         thread.best <- i
       }
     }
   }
-  
   
   # Collect all features and their renormalized weighted values
   features <- vector("list")
@@ -132,17 +142,14 @@ population.weigths <- function (results, pops.use) {
   pop.best <- 1
   thread.best <- 1
   for (i in seq_along(results)) {
-    for (pop in pops.use[[i]]) 
-    {
+    for (pop in pops.use[[i]]) {
       max.crits <- append(max.crits, results[[i]]$best.margs[[pop]])
-      if(results[[i]]$best.margs[[pop]] > max.crit)
-      {
+      if (results[[i]]$best.margs[[pop]] > max.crit) {
         max.crit <- results[[i]]$best.margs[[pop]]
         pop.best <- pop
         thread.best <- i
       }
     }
-      
   }
   max.crits <- unlist(max.crits)
 
@@ -155,6 +162,8 @@ population.weigths <- function (results, pops.use) {
 #' @param features The population of features
 #' @param link The link function to use, as a string
 #' @param round Rounding error for the features in the printed format
+#'
+#' @return A character representation of a model
 #'
 #' @export model.string
 model.string <- function (model, features, link = "I", round = 2) {
@@ -171,6 +180,10 @@ model.string <- function (model, features, link = "I", round = 2) {
 #' @param tol The tolerance to use as a threshold when reporting the results.
 #' @param labels Should the covariates be named, or just referred to as their place in the data.frame.
 #' @param ... Not used.
+#'
+#' @return A data frame containing the following columns:
+#' \item{feats.strings}{Character representation of the features ordered by marginal probabilities.}
+#' \item{marg.probs}{Marginal probabilities corresponding to the ordered feature strings.}
 #'
 #' @export
 summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, labels = FALSE, ...) {
@@ -196,6 +209,10 @@ summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, labels = FALSE,
 #' @param labels Should the covariates be named, or just referred to as their place in the data.frame.
 #' @param ... Not used.
 #'
+#' @return A data frame containing the following columns:
+#' \item{feats.strings}{Character representation of the features ordered by marginal probabilities.}
+#' \item{marg.probs}{Marginal probabilities corresponding to the ordered feature strings.}
+#'
 #' @export
 summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, ...) {
   best <- max(sapply(object$results, function (y) y$best))
@@ -212,6 +229,10 @@ summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, ...) {
 #' @param labels Should the covariates be named, or just referred to as their place in the data.frame.
 #' @param ... Not used.
 #'
+#' @return A data frame containing the following columns:
+#' \item{feats.strings}{Character representation of the covariates ordered by marginal probabilities.}
+#' \item{marg.probs}{Marginal probabilities corresponding to the ordered feature strings.}
+#'
 #' @export
 summary.mjmcmc <- function (object, tol = 0.0001, labels = FALSE, ...) {
   return(summary.mjmcmc_parallel(list(object), tol = tol, labels = labels))
@@ -223,6 +244,10 @@ summary.mjmcmc <- function (object, tol = 0.0001, labels = FALSE, ...) {
 #' @param tol The tolerance to use as a threshold when reporting the results.
 #' @param labels Should the covariates be named, or just referred to as their place in the data.frame.
 #' @param ... Not used.
+#'
+#' @return A data frame containing the following columns:
+#' \item{feats.strings}{Character representation of the covariates ordered by marginal probabilities.}
+#' \item{marg.probs}{Marginal probabilities corresponding to the ordered feature strings.}
 #'
 #' @export
 summary.mjmcmc_parallel <- function (object, tol = 0.0001, labels = FALSE, ...) {
@@ -267,23 +292,27 @@ summary_internal <- function (best, feats.strings, marg.probs, tol = 0.0001, bes
   return(data.frame(feats.strings = feats.strings[ord.marg], marg.probs = marg.probs[ord.marg]))
 }
 
-#' Function to get a character respresentation of a list of features 
-#' A list or a population of features in a character representation
+#' Function to get a character respresentation of a list of features
 #'
 #' @param x A list of feature objects
 #' @param round Rounding precision for parameters of the features
+#'
+#' @return A matrix of character representations of the features of a model.
+#'
 #' @export
 string.population <- function(x, round = 2) {
   cbind(sapply(x, print.feature, round = round))
 }
 
 #' Function to get a character respresentation of a list of models
-#' A list of models in a character representation
 #'
 #' @param features A list of feature objects on which the models are build
 #' @param models A list of model objects
 #' @param round Rounding precision for parameters of the features
 #' @param link The link function to use, as a string
+#'
+#' @return A matrix of character representations of a list of models.
+#'
 #' @export
 string.population.models <- function(features, models, round = 2, link = "I") {
   cbind(sapply(seq_along(models), FUN = function(x) model.string(features = features, model = (models[[x]]$model), round = round, link = "I")))
@@ -296,6 +325,8 @@ string.population.models <- function(features, models, round = 2, link = "I") {
 #' @param count The number of features to plot, defaults to all
 #' @param pop The population to plot, defaults to last
 #' @param ... Not used.
+#'
+#' @return NULL
 #'
 #' @export
 plot.gmjmcmc <- function (x, count = "all", pop = "last", ...) {
@@ -316,6 +347,8 @@ plot.gmjmcmc <- function (x, count = "all", pop = "last", ...) {
 #' @param x The results to use
 #' @param count The number of features to plot, defaults to all
 #' @param ... Not used.
+#'
+#' @return NULL
 #'
 #' @export
 plot.mjmcmc <- function (x, count = "all", ...) {
@@ -339,13 +372,14 @@ marg.prob.plot <- function (feats.strings, marg.probs, count = "all", ...) {
   feats.strings <- feats.strings[order(marg.probs)]
   marg.probs <- sort(marg.probs)
   tot <- length(marg.probs)
-  if (count=="all") count <- tot
+  if (count == "all") count <- tot
   y <- barplot(marg.probs[(tot - count + 1):tot], horiz = TRUE, xlab = "Marginal probability", ylab = "Feature")
   text((max(marg.probs[(tot - count + 1):tot]) / 2), y, feats.strings[(tot - count + 1):tot])
 }
 
 #' Plot a mjmcmc_parallel run
 #' @inheritParams plot.mjmcmc
+#' @return NULL
 #' @export
 plot.mjmcmc_parallel <- function (x, count = "all", ...) {
   merged <- merge.mjmcmc_parallel(x)
@@ -376,6 +410,7 @@ run.weigths <- function (results) {
 
 #' Plot a gmjmcmc_merged run
 #' @inheritParams plot.gmjmcmc
+#' @return NULL
 #' @export
 plot.gmjmcmc_merged <- function (x, count = "all", ...) {
   marg.prob.plot(sapply(x$features, print), x$marg.probs, count = count)

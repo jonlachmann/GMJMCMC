@@ -2,8 +2,7 @@
 % Please edit documentation in R/results.R
 \name{string.population.models}
 \alias{string.population.models}
-\title{Function to get a character respresentation of a list of models
-A list of models in a character representation}
+\title{Function to get a character respresentation of a list of models}
 \usage{
 string.population.models(features, models, round = 2, link = "I")
 }
@@ -16,7 +15,9 @@ string.population.models(features, models, round = 2, link = "I")
 
 \item{link}{The link function to use, as a string}
 }
+\value{
+A matrix of character representations of a list of models.
+}
 \description{
 Function to get a character respresentation of a list of models
-A list of models in a character representation
 }

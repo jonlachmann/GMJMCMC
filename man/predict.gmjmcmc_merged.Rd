@@ -2,7 +2,7 @@
 % Please edit documentation in R/predict.R
 \name{predict.gmjmcmc_merged}
 \alias{predict.gmjmcmc_merged}
-\title{Predict using a BGNLM model.}
+\title{Predict using a merged gmjmcmc result object.}
 \usage{
 \method{predict}{gmjmcmc_merged}(object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...)
 }
@@ -17,6 +17,15 @@
 
 \item{...}{Not used.}
 }
+\value{
+A list containing aggregated predictions and per model predictions.
+\item{aggr}{Aggregated predictions with mean and quantiles.}
+\itemize{
+\item{mean}{Mean of aggregated predictions.}
+\item{quantiles}{Quantiles of aggregated predictions.}
+}
+\item{preds}{A list of lists containing individual predictions per model per population in object.}
+}
 \description{
-Predict using a BGNLM model.
+Predict using a merged gmjmcmc result object.
 }

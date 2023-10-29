@@ -1,3 +1,15 @@
+
+
+#' Predict using a gmjmcmc result object.
+#'
+#' @inheritParams predict.gmjmcmc_merged
+#' @return A list containing aggregated predictions and per model predictions.
+#' \item{aggr}{Aggregated predictions with mean and quantiles.}
+#'   \itemize{
+#'     \item{mean}{Mean of aggregated predictions.}
+#'     \item{quantiles}{Quantiles of aggregated predictions.}
+#'   }
+#' \item{preds}{A list of lists containing individual predictions per model per population in object.}
 #' @export
 predict.gmjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
   merged <- merge_results(list(object),data = cbind(1,x))
@@ -17,13 +29,20 @@ predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.
   return(predict.mjmcmc(mmodel, x.precalc, link, quantiles))
 }
 
-#' Predict using a BGNLM model.
+#' Predict using a merged gmjmcmc result object.
 #'
 #' @param object The model to use.
 #' @param x The new data to use for the prediction, a matrix where each row is an observation.
 #' @param link The link function to use
 #' @param quantiles The quantiles to calculate credible intervals for the posterior moddes (in model space).
 #' @param ... Not used.
+#' @return A list containing aggregated predictions and per model predictions.
+#' \item{aggr}{Aggregated predictions with mean and quantiles.}
+#'   \itemize{
+#'     \item{mean}{Mean of aggregated predictions.}
+#'     \item{quantiles}{Quantiles of aggregated predictions.}
+#'   }
+#' \item{preds}{A list of lists containing individual predictions per model per population in object.}
 #'
 #' @export
 predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
@@ -64,9 +83,15 @@ predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles =
     }
   }
 
-  return(list(aggr=aggr, preds=preds))
+  return(list(aggr = aggr, preds = preds))
 }
 
+#' Predict using a mjmcmc result object.
+#'
+#' @inheritParams predict.gmjmcmc_merged
+#' @return A list containing aggregated predictions.
+#' \item{mean}{Mean of aggregated predictions.}
+#' \item{quantiles}{Quantiles of aggregated predictions.}
 #' @export
 predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
   # Select the models and features to predict from at this iteration
@@ -85,6 +110,12 @@ predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025
   return(list(mean = mean.pred, quantiles = pred.quant))
 }
 
+#' Predict using a mjmcmc result object from a parallel run.
+#'
+#' @inheritParams predict.gmjmcmc_merged
+#' @return A list containing aggregated predictions.
+#' \item{mean}{Mean of aggregated predictions.}
+#' \item{quantiles}{Quantiles of aggregated predictions.}
 #' @export
 predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
   max.crits <- numeric()
@@ -110,9 +141,20 @@ predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles 
   return(list(aggr = aggr, preds = preds))
 }
 
+#' Predict using a gmjmcmc result object from a parallel run.
+#'
+#' @inheritParams predict.gmjmcmc_merged
+#' @param ... Additional arguments to pass to merge_results.
+#' @return A list containing aggregated predictions and per model predictions.
+#' \item{aggr}{Aggregated predictions with mean and quantiles.}
+#'   \itemize{
+#'     \item{mean}{Mean of aggregated predictions.}
+#'     \item{quantiles}{Quantiles of aggregated predictions.}
+#'   }
+#' \item{preds}{A list of lists containing individual predictions per model per population in object.}
 #' @export
 predict.gmjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
-  merged <- merge_results(object,data = cbind(1,x), ...)
+  merged <- merge_results(object,data = cbind(1, x), ...)
   predict.gmjmcmc_merged(merged, x, link, quantiles)
 }
 

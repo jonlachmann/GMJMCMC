@@ -24,8 +24,14 @@ mjmcmc.loop(data, complex, loglik.pi, model.cur, N, probs, params, sub = FALSE)
 \item{sub}{An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)}
 }
 \value{
-A list containing the visited models, the models visited during local optimisation,
-the acceptance count and the best critical value encountered.
+A list containing the following elements:
+\item{models}{All visited models.}
+\item{accept}{Number of accepted proposals of the chain.}
+\item{lo.models}{All models visited during local optimization.}
+\item{best.crit}{The highest log marginal probability of the visited models.}
+\item{marg.probs}{Marginal probabilities of the features.}
+\item{model.probs}{Marginal probabilities of all of the visited models.}
+\item{model.probs.idx}{Indices of unique visited models.}
 }
 \description{
 The main loop for the MJMCMC (Mode Jumping MCMC) algorithm, used in both MJMCMC and GMJMCMC (Genetically Modified MJMCMC)

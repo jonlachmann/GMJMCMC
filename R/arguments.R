@@ -5,6 +5,8 @@
 
 #' Generate a probability list for MJMCMC (Mode Jumping MCMC)
 #'
+#' @return A list of probabilities to be used as input for the mjmcmc function.
+#'
 #' @export gen.probs.mjmcmc
 gen.probs.mjmcmc <- function () {
   ## Mode jumping algorithm probabilities
@@ -24,6 +26,8 @@ gen.probs.mjmcmc <- function () {
 #' Generate a probability list for GMJMCMC (Genetically Modified MJMCMC)
 #'
 #' @param transforms A list of the transformations used (to get the count).
+#'
+#' @return A list of probabilities to be used as input for the gmjmcmc function.
 #'
 #' @export gen.probs.gmjmcmc
 gen.probs.gmjmcmc <- function (transforms) {
@@ -52,7 +56,7 @@ gen.probs.gmjmcmc <- function (transforms) {
 #'
 #' @param data The dataset that will be used in the algorithm
 #'
-#' @return A list of parameters to use when running the MJMCMC algorithm.
+#' @return A list of parameters to use when running the mjmcmc function.
 #'
 #' Note that the $loglik item is an empty list, which is passed to the log likelihood function of the model,
 #' intended to store parameters that the estimator function should use.
@@ -64,7 +68,6 @@ gen.params.mjmcmc <- function (data) {
   ## Get the dimensions of the data to set parameters based on it
   data.dim <- data.dims(data)
   ncov <- data.dim[2] - 2
-  nobs <- data.dim[1]
 
   ## Local optimization parameters
   sa_kern <- list(probs=c(0.1, 0.05, 0.2, 0.3, 0.2, 0.15),
@@ -95,6 +98,8 @@ gen.params.mjmcmc <- function (data) {
 #' Generate a parameter list for GMJMCMC (Genetically Modified MJMCMC)
 #'
 #' @param data The dataset that will be used in the algorithm
+#'
+#' @return A list of parameters to use when running the mjmcmc function.
 #'
 #' @export gen.params.gmjmcmc
 gen.params.gmjmcmc <- function (data) {

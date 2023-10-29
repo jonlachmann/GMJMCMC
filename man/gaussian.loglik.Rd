@@ -17,6 +17,9 @@ gaussian.loglik(y, x, model, complex, params)
 
 \item{params}{A list of parameters for the log likelihood, supplied by the user}
 }
+\value{
+A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
+}
 \description{
 Log likelihood function for gaussian regression with a prior p(m)=r*sum(total_width).
 }

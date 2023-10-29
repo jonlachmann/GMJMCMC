@@ -19,6 +19,9 @@ logistic.loglik(y, x, model, complex, params = list(r = 1))
 
 \item{params}{A list of parameters for the log likelihood, supplied by the user}
 }
+\value{
+A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
+}
 \description{
 Log likelihood function for logistic regression with a prior p(m)=sum(total_width)
 This function is created as an example of how to create an estimator that is used

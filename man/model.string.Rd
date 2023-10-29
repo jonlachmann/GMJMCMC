@@ -15,6 +15,9 @@ model.string(model, features, link = "I", round = 2)
 
 \item{round}{Rounding error for the features in the printed format}
 }
+\value{
+A character representation of a model
+}
 \description{
 Function to generate a function string for a model consisting of features
 }

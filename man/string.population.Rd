@@ -2,8 +2,7 @@
 % Please edit documentation in R/results.R
 \name{string.population}
 \alias{string.population}
-\title{Function to get a character respresentation of a list of features
-A list or a population of features in a character representation}
+\title{Function to get a character respresentation of a list of features}
 \usage{
 string.population(x, round = 2)
 }
@@ -12,7 +11,9 @@ string.population(x, round = 2)
 
 \item{round}{Rounding precision for parameters of the features}
 }
+\value{
+A matrix of character representations of the features of a model.
+}
 \description{
 Function to get a character respresentation of a list of features
-A list or a population of features in a character representation
 }

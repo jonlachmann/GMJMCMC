@@ -19,6 +19,9 @@
 
 \item{...}{Not used.}
 }
+\value{
+A character representation of a feature
+}
 \description{
 Print method for "feature" class
 }

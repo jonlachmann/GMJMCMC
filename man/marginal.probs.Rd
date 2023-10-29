@@ -9,6 +9,9 @@ marginal.probs(models)
 \arguments{
 \item{models}{The list of models to use.}
 }
+\value{
+A numeric vector of marginal model probabilities based on relative frequencies of model visits in MCMC.
+}
 \description{
 Function for calculating marginal inclusion probabilities of features given a list of models
 }

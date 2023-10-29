@@ -100,6 +100,8 @@ update.alphas <- function (feature, alphas, recurse=FALSE) {
 #' @param round Should numbers be rounded when printing? Default is FALSE, otherwise it can be set to the number of decimal places.
 #' @param ... Not used.
 #'
+#' @return A character representation of a feature
+#'
 #' @export
 print.feature <- function (x, dataset = FALSE, alphas = FALSE, labels = FALSE, round = FALSE, ...) {
   fString <- ""

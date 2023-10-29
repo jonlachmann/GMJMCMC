@@ -15,6 +15,11 @@
 
 \item{...}{Not used.}
 }
+\value{
+A data frame containing the following columns:
+\item{feats.strings}{Character representation of the features ordered by marginal probabilities.}
+\item{marg.probs}{Marginal probabilities corresponding to the ordered feature strings.}
+}
 \description{
 Function to print a quick summary of the results
 }

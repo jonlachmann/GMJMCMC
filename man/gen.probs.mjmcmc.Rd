@@ -6,6 +6,9 @@
 \usage{
 gen.probs.mjmcmc()
 }
+\value{
+A list of probabilities to be used as input for the mjmcmc function.
+}
 \description{
 Generate a probability list for MJMCMC (Mode Jumping MCMC)
 }

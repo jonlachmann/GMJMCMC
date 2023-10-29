@@ -14,6 +14,16 @@
 #' @param params A list of the various parameters for all the parts of the algorithm
 #' @param sub An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)
 #'
+#' @return A list containing the following elements:
+#' \item{models}{All visited models.}
+#' \item{accept}{Average acceptance rate of the chain.}
+#' \item{lo.models}{All models visited during local optimization.}
+#' \item{best.crit}{The highest log marginal probability of the visited models.}
+#' \item{marg.probs}{Marginal probabilities of the features.}
+#' \item{model.probs}{Marginal probabilities of all of the visited models.}
+#' \item{model.probs.idx}{Indices of unique visited models.}
+#' \item{populations}{The covariates represented as a list of features.}
+#'
 #' @export mjmcmc
 mjmcmc <- function (data, loglik.pi, N = 100, probs = NULL, params = NULL, sub = FALSE) {
   # Verify that data is well-formed
@@ -58,8 +68,15 @@ mjmcmc <- function (data, loglik.pi, N = 100, probs = NULL, params = NULL, sub =
 #' @param params A list of the various parameters for all the parts of the algorithm
 #' @param sub An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)
 #'
-#' @return A list containing the visited models, the models visited during local optimisation,
-#' the acceptance count and the best critical value encountered.
+#' @return A list containing the following elements:
+#' \item{models}{All visited models.}
+#' \item{accept}{Number of accepted proposals of the chain.}
+#' \item{lo.models}{All models visited during local optimization.}
+#' \item{best.crit}{The highest log marginal probability of the visited models.}
+#' \item{marg.probs}{Marginal probabilities of the features.}
+#' \item{model.probs}{Marginal probabilities of all of the visited models.}
+#' \item{model.probs.idx}{Indices of unique visited models.}
+#'
 mjmcmc.loop <- function (data, complex, loglik.pi, model.cur, N, probs, params, sub = FALSE) {
   # Acceptance count
   accept <- 0

@@ -9,6 +9,9 @@ gen.probs.gmjmcmc(transforms)
 \arguments{
 \item{transforms}{A list of the transformations used (to get the count).}
 }
+\value{
+A list of probabilities to be used as input for the gmjmcmc function.
+}
 \description{
 Generate a probability list for GMJMCMC (Genetically Modified MJMCMC)
 }

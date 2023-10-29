@@ -8,6 +8,8 @@
 #'
 #' @param transforms The vector of non-linear transformations
 #'
+#' @return NULL
+#'
 #' @export set.transforms
 set.transforms <- function (transforms) {
   options("gmjmcmc-transformations"=transforms)
@@ -32,6 +34,9 @@ verify.inputs <- function (data, loglik.pi, transforms, T, N, N.final, probs, pa
 
 #' Function for calculating marginal inclusion probabilities of features given a list of models
 #' @param models The list of models to use.
+#'
+#' @return A numeric vector of marginal model probabilities based on relative frequencies of model visits in MCMC.
+#'
 #' @export
 marginal.probs <- function (models) {
   mod.count <- length(models)

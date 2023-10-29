@@ -9,6 +9,9 @@ gen.params.gmjmcmc(data)
 \arguments{
 \item{data}{The dataset that will be used in the algorithm}
 }
+\value{
+A list of parameters to use when running the mjmcmc function.
+}
 \description{
 Generate a parameter list for GMJMCMC (Genetically Modified MJMCMC)
 }

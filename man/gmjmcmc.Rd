@@ -43,6 +43,25 @@ A larger value like $P = 50$ might be more realistic for more complicated exampl
 
 \item{sub}{An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)}
 }
+\value{
+A list containing the following elements:
+\item{models}{All models per population.}
+\item{lo.models}{All local optimization models per population.}
+\item{populations}{All features per population.}
+\item{marg.probs}{Marginal feature probabilities per population.}
+\item{model.probs}{Marginal feature probabilities per population.}
+\item{model.probs.idx}{Marginal feature probabilities per population.}
+\item{best.margs}{Best marginal model probability per population.}
+\item{accept}{Acceptance rate per population.}
+\item{accept.tot}{Overall acceptance rate.}
+\item{best}{Best marginal model probability throughout the run, represented as the maximum value in \code{unlist(best.margs)}.}
+}
 \description{
 Main algorithm for GMJMCMC (Genetically Modified MJMCMC)
+}
+\examples{
+# Example usage:
+# result <- your_function_name()
+# print(result)
+
 }

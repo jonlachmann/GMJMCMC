@@ -16,6 +16,9 @@ gaussian.loglik.alpha(a, data, mu_func)
 \item{mu_func}{The function linking the mean to the covariates,
 as a string with the alphas as a[i].}
 }
+\value{
+A numeric with the log likelihood.
+}
 \description{
 Log likelihood function for gaussian regression for alpha calculation
 This function is just the bare likelihood function
