@@ -13,7 +13,8 @@ gmjmcmc.transition(
   marg.probs,
   labels,
   probs,
-  params
+  params,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ gmjmcmc.transition(
 \item{probs}{A list of the various probability vectors to use}
 
 \item{params}{A list of the various parameters for all the parts of the algorithm}
+
+\item{verbose}{A logical denoting if messages should be printed}
 }
 \value{
 The updated population of features, that becomes S.t+1

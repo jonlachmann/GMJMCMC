@@ -3,10 +3,10 @@
 # Created by: jonlachmann
 # Created on: 2021-03-16
 
-gen.alphas <- function (strategy, feature, data, loglik) {
+gen.alphas <- function (strategy, feature, data, loglik, verbose) {
   if (strategy == 1) stop("Not implemented.")
   else if (strategy == 2) stop("Not implemented.")
-  else if (strategy == 3) feature <- alpha_3(feature, data, loglik)
+  else if (strategy == 3) feature <- alpha_3(feature, data, loglik, verbose)
   return(feature)
 }
 
@@ -29,7 +29,7 @@ alpha_2 <- function (feature) {
 #' @param feature The feature to generate alphas for
 #' @param data The dataset used
 #' @param loglik log likelihood function to use
-alpha_3 <- function (feature, data, loglik) {
+alpha_3 <- function (feature, data, loglik, verbose) {
   # Create the string representation of the feature with variable alphas
   featfun <- print.feature(feature, dataset = TRUE, alphas = TRUE)
   featfun <- set_alphas(featfun)
@@ -37,7 +37,6 @@ alpha_3 <- function (feature, data, loglik) {
   if (featfun$count == 0) return(feature)
 
   # Set initial range for Simulated Annealing
-  cat("Generating alphas\n")
   range <- 10
   done <- FALSE
   while (!done) {
@@ -50,7 +49,7 @@ alpha_3 <- function (feature, data, loglik) {
     else done <- TRUE
   }
   if (sum(sares$par == 0) == featfun$count) {
-    cat("All zero feature occured.\n")
+    if (verbose) cat("All zero feature occured.\n")
     return(NULL)
   }
   # Inject the new alphas into the feature

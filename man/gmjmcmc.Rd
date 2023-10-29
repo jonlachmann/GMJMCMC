@@ -14,7 +14,8 @@ gmjmcmc(
   N.final = 100,
   probs = NULL,
   params = NULL,
-  sub = FALSE
+  sub = FALSE,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -42,6 +43,8 @@ A larger value like $P = 50$ might be more realistic for more complicated exampl
 \item{params}{A list of the various parameters for all the parts of the algorithm}
 
 \item{sub}{An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)}
+
+\item{verbose}{A logical denoting if messages should be printed}
 }
 \value{
 A list containing the following elements:

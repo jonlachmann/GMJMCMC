@@ -37,7 +37,7 @@ gen.new <- function (features, F.0.size) {
 }
 
 # Select a feature to generate and generate it
-gen.feature <- function (features, marg.probs, data, loglik.alpha, probs, F.0.size, params) {
+gen.feature <- function (features, marg.probs, data, loglik.alpha, probs, F.0.size, params, verbose = TRUE) {
   tries <- 0
   feat.ok <- F
   while (!feat.ok && tries < 50) {
@@ -50,7 +50,7 @@ gen.feature <- function (features, marg.probs, data, loglik.alpha, probs, F.0.si
     if (!(depth.feature(feat) > params$D || width.feature(feat) > params$L)) {
       # Generate alphas using the strategy chosen
       if (params$alpha > 0) {
-        feat <- gen.alphas(params$alpha, feat, data, loglik.alpha)
+        feat <- gen.alphas(params$alpha, feat, data, loglik.alpha, verbose)
       }
       if (!is.null(feat)) {
         # Check for linear dependence of new the feature
@@ -79,7 +79,7 @@ check.collinearity <- function (proposal, features, F.0.size, data, mock) {
     mock.data <- matrix(c(runif((F.0.size * 2), -100, 100), rep(1, F.0.size * 2),
                         runif((F.0.size * 2) * (F.0.size), -100, 100)), F.0.size * 2, F.0.size + 2)
   else
-    mock.data <- check.data(data[seq_len(min(F.0.size * 2, dim(data)[1])), ])
+    mock.data <- check.data(data[seq_len(min(F.0.size * 2, dim(data)[1])), ], FALSE)
   # Use the mock data to precalc the features
   mock.data.precalc <- precalc.features(mock.data, features)
   # Fit a linear model with the mock data precalculated features

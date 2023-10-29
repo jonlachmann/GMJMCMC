@@ -4,7 +4,7 @@
 \alias{alpha_3}
 \title{Alpha generator using strategy 3 as per Hubin et. al.}
 \usage{
-alpha_3(feature, data, loglik)
+alpha_3(feature, data, loglik, verbose)
 }
 \arguments{
 \item{feature}{The feature to generate alphas for}

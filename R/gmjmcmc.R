@@ -25,6 +25,7 @@ NULL
 #' @param probs A list of the various probability vectors to use
 #' @param params A list of the various parameters for all the parts of the algorithm
 #' @param sub An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)
+#' @param verbose A logical denoting if messages should be printed
 #'
 #' @return A list containing the following elements:
 #' \item{models}{All models per population.}
@@ -44,16 +45,28 @@ NULL
 #' # print(result)
 #'
 #' @export gmjmcmc
-gmjmcmc <- function (data, loglik.pi = gaussian.loglik, loglik.alpha = gaussian.loglik.alpha, transforms, P = 10, N.init = 100, N.final = 100, probs = NULL, params = NULL, sub = FALSE) {
+gmjmcmc <- function (
+  data,
+  loglik.pi = gaussian.loglik,
+  loglik.alpha = gaussian.loglik.alpha,
+  transforms,
+  P = 10,
+  N.init = 100,
+  N.final = 100,
+  probs = NULL,
+  params = NULL,
+  sub = FALSE,
+  verbose = TRUE
+) {
   # Verify that the data is well-formed
-  data <- check.data(data)
+  data <- check.data(data, verbose)
 
   # Generate default probabilities and parameters if there are none supplied.
   if (is.null(probs)) probs <- gen.probs.gmjmcmc(transforms)
   if (is.null(params)) params <- gen.params.gmjmcmc(data)
 
   # Extract labels from column names in dataframe
-  labels <- get.labels(data)
+  labels <- get.labels(data, verbose)
   # Set the transformations option
   options("gmjmcmc-transformations" = transforms)
   # Acceptance probability per population
@@ -98,9 +111,9 @@ gmjmcmc <- function (data, loglik.pi = gaussian.loglik, loglik.alpha = gaussian.
     best.crit <- model.cur$crit # Reset first best criteria value
 
     # Run MJMCMC over the population
-    cat(paste("Population", p, "begin."))
-    mjmcmc_res <- mjmcmc.loop(data.t, complex, loglik.pi, model.cur, N, probs, params, sub)
-    cat(paste("\nPopulation", p, "done.\n"))
+    if (verbose) cat(paste("Population", p, "begin."))
+    mjmcmc_res <- mjmcmc.loop(data.t, complex, loglik.pi, model.cur, N, probs, params, sub, verbose)
+    if (verbose) cat(paste("\nPopulation", p, "done.\n"))
 
     # Add the models visited in the current population to the model list
     models[[p]] <- mjmcmc_res$models
@@ -114,13 +127,15 @@ gmjmcmc <- function (data, loglik.pi = gaussian.loglik, loglik.alpha = gaussian.
     # Store best marginal model probability for current population
     best.margs[[p]] <- mjmcmc_res$best.crit
     # Print the marginal posterior distribution of the features after MJMCMC
-    cat(paste("\rCurrent best crit:", mjmcmc_res$best.crit, "\n"))
-    cat("Feature importance:\n")
-    print.dist(marg.probs[[p]], sapply(S[[p]], print.feature, labels = labels, round = 2), probs$filter)
+    if (verbose) {
+      cat(paste("\rCurrent best crit:", mjmcmc_res$best.crit, "\n"))
+      cat("Feature importance:\n")
+      print.dist(marg.probs[[p]], sapply(S[[p]], print.feature, labels = labels, round = 2), probs$filter)
+    }
     if (params$rescale.large) prev.large <- params$large
     # Generate a new population of features for the next iteration (if this is not the last)
     if (p != P) {
-      S[[p + 1]] <- gmjmcmc.transition(S[[p]], F.0, data, loglik.alpha, marg.probs[[1]], marg.probs[[p]], labels, probs, params$feat)
+      S[[p + 1]] <- gmjmcmc.transition(S[[p]], F.0, data, loglik.alpha, marg.probs[[1]], marg.probs[[p]], labels, probs, params$feat, verbose)
       complex <- complex.features(S[[p + 1]])
       if (params$rescale.large) params$large <- lapply(prev.large, function(x) x * length(S[[p + 1]]) / length(S[[p]]))
     }
@@ -158,9 +173,10 @@ gmjmcmc <- function (data, loglik.pi = gaussian.loglik, loglik.alpha = gaussian.
 #' @param labels Variable labels for printing
 #' @param probs A list of the various probability vectors to use
 #' @param params A list of the various parameters for all the parts of the algorithm
+#' @param verbose A logical denoting if messages should be printed
 #'
 #' @return The updated population of features, that becomes S.t+1
-gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs.F.0, marg.probs, labels, probs, params) {
+gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs.F.0, marg.probs, labels, probs, params, verbose = TRUE) {
   # Sample which features to keep based on marginal inclusion below probs$filter
   feats.keep <- as.logical(rbinom(n = length(marg.probs), size = 1, prob = pmin(marg.probs / probs$filter, 1)))
 
@@ -169,8 +185,6 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs.F.0, ma
     if (params$prel.filter > 0) {
       # Do preliminary filtering if turned on
       feats.keep[(seq_along(F.0))[marg.probs.F.0 > params$prel.filter]] <- T
-      #removed.count <- sum(marg.probs.F.0 <= params$prel.filter)
-      #cat("Preliminary filtering removed",removed.count,"features.")
     } # Keep all if no preliminary filtering
     else feats.keep[seq_along(F.0)] <- T
   }
@@ -193,13 +207,15 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs.F.0, ma
   for (i in feats.replace) {
     prev.size <- length(S.t)
     prev.feat.string <- print.feature(S.t[[i]], labels=labels, round = 2)
-    S.t[[i]] <- gen.feature(c(F.0, S.t), marg.probs.use, data, loglik.alpha, probs, length(F.0), params)
+    S.t[[i]] <- gen.feature(c(F.0, S.t), marg.probs.use, data, loglik.alpha, probs, length(F.0), params, verbose)
     if (prev.size > length(S.t)) {
-      cat("Removed feature", prev.feat.string, "\n")
-      cat("Population shrinking, returning.\n")
+      if (verbose) {
+        cat("Removed feature", prev.feat.string, "\n")
+        cat("Population shrinking, returning.\n")
+      }
       return(S.t)
     }
-    cat("Replaced feature", prev.feat.string, "with", print.feature(S.t[[i]], labels=labels, round = 2), "\n")
+    if (verbose) cat("Replaced feature", prev.feat.string, "with", print.feature(S.t[[i]], labels=labels, round = 2), "\n")
     feats.keep[i] <- T
     marg.probs.use[i] <- mean(marg.probs.use)
   }
@@ -208,12 +224,12 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs.F.0, ma
   if (length(S.t) < params$pop.max) {
     for (i in (length(S.t)+1):params$pop.max) {
       prev.size <- length(S.t)
-      S.t[[i]] <- gen.feature(c(F.0, S.t), marg.probs.use, data, loglik.alpha, probs, length(F.0), params)
+      S.t[[i]] <- gen.feature(c(F.0, S.t), marg.probs.use, data, loglik.alpha, probs, length(F.0), params, verbose)
       if (prev.size == length(S.t)) {
-        cat("Population not growing, returning.\n")
+        if (verbose) cat("Population not growing, returning.\n")
         return(S.t)
       }
-      cat("Added feature", print.feature(S.t[[i]], labels=labels, round = 2), "\n")
+      if (verbose) cat("Added feature", print.feature(S.t[[i]], labels=labels, round = 2), "\n")
       marg.probs.use <- c(marg.probs.use, params$eps)
     }
   }

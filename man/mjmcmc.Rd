@@ -4,7 +4,15 @@
 \alias{mjmcmc}
 \title{Main algorithm for MJMCMC (Genetically Modified MJMCMC)}
 \usage{
-mjmcmc(data, loglik.pi, N = 100, probs = NULL, params = NULL, sub = FALSE)
+mjmcmc(
+  data,
+  loglik.pi,
+  N = 100,
+  probs = NULL,
+  params = NULL,
+  sub = FALSE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{data}{A matrix containing the data to use in the algorithm,
@@ -20,6 +28,8 @@ and the rest of the columns should be the independent variables.}
 \item{params}{A list of the various parameters for all the parts of the algorithm}
 
 \item{sub}{An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)}
+
+\item{verbose}{A logical denoting if messages should be printed}
 }
 \value{
 A list containing the following elements:

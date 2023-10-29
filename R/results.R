@@ -92,7 +92,7 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
   renorms <- unlist(renorms)
   na.feats <- which(is.na(renorms))
   if (length(na.feats) != 0) {
-    cat("Underflow occurred,", length(na.feats), "features removed.\n")
+    warning("Underflow occurred,", length(na.feats), "features removed.\n")
     renorms <- renorms[-na.feats]
     features <- features[-na.feats]
   }
@@ -104,7 +104,7 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
   ## Detect equivalent features
   # Generate mock data to compare features with
   if (is.null(data)) mock.data <- matrix(runif((feat.count+2)^2, -100, 100), ncol=feat.count+2)
-  else mock.data <- check.data(data)
+  else mock.data <- check.data(data, FALSE)
   
   mock.data.precalc <- precalc.features(mock.data, features)[,-(1:2)]
 

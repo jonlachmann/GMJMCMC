@@ -112,14 +112,14 @@ loglik.pre <- function (loglik.pi, model, complex, data, params = NULL) {
 # Function to check the data
 # Checks that there is an intercept in the data, adds it if missing
 # Coerces the data to be of type matrix
-check.data <- function (data) {
+check.data <- function (data, verbose) {
   if (!is.matrix(data)) {
     data <- as.matrix(data)
-    cat("Data coerced to matrix type.\n")
+    if (verbose) cat("Data coerced to matrix type.\n")
   }
   if (sum(data[, 2] == 1) != nrow(data)) {
     data <- cbind(data[, 1], 1, data[, -1])
-    cat("Intercept added to data.\n")
+    if (verbose) cat("Intercept added to data.\n")
   }
   return(data)
 }
@@ -134,11 +134,11 @@ data.dims <- function (data) {
 }
 
 # Function to extract column names if they are well formed
-get.labels <- function (data) {
+get.labels <- function (data, verbose) {
   labels <- colnames(data)[-(1:2)]
   if (is.null(labels)) return(F)
   if (sum(is.na(labels)) != 0) {
-    cat("NA labels present, using x#\n")
+    if (verbose) cat("NA labels present, using x#\n")
     return(F)
   }
   return(labels)

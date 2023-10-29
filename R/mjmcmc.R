@@ -13,6 +13,7 @@
 #' @param probs A list of the various probability vectors to use
 #' @param params A list of the various parameters for all the parts of the algorithm
 #' @param sub An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)
+#' @param verbose A logical denoting if messages should be printed
 #'
 #' @return A list containing the following elements:
 #' \item{models}{All visited models.}
@@ -25,9 +26,9 @@
 #' \item{populations}{The covariates represented as a list of features.}
 #'
 #' @export mjmcmc
-mjmcmc <- function (data, loglik.pi, N = 100, probs = NULL, params = NULL, sub = FALSE) {
+mjmcmc <- function (data, loglik.pi, N = 100, probs = NULL, params = NULL, sub = FALSE, verbose = TRUE) {
   # Verify that data is well-formed
-  data <- check.data(data)
+  data <- check.data(data, verbose)
 
   # Generate default probabilities and parameters if there are none supplied.
   if (is.null(probs)) probs <- gen.probs.mjmcmc()
@@ -45,9 +46,9 @@ mjmcmc <- function (data, loglik.pi, N = 100, probs = NULL, params = NULL, sub =
   model.cur.res <- loglik.pre(loglik.pi, model.cur, complex, data, params$loglik)
   model.cur <- list(prob=0, model=model.cur, coefs=model.cur.res$coefs, crit=model.cur.res$crit, alpha=0)
 
-  cat("\nMJMCMC begin.\n")
-  result <- mjmcmc.loop(data, complex, loglik.pi, model.cur, N, probs, params, sub)
-  cat("\nMJMCMC done.\n")
+  if (verbose) cat("\nMJMCMC begin.\n")
+  result <- mjmcmc.loop(data, complex, loglik.pi, model.cur, N, probs, params, sub, verbose)
+  if (verbose) cat("\nMJMCMC done.\n")
   # Calculate acceptance rate
   result$accept <- result$accept / N
   result$populations <- S
@@ -67,6 +68,7 @@ mjmcmc <- function (data, loglik.pi, N = 100, probs = NULL, params = NULL, sub =
 #' @param probs A list of the various probability vectors to use
 #' @param params A list of the various parameters for all the parts of the algorithm
 #' @param sub An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)
+#' @param verbose A logical denoting if messages should be printed
 #'
 #' @return A list containing the following elements:
 #' \item{models}{All visited models.}
@@ -77,7 +79,7 @@ mjmcmc <- function (data, loglik.pi, N = 100, probs = NULL, params = NULL, sub =
 #' \item{model.probs}{Marginal probabilities of all of the visited models.}
 #' \item{model.probs.idx}{Indices of unique visited models.}
 #'
-mjmcmc.loop <- function (data, complex, loglik.pi, model.cur, N, probs, params, sub = FALSE) {
+mjmcmc.loop <- function (data, complex, loglik.pi, model.cur, N, probs, params, sub = FALSE, verbose = TRUE) {
   # Acceptance count
   accept <- 0
   # Number of covariates or features
@@ -87,21 +89,21 @@ mjmcmc.loop <- function (data, complex, loglik.pi, model.cur, N, probs, params, 
   # Initialize a vector to contain local opt visited models
   lo.models <- vector("list", 0)
   # Initialize list for keeping track of unique visited models
-  visited.models <- list(models=matrix(model.cur$model, 1, covar_count), crit=model.cur$crit, count=1)
+  visited.models <- list(models = matrix(model.cur$model, 1, covar_count), crit = model.cur$crit, count = 1)
   best.crit <- model.cur$crit # Set first best criteria value
 
   progress <- 0
   mcmc_total <- as.numeric(model.cur$model)
-  for (i in 1:N) {
-    if (N > 40 && i %% floor(N/40) == 0) progress <- print.progressbar(progress, 40)
+  for (i in seq_len(N)) {
+    if (verbose && N > 40 && i %% floor(N / 40) == 0) progress <- print.progressbar(progress, 40)
 
-    if (i > params$burn_in) pip_estimate <- mcmc_total/i
-    else pip_estimate <- rep(1/covar_count, covar_count)
+    if (i > params$burn_in) pip_estimate <- mcmc_total / i
+    else pip_estimate <- rep(1 / covar_count, covar_count)
 
     proposal <- mjmcmc.prop(data, loglik.pi, model.cur, complex, pip_estimate, probs, params, visited.models)
     if (proposal$crit > best.crit) {
       best.crit <- proposal$crit
-      cat(paste("\rNew best crit:", best.crit, "\n"))
+      if (verbose) cat(paste("\rNew best crit:", best.crit, "\n"))
     }
 
     # If we did a large jump and visited models to save

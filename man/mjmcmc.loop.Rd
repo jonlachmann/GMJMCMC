@@ -4,7 +4,17 @@
 \alias{mjmcmc.loop}
 \title{The main loop for the MJMCMC (Mode Jumping MCMC) algorithm, used in both MJMCMC and GMJMCMC (Genetically Modified MJMCMC)}
 \usage{
-mjmcmc.loop(data, complex, loglik.pi, model.cur, N, probs, params, sub = FALSE)
+mjmcmc.loop(
+  data,
+  complex,
+  loglik.pi,
+  model.cur,
+  N,
+  probs,
+  params,
+  sub = FALSE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{data}{The data to use}
@@ -22,6 +32,8 @@ mjmcmc.loop(data, complex, loglik.pi, model.cur, N, probs, params, sub = FALSE)
 \item{params}{A list of the various parameters for all the parts of the algorithm}
 
 \item{sub}{An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)}
+
+\item{verbose}{A logical denoting if messages should be printed}
 }
 \value{
 A list containing the following elements:
