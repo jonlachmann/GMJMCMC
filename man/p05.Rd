@@ -15,3 +15,7 @@ p05(x)
 \description{
 p05 polynomial term
 }
+\examples{
+p05(2)
+
+}

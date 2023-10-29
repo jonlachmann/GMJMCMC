@@ -15,3 +15,7 @@ max(x,0)
 \description{
 ReLu function
 }
+\examples{
+relu(2)
+
+}

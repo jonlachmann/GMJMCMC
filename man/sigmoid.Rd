@@ -15,3 +15,8 @@ The sigmoid of x
 \description{
 Sigmoid function
 }
+\examples{
+sigmoid(2)
+
+
+}

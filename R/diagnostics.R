@@ -14,6 +14,12 @@
 #' @param window sliding window for computing the standard deviation
 #'
 #' @return A list of summary statistics for checking convergence with given confidence intervals
+#' 
+#' @examples
+#' result <- gmjmcmc(matrix(rnorm(600), 100),gaussian.loglik, NULL, c("p0", "exp_dbl"))
+#' diagnstats <- diagn_plot(result)
+#' 
+#' @export
 diagn_plot <- function (res, FUN = median, conf = 0.95, burnin = 0, window = 10000) {
   
   if(length(res$thread.best)>0)

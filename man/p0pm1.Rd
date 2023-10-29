@@ -15,3 +15,7 @@ p0(x)*(x+.Machine$double.eps)^(-1)
 \description{
 p0pm1 polynomial terms
 }
+\examples{
+p0pm1(2)
+
+}

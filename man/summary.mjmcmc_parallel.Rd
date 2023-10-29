@@ -23,3 +23,8 @@ A data frame containing the following columns:
 \description{
 Function to print a quick summary of the results
 }
+\examples{
+result <- mjmcmc.parallel(runs = 1, cores = 1, matrix(rnorm(600), 100),gaussian.loglik)
+summary.mjmcmc_parallel(result)
+
+}

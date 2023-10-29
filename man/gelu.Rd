@@ -15,3 +15,7 @@ x*pnorm(x)
 \description{
 GELU function
 }
+\examples{
+gelu(2)
+
+}

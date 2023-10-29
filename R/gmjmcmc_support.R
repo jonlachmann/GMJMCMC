@@ -10,6 +10,10 @@
 #'
 #' @return No return value, just sets the gmjmcmc-transformations option
 #'
+#' @examples
+#' set.transforms(c("p0","p1"))
+#' 
+#'
 #' @export set.transforms
 set.transforms <- function (transforms) {
   options("gmjmcmc-transformations"=transforms)
@@ -37,6 +41,10 @@ verify.inputs <- function (data, loglik.pi, transforms, T, N, N.final, probs, pa
 #'
 #' @return A numeric vector of marginal model probabilities based on relative frequencies of model visits in MCMC.
 #'
+#' @examples
+#' result <- gmjmcmc(matrix(rnorm(600), 100),gaussian.loglik, NULL, c("p0", "exp_dbl"))
+#' marginal.probs(result$models[[1]])
+#'
 #' @export
 marginal.probs <- function (models) {
   mod.count <- length(models)
@@ -51,6 +59,8 @@ marginal.probs <- function (models) {
 #' Function for calculating feature importance through renormalized model estimates
 #' @param models The models to use.
 #' @param type Select which probabilities are of interest, features or models
+#' 
+#' @noRd
 marginal.probs.renorm <- function (models, type = "features") {
   models <- lapply(models, function (x) x[c("model", "crit")])
   model.size <- length(models[[1]]$model)

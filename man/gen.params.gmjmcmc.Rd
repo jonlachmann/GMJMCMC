@@ -15,3 +15,8 @@ A list of parameters to use when running the mjmcmc function.
 \description{
 Generate a parameter list for GMJMCMC (Genetically Modified MJMCMC)
 }
+\examples{
+gen.params.gmjmcmc(matrix(rnorm(600), 100))
+
+
+}

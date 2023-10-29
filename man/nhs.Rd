@@ -15,3 +15,7 @@ as.integer(x<0)
 \description{
 negative heavy side function
 }
+\examples{
+nhs(2)
+
+}

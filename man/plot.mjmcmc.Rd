@@ -21,3 +21,8 @@ No return value, just creates a plot
 Function to plot the results, works both for results from gmjmcmc and
 merged results from merge.results
 }
+\examples{
+result <- mjmcmc(matrix(rnorm(600), 100),gaussian.loglik)
+plot(result)
+
+}

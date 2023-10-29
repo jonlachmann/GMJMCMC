@@ -15,3 +15,8 @@ A numeric vector of marginal model probabilities based on relative frequencies o
 \description{
 Function for calculating marginal inclusion probabilities of features given a list of models
 }
+\examples{
+result <- gmjmcmc(matrix(rnorm(600), 100),gaussian.loglik, NULL, c("p0", "exp_dbl"))
+marginal.probs(result$models[[1]])
+
+}

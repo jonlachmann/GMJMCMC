@@ -18,3 +18,8 @@ intended to store parameters that the estimator function should use.
 \description{
 Generate a parameter list for MJMCMC (Mode Jumping MCMC)
 }
+\examples{
+gen.params.mjmcmc(matrix(rnorm(600), 100))
+
+
+}

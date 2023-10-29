@@ -15,3 +15,7 @@ The sine of x
 \description{
 Sine function for degrees
 }
+\examples{
+sin_deg(0)
+
+}

@@ -15,6 +15,10 @@
 #'
 #' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 #'
+#' @examples
+#' logistic.loglik(as.integer(rnorm(100)>0),matrix(rnorm(100)),c(TRUE),c(list(oc=1)))
+#' 
+#'
 #' @export logistic.loglik
 logistic.loglik <- function (y, x, model, complex, params = list(r = 1)) {
   if (length(params) == 0)
@@ -34,7 +38,7 @@ logistic.loglik <- function (y, x, model, complex, params = list(r = 1)) {
 #'
 #' @return A numeric with the log likelihood.
 #'
-#' @export logistic.loglik.alpha
+#' @noRd
 logistic.loglik.alpha <- function (a, data, mu_func) {
   m <- 1 / (1 + exp(-eval(parse(text = mu_func))))
   -sum((data[,1] * log(m) + (1 - data[, 1]) * log(1 - m)))
@@ -49,6 +53,10 @@ logistic.loglik.alpha <- function (a, data, mu_func) {
 #' @param params A list of parameters for the log likelihood, supplied by the user
 #'
 #' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
+#'
+#' @examples
+#' gaussian.loglik(rnorm(100),matrix(rnorm(100)),c(TRUE),c(list(oc=1)),NULL)
+#'   
 #'
 #' @export gaussian.loglik
 gaussian.loglik <- function (y, x, model, complex, params) {
@@ -71,7 +79,7 @@ gaussian.loglik <- function (y, x, model, complex, params) {
 #'
 #' @return A numeric with the log likelihood.
 #'
-#' @export gaussian.loglik.alpha
+#' @noRd
 gaussian.loglik.alpha <- function (a, data, mu_func) {
   m <- eval(parse(text=mu_func))
   sum((data[,1]-m)^2)
@@ -87,6 +95,9 @@ gaussian.loglik.alpha <- function (a, data, mu_func) {
 #'
 #' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 #'
+#' @examples
+#' linear.g.prior.loglik(rnorm(100),matrix(rnorm(100)),c(TRUE),c(list(oc=1)))
+#'
 #' @export linear.g.prior.loglik
 linear.g.prior.loglik <- function (y, x, model, complex, params = list(g = 4)) {
   out <- lm.fit(as.matrix(x[, model]), y)
@@ -94,7 +105,7 @@ linear.g.prior.loglik <- function (y, x, model, complex, params = list(g = 4)) {
   p <- out$rank
   n <- nrow(x)
   logmarglik <- 0.5 * (log(1 + params$g) * (n - p) - log(1 + params$g * (1 - rsquared)) * (n - 1)) * (p != 1)
-  return(logmarglik)
+  return(list(crit=logmarglik, coefs=out$coefficients))
 }
 
 

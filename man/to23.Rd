@@ -15,3 +15,7 @@ x^2.3
 \description{
 To the 2.3  power function
 }
+\examples{
+to23(2)
+
+}

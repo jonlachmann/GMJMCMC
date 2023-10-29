@@ -15,3 +15,7 @@ ngelu(x)
 \description{
 Negative GELU function
 }
+\examples{
+ngelu(2)
+
+}

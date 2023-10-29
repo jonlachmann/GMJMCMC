@@ -15,3 +15,7 @@ p0(x)*x^(3)
 \description{
 p0p3 polynomial term
 }
+\examples{
+p0p3(2)
+
+}

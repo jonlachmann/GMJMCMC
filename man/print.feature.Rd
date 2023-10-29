@@ -25,3 +25,9 @@ A character representation of a feature
 \description{
 Print method for "feature" class
 }
+\examples{
+result <- gmjmcmc(matrix(rnorm(600), 100),gaussian.loglik, NULL, c("p0", "exp_dbl"))
+print.feature(result$populations[[1]][1])
+
+
+}

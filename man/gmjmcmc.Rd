@@ -63,8 +63,8 @@ A list containing the following elements:
 Main algorithm for GMJMCMC (Genetically Modified MJMCMC)
 }
 \examples{
-# Example usage:
-# result <- your_function_name()
-# print(result)
+result <- gmjmcmc(matrix(rnorm(600), 100),gaussian.loglik, NULL, c("p0", "exp_dbl"))
+summary(result)
+plot(result)
 
 }

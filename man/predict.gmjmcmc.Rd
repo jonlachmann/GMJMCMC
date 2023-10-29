@@ -29,3 +29,9 @@ A list containing aggregated predictions and per model predictions.
 \description{
 Predict using a gmjmcmc result object.
 }
+\examples{
+result <- gmjmcmc(matrix(rnorm(600), 100), gaussian.loglik, loglik.alpha = gaussian.loglik.alpha, c("p0", "exp_dbl"))
+preds <- predict.gmjmcmc(result, matrix(rnorm(600), 100))
+
+
+}

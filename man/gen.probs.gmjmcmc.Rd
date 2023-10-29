@@ -15,3 +15,8 @@ A list of probabilities to be used as input for the gmjmcmc function.
 \description{
 Generate a probability list for GMJMCMC (Genetically Modified MJMCMC)
 }
+\examples{
+gen.probs.gmjmcmc(c("p0", "exp_dbl"))
+
+
+}

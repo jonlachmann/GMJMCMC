@@ -15,3 +15,7 @@ e^(-x^2)
 \description{
 Gaussian function
 }
+\examples{
+gauss(2)
+
+}

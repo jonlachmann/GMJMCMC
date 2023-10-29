@@ -25,6 +25,11 @@
 #' \item{model.probs.idx}{Indices of unique visited models.}
 #' \item{populations}{The covariates represented as a list of features.}
 #'
+#' @examples
+#' result <- mjmcmc(matrix(rnorm(600), 100),gaussian.loglik)
+#' summary(result)
+#' plot(result)
+#'
 #' @export mjmcmc
 mjmcmc <- function (data, loglik.pi, N = 100, probs = NULL, params = NULL, sub = FALSE, verbose = TRUE) {
   # Verify that data is well-formed
@@ -78,6 +83,8 @@ mjmcmc <- function (data, loglik.pi, N = 100, probs = NULL, params = NULL, sub =
 #' \item{marg.probs}{Marginal probabilities of the features.}
 #' \item{model.probs}{Marginal probabilities of all of the visited models.}
 #' \item{model.probs.idx}{Indices of unique visited models.}
+#'
+#' @noRd
 #'
 mjmcmc.loop <- function (data, complex, loglik.pi, model.cur, N, probs, params, sub = FALSE, verbose = TRUE) {
   # Acceptance count
@@ -170,6 +177,9 @@ mjmcmc.loop <- function (data, complex, loglik.pi, model.cur, N, probs, params, 
 #' @param probs A list of the various probability vectors to use
 #' @param params A list of the various parameters for all the parts of the algorithm
 #' @param visited.models A list of the previously visited models to use when subsampling and avoiding recalculation
+#'
+#'
+#' @noRd
 #'
 mjmcmc.prop <- function (data, loglik.pi, model.cur, complex, pip_estimate, probs, params, visited.models=NULL) {
   l <- runif(1)

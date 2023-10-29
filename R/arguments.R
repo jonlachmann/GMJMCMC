@@ -7,7 +7,11 @@
 #'
 #' @return A list of probabilities to be used as input for the mjmcmc function.
 #'
+#' @examples
+#' gen.probs.mjmcmc()
+#' 
 #' @export gen.probs.mjmcmc
+#' 
 gen.probs.mjmcmc <- function () {
   ## Mode jumping algorithm probabilities
   large <- 0.05                         # probability of a large jump
@@ -28,6 +32,10 @@ gen.probs.mjmcmc <- function () {
 #' @param transforms A list of the transformations used (to get the count).
 #'
 #' @return A list of probabilities to be used as input for the gmjmcmc function.
+#'
+#' @examples
+#' gen.probs.gmjmcmc(c("p0", "exp_dbl"))
+#' 
 #'
 #' @export gen.probs.gmjmcmc
 gen.probs.gmjmcmc <- function (transforms) {
@@ -60,6 +68,10 @@ gen.probs.gmjmcmc <- function (transforms) {
 #'
 #' Note that the $loglik item is an empty list, which is passed to the log likelihood function of the model,
 #' intended to store parameters that the estimator function should use.
+#'
+#' @examples
+#' gen.params.mjmcmc(matrix(rnorm(600), 100))
+#' 
 #'
 #' @export gen.params.mjmcmc
 gen.params.mjmcmc <- function (data) {
@@ -100,6 +112,10 @@ gen.params.mjmcmc <- function (data) {
 #' @param data The dataset that will be used in the algorithm
 #'
 #' @return A list of parameters to use when running the mjmcmc function.
+#'
+#' @examples
+#' gen.params.gmjmcmc(matrix(rnorm(600), 100))
+#' 
 #'
 #' @export gen.params.gmjmcmc
 gen.params.gmjmcmc <- function (data) {

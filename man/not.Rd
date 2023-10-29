@@ -15,3 +15,7 @@ not(x)
 \description{
 not x
 }
+\examples{
+not(TRUE)
+
+}

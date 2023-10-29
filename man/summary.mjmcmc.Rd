@@ -23,3 +23,8 @@ A data frame containing the following columns:
 \description{
 Function to print a quick summary of the results
 }
+\examples{
+result <- mjmcmc(matrix(rnorm(600), 100),gaussian.loglik)
+summary(result)
+
+}

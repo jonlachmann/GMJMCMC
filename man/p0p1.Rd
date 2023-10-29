@@ -15,3 +15,7 @@ p0(x)*x
 \description{
 p0p1 polynomial term
 }
+\examples{
+p0p1(2)
+
+}

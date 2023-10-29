@@ -15,3 +15,7 @@ The cube root of x
 \description{
 Cube root function
 }
+\examples{
+troot(27)
+
+}

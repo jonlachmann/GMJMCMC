@@ -15,3 +15,7 @@ x^(3.5)
 \description{
 To 3.5 power
 }
+\examples{
+to35(2)
+
+}

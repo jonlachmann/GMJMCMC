@@ -23,3 +23,8 @@ A list with the log marginal likelihood combined with the log prior (crit) and t
 \description{
 Log likelihood function for gaussian regression with a prior p(m)=r*sum(total_width).
 }
+\examples{
+gaussian.loglik(rnorm(100),matrix(rnorm(100)),c(TRUE),c(list(oc=1)),NULL)
+  
+
+}

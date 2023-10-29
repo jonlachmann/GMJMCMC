@@ -45,3 +45,9 @@ A list containing the following elements:
 \description{
 Main algorithm for MJMCMC (Genetically Modified MJMCMC)
 }
+\examples{
+result <- mjmcmc(matrix(rnorm(600), 100),gaussian.loglik)
+summary(result)
+plot(result)
+
+}

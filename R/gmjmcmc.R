@@ -40,9 +40,9 @@ NULL
 #' \item{best}{Best marginal model probability throughout the run, represented as the maximum value in \code{unlist(best.margs)}.}
 #'
 #' @examples
-#' # Example usage:
-#' # result <- your_function_name()
-#' # print(result)
+#' result <- gmjmcmc(matrix(rnorm(600), 100),gaussian.loglik, NULL, c("p0", "exp_dbl"))
+#' summary(result)
+#' plot(result)
 #'
 #' @export gmjmcmc
 gmjmcmc <- function (
@@ -176,6 +176,9 @@ gmjmcmc <- function (
 #' @param verbose A logical denoting if messages should be printed
 #'
 #' @return The updated population of features, that becomes S.t+1
+#' 
+#' @noRd
+#' 
 gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs.F.0, marg.probs, labels, probs, params, verbose = TRUE) {
   # Sample which features to keep based on marginal inclusion below probs$filter
   feats.keep <- as.logical(rbinom(n = length(marg.probs), size = 1, prob = pmin(marg.probs / probs$filter, 1)))

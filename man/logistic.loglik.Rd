@@ -27,3 +27,8 @@ Log likelihood function for logistic regression with a prior p(m)=sum(total_widt
 This function is created as an example of how to create an estimator that is used
 to calculate the marginal likelihood of a model.
 }
+\examples{
+logistic.loglik(as.integer(rnorm(100)>0),matrix(rnorm(100)),c(TRUE),c(list(oc=1)))
+
+
+}

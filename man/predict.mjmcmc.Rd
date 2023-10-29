@@ -25,3 +25,8 @@ A list containing aggregated predictions.
 \description{
 Predict using a mjmcmc result object.
 }
+\examples{
+result <- mjmcmc(matrix(rnorm(600), 100), gaussian.loglik)
+preds <- predict.mjmcmc(result, matrix(rnorm(600), 100))
+
+}

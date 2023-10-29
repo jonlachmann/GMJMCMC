@@ -15,3 +15,7 @@ p0(x)\emph{sign(x)}(abs(x)+.Machine$double.eps)^(-0.5)
 \description{
 p0pm05 polynomial term
 }
+\examples{
+p0pm05(2)
+
+}

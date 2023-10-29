@@ -15,3 +15,7 @@ The square root of the absolute value of x
 \description{
 Square root function
 }
+\examples{
+sqroot(4)
+
+}

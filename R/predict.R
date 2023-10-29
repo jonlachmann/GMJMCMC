@@ -10,6 +10,12 @@
 #'     \item{quantiles}{Quantiles of aggregated predictions.}
 #'   }
 #' \item{preds}{A list of lists containing individual predictions per model per population in object.}
+#' 
+#' @examples
+#' result <- gmjmcmc(matrix(rnorm(600), 100), gaussian.loglik, loglik.alpha = gaussian.loglik.alpha, c("p0", "exp_dbl"))
+#' preds <- predict.gmjmcmc(result, matrix(rnorm(600), 100))
+#' 
+#' 
 #' @export
 predict.gmjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
   merged <- merge_results(list(object),data = cbind(1,x))
@@ -20,6 +26,7 @@ predict.gmjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.02
 #' Produces slightly different results from the fun above since this is using all lo.models too.
 #' @inheritParams predict.gmjmcmc_merged
 #' @param pop The population to use.
+#' @noRd
 predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = 1, ...) {
 
   mmodel <- lapply(object[1:8], function (x) x[[pop]])
@@ -43,6 +50,10 @@ predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.
 #'     \item{quantiles}{Quantiles of aggregated predictions.}
 #'   }
 #' \item{preds}{A list of lists containing individual predictions per model per population in object.}
+#'
+#' @examples
+#' result <- gmjmcmc.parallel(runs = 1, cores = 1,list(populations = "best", complex.measure = 2, tol = 0.0000001), matrix(rnorm(600), 100), gaussian.loglik, loglik.alpha = gaussian.loglik.alpha, c("p0", "exp_dbl"))
+#' preds <- predict.gmjmcmc_merged(result, matrix(rnorm(600), 100))
 #'
 #' @export
 predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
@@ -92,6 +103,11 @@ predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles =
 #' @return A list containing aggregated predictions.
 #' \item{mean}{Mean of aggregated predictions.}
 #' \item{quantiles}{Quantiles of aggregated predictions.}
+#' 
+#' @examples
+#' result <- mjmcmc(matrix(rnorm(600), 100), gaussian.loglik)
+#' preds <- predict.mjmcmc(result, matrix(rnorm(600), 100))
+#' 
 #' @export
 predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
   # Select the models and features to predict from at this iteration
@@ -116,6 +132,12 @@ predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025
 #' @return A list containing aggregated predictions.
 #' \item{mean}{Mean of aggregated predictions.}
 #' \item{quantiles}{Quantiles of aggregated predictions.}
+#' 
+#' @examples
+#' result <- mjmcmc.parallel(runs = 1, cores = 1, matrix(rnorm(600), 100), gaussian.loglik)
+#' preds <- predict.mjmcmc_parallel(result, matrix(rnorm(600), 100))
+#' 
+#' 
 #' @export
 predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
   max.crits <- numeric()
@@ -152,6 +174,11 @@ predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles 
 #'     \item{quantiles}{Quantiles of aggregated predictions.}
 #'   }
 #' \item{preds}{A list of lists containing individual predictions per model per population in object.}
+#' 
+#' @examples
+#' result <- gmjmcmc.parallel(runs = 1, cores = 1,list(populations = "best", complex.measure = 2, tol = 0.0000001), matrix(rnorm(600), 100), gaussian.loglik, loglik.alpha = gaussian.loglik.alpha, c("p0", "exp_dbl"))
+#' preds <- predict.gmjmcmc_parallel(result$results, matrix(rnorm(600), 100))
+#' 
 #' @export
 predict.gmjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
   merged <- merge_results(object,data = cbind(1, x), ...)
@@ -165,6 +192,7 @@ predict.gmjmcmc_parallel <- function (object, x, link = function(x) x, quantiles
 #' @param prob The probabilities of the quantiles to use
 #'
 #' @return Weighted quantiles
+#' @noRd
 weighted.quantiles <- function (values, weights, prob = c(0.025, 0.975)) {
   ordered <- order(values)
   P <- cumsum(weights[ordered])

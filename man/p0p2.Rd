@@ -15,3 +15,7 @@ p0(x)*x^(2)
 \description{
 p0p2 polynomial term
 }
+\examples{
+p0p2(2)
+
+}

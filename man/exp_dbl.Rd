@@ -15,3 +15,7 @@ e^(-abs(x))
 \description{
 Double exponential function
 }
+\examples{
+exp_dbl(2)
+
+}

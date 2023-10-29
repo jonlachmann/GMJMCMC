@@ -15,3 +15,7 @@ erf(x)
 \description{
 erf function
 }
+\examples{
+erf(2)
+
+}

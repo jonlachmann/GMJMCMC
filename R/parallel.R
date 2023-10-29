@@ -3,6 +3,12 @@
 #' @param cores The number of cores to run on
 #' @param ... Further params passed to mjmcmc.
 #' @return Merged results from multiple mjmcmc runs
+#' 
+#' @examples
+#' result <- mjmcmc.parallel(runs = 1, cores = 1, matrix(rnorm(600), 100),gaussian.loglik)
+#' summary(result)
+#' plot(result)
+#' 
 #' @export
 mjmcmc.parallel <- function (runs, cores = getOption("mc.cores", 2L), ...) {
   results <- mclapply(seq_len(runs), function (x) { mjmcmc(...) }, mc.cores = cores)
@@ -18,6 +24,15 @@ mjmcmc.parallel <- function (runs, cores = getOption("mc.cores", 2L), ...) {
 #' @inheritParams gmjmcmc
 #' @param ... Further params passed to mjmcmc.
 #' @return Results from multiple gmjmcmc runs
+#' 
+#' @examples
+#' result <- gmjmcmc.parallel(runs = 1, cores = 1,list(populations = "best", complex.measure = 2, tol = 0.0000001), matrix(rnorm(600), 100), gaussian.loglik, loglik.alpha = gaussian.loglik.alpha, c("p0", "exp_dbl"))
+#' 
+#' summary(result)
+#' 
+#' plot(result)
+#' 
+#' 
 #' @export
 gmjmcmc.parallel <- function (runs, cores = getOption("mc.cores", 2L), merge.options = list(populations = "best", complex.measure = 2, tol = 0.0000001), data, loglik.pi = gaussian.loglik, loglik.alpha = gaussian.loglik.alpha(), transforms, ...) {
   options("gmjmcmc-transformations" = transforms)

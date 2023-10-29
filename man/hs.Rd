@@ -15,3 +15,7 @@ as.integer(x>0)
 \description{
 heavy side function
 }
+\examples{
+hs(2)
+
+}

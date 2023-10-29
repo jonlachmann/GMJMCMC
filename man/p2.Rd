@@ -15,3 +15,7 @@ x^(2)
 \description{
 p2 polynomial term
 }
+\examples{
+p2(2)
+
+}

@@ -15,3 +15,7 @@ x^(7/2)
 \description{
 To the 7/2  power function
 }
+\examples{
+to72(2)
+
+}

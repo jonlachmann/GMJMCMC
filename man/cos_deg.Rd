@@ -15,3 +15,7 @@ The cosine of x
 \description{
 Cosine function for degrees
 }
+\examples{
+cos_deg(0)
+
+}

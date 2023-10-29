@@ -15,3 +15,7 @@ p0(x)*(abs(x)+.Machine$double.eps)^(0.5)
 \description{
 p0p05 polynomial term
 }
+\examples{
+p0p05(2)
+
+}

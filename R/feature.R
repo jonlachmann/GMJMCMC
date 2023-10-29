@@ -22,6 +22,7 @@
 #' @param features A list of features to include
 #' @param trans.priors A vector of prior inclusion penalties for the different transformations.
 #' @param alphas A numeric vector denoting the alphas to use
+#' @noRd
 create.feature <- function (transform, features, trans.priors, alphas=NULL) {
   # Given no alphas, assume no intercept and unit coefficients
   if (is.null(alphas)) alphas <- c(0, rep(1, length(features)))
@@ -62,6 +63,7 @@ create.feature <- function (transform, features, trans.priors, alphas=NULL) {
 #' @param feature The feature to be updated
 #' @param alphas The alphas that will be used
 #' @param recurse If we are recursing, to note the number of alphas used
+#' @noRd
 update.alphas <- function (feature, alphas, recurse=FALSE) {
   feat <- feature[[length(feature)]]
   alpha <- 0
@@ -101,6 +103,11 @@ update.alphas <- function (feature, alphas, recurse=FALSE) {
 #' @param ... Not used.
 #'
 #' @return A character representation of a feature
+#'
+#' @examples
+#' result <- gmjmcmc(matrix(rnorm(600), 100),gaussian.loglik, NULL, c("p0", "exp_dbl"))
+#' print.feature(result$populations[[1]][1])
+#' 
 #'
 #' @export
 print.feature <- function (x, dataset = FALSE, alphas = FALSE, labels = FALSE, round = FALSE, ...) {

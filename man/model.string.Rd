@@ -21,3 +21,11 @@ A character representation of a model
 \description{
 Function to generate a function string for a model consisting of features
 }
+\examples{
+result <- gmjmcmc(matrix(rnorm(600), 100),gaussian.loglik, NULL, c("p0", "exp_dbl"))
+summary(result)
+plot(result)
+model.string(c(TRUE,FALSE,TRUE,FALSE,TRUE),result$populations[[1]])
+model.string(result$models[[1]][1][[1]]$model,result$populations[[1]])
+
+}
