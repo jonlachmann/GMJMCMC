@@ -2,7 +2,7 @@
 % Please edit documentation in R/gmjmcmc.R
 \name{gmjmcmc.transition}
 \alias{gmjmcmc.transition}
-\title{Subalgorithm for generating a new population of features in GMJMCMC}
+\title{Subalgorithm for generating a new population of features in GMJMCMC (Genetically Modified MJMCMC)}
 \usage{
 gmjmcmc.transition(
   S.t,
@@ -39,5 +39,5 @@ gmjmcmc.transition(
 The updated population of features, that becomes S.t+1
 }
 \description{
-Subalgorithm for generating a new population of features in GMJMCMC
+Subalgorithm for generating a new population of features in GMJMCMC (Genetically Modified MJMCMC)
 }

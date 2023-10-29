@@ -2,8 +2,7 @@
 % Please edit documentation in R/gmjmcmc.R
 \name{gmjmcmc}
 \alias{gmjmcmc}
-\title{Main algorithm for GMJMCMC
-TODO: More documentation - borrow from https://github.com/aliaksah/EMJMCMC2016/blob/master/man/EMJMCMC.Rd if applicable.}
+\title{Main algorithm for GMJMCMC (Genetically Modified MJMCMC)}
 \usage{
 gmjmcmc(
   data,
@@ -30,7 +29,7 @@ and the rest of the columns should be the independent variables.}
 \item{transforms}{A Character vector including the names of the non-linear functions to be used by the modification
 and the projection operator.}
 
-\item{P}{The number of generations for GMJMCMC.
+\item{P}{The number of generations for GMJMCMC (Genetically Modified MJMCMC).
 The default value is $P = 10$.
 A larger value like $P = 50$ might be more realistic for more complicated examples where one expects a lot of non-linear structures.}
 
@@ -45,6 +44,5 @@ A larger value like $P = 50$ might be more realistic for more complicated exampl
 \item{sub}{An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)}
 }
 \description{
-Main algorithm for GMJMCMC
-TODO: More documentation - borrow from https://github.com/aliaksah/EMJMCMC2016/blob/master/man/EMJMCMC.Rd if applicable.
+Main algorithm for GMJMCMC (Genetically Modified MJMCMC)
 }

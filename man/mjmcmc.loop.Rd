@@ -2,7 +2,7 @@
 % Please edit documentation in R/mjmcmc.R
 \name{mjmcmc.loop}
 \alias{mjmcmc.loop}
-\title{The main loop for the MJMCMC algorithm, used in both MJMCMC and GMJMCMC}
+\title{The main loop for the MJMCMC (Mode Jumping MCMC) algorithm, used in both MJMCMC and GMJMCMC (Genetically Modified MJMCMC)}
 \usage{
 mjmcmc.loop(data, complex, loglik.pi, model.cur, N, probs, params, sub = FALSE)
 }
@@ -28,5 +28,5 @@ A list containing the visited models, the models visited during local optimisati
 the acceptance count and the best critical value encountered.
 }
 \description{
-The main loop for the MJMCMC algorithm, used in both MJMCMC and GMJMCMC
+The main loop for the MJMCMC (Mode Jumping MCMC) algorithm, used in both MJMCMC and GMJMCMC (Genetically Modified MJMCMC)
 }

@@ -7,7 +7,7 @@
 #' This function will weight the features based on the best mlik in that population
 #' and merge the results together, simplifying by merging equivalent features (having high correlation).
 #'
-#' @param results A list containing multiple results from GMJMCMC.
+#' @param results A list containing multiple results from GMJMCMC (Genetically Modified MJMCMC).
 #' @param populations Which populations should be merged from the results, can be "all", "last" (default) or "best".
 #' @param complex.measure The complex measure to use when finding the simplest equivalent feature,
 #' 1=total width, 2=operation count and 3=depth.

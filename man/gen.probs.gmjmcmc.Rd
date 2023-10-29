@@ -2,7 +2,7 @@
 % Please edit documentation in R/arguments.R
 \name{gen.probs.gmjmcmc}
 \alias{gen.probs.gmjmcmc}
-\title{Generate a probability list for GMJMCMC}
+\title{Generate a probability list for GMJMCMC (Genetically Modified MJMCMC)}
 \usage{
 gen.probs.gmjmcmc(transforms)
 }
@@ -10,5 +10,5 @@ gen.probs.gmjmcmc(transforms)
 \item{transforms}{A list of the transformations used (to get the count).}
 }
 \description{
-Generate a probability list for GMJMCMC
+Generate a probability list for GMJMCMC (Genetically Modified MJMCMC)
 }

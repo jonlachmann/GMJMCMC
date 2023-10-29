@@ -11,7 +11,7 @@ mjmcmc.parallel <- function (runs, cores = getOption("mc.cores", 2L), ...) {
 }
 
 
-#' Run multiple gmjmcmc runs in parallel returning a list of all results.
+#' Run multiple gmjmcmc (Genetically Modified MJMCMC) runs in parallel returning a list of all results.
 #' @param runs The number of runs to run
 #' @param cores The number of cores to run on
 #' @param merge.options A list of options to pass to the [merge_results()] function run after the

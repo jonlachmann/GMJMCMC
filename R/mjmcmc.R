@@ -3,7 +3,7 @@
 # Created by: jonlachmann
 # Created on: 2021-04-27
 
-#' Main algorithm for MJMCMC
+#' Main algorithm for MJMCMC (Genetically Modified MJMCMC)
 #'
 #' @param data A matrix containing the data to use in the algorithm,
 #' first column should be the dependent variable, second should be the intercept
@@ -47,7 +47,7 @@ mjmcmc <- function (data, loglik.pi, N = 100, probs = NULL, params = NULL, sub =
   return(result)
 }
 
-#' The main loop for the MJMCMC algorithm, used in both MJMCMC and GMJMCMC
+#' The main loop for the MJMCMC (Mode Jumping MCMC) algorithm, used in both MJMCMC and GMJMCMC (Genetically Modified MJMCMC)
 #'
 #' @param data The data to use
 #' @param complex The complexity measures of the data

@@ -15,7 +15,7 @@ merge_results(
 )
 }
 \arguments{
-\item{results}{A list containing multiple results from GMJMCMC.}
+\item{results}{A list containing multiple results from GMJMCMC (Genetically Modified MJMCMC).}
 
 \item{populations}{Which populations should be merged from the results, can be "all", "last" (default) or "best".}
 

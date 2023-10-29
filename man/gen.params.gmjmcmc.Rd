@@ -2,7 +2,7 @@
 % Please edit documentation in R/arguments.R
 \name{gen.params.gmjmcmc}
 \alias{gen.params.gmjmcmc}
-\title{Generate a parameter list for GMJMCMC}
+\title{Generate a parameter list for GMJMCMC (Genetically Modified MJMCMC)}
 \usage{
 gen.params.gmjmcmc(data)
 }
@@ -10,5 +10,5 @@ gen.params.gmjmcmc(data)
 \item{data}{The dataset that will be used in the algorithm}
 }
 \description{
-Generate a parameter list for GMJMCMC
+Generate a parameter list for GMJMCMC (Genetically Modified MJMCMC)
 }

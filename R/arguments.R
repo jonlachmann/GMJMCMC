@@ -3,7 +3,7 @@
 # Created by: jonlachmann
 # Created on: 2021-02-19
 
-#' Generate a probability list for MJMCMC
+#' Generate a probability list for MJMCMC (Mode Jumping MCMC)
 #'
 #' @export gen.probs.mjmcmc
 gen.probs.mjmcmc <- function () {
@@ -21,7 +21,7 @@ gen.probs.mjmcmc <- function () {
   return(probs)
 }
 
-#' Generate a probability list for GMJMCMC
+#' Generate a probability list for GMJMCMC (Genetically Modified MJMCMC)
 #'
 #' @param transforms A list of the transformations used (to get the count).
 #'
@@ -48,13 +48,11 @@ gen.probs.gmjmcmc <- function (transforms) {
   return(probs)
 }
 
-#' Generate a parameter list for MJMCMC
+#' Generate a parameter list for MJMCMC (Mode Jumping MCMC)
 #'
 #' @param data The dataset that will be used in the algorithm
 #'
 #' @return A list of parameters to use when running the MJMCMC algorithm.
-#'
-#' TODO: WRITE MORE
 #'
 #' Note that the $loglik item is an empty list, which is passed to the log likelihood function of the model,
 #' intended to store parameters that the estimator function should use.
@@ -94,7 +92,7 @@ gen.params.mjmcmc <- function (data) {
   return(params)
 }
 
-#' Generate a parameter list for GMJMCMC
+#' Generate a parameter list for GMJMCMC (Genetically Modified MJMCMC)
 #'
 #' @param data The dataset that will be used in the algorithm
 #'

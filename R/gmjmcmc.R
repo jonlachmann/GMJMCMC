@@ -8,8 +8,7 @@
 #' @importFrom Rcpp sourceCpp
 NULL
 
-#' Main algorithm for GMJMCMC
-#' TODO: More documentation - borrow from https://github.com/aliaksah/EMJMCMC2016/blob/master/man/EMJMCMC.Rd if applicable.
+#' Main algorithm for GMJMCMC (Genetically Modified MJMCMC)
 #'
 #' @param data A matrix containing the data to use in the algorithm,
 #' first column should be the dependent variable, second should be the intercept
@@ -18,7 +17,7 @@ NULL
 #' @param loglik.alpha The likelihood function to use for alpha calculation
 #' @param transforms A Character vector including the names of the non-linear functions to be used by the modification 
 #' and the projection operator. 
-#' @param P The number of generations for GMJMCMC. 
+#' @param P The number of generations for GMJMCMC (Genetically Modified MJMCMC).
 #' The default value is $P = 10$.
 #' A larger value like $P = 50$ might be more realistic for more complicated examples where one expects a lot of non-linear structures. 
 #' @param N.init The number of iterations per population (total iterations = (T-1)*N.init+N.final)
@@ -131,7 +130,7 @@ gmjmcmc <- function (data, loglik.pi = gaussian.loglik, loglik.alpha = gaussian.
 }
 
 
-#' Subalgorithm for generating a new population of features in GMJMCMC
+#' Subalgorithm for generating a new population of features in GMJMCMC (Genetically Modified MJMCMC)
 #'
 #' @param S.t The current population of features
 #' @param F.0 The initial population of features, i.e. the bare covariates

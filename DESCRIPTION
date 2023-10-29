@@ -8,7 +8,7 @@ Authors@R: c(
     person("Jon", "Lachmann", email = "jon@lachmann.nu", role = c("cre", "aut")),
     person("Aliaksandr", "Hubin", email = "aliaksah@math.uio.no", role = "aut")
     )
-Description: Implements the GMJMCMC and MJMCMC algorithms for Flexible Bayesian Model Selection and Model Averaging.
+Description: Implements the MJMCMC (Mode Jumping MCMC) and GMJMCMC (Genetically Modified MJMCMC) algorithms for Flexible Bayesian Model Selection and Model Averaging.
 License: GPL-2
 Depends:
     R (>= 3.5.0),

@@ -2,7 +2,7 @@
 % Please edit documentation in R/gmjmcmc_support.R
 \name{set.transforms}
 \alias{set.transforms}
-\title{Set the transformations option for GMJMCMC,
+\title{Set the transformations option for GMJMCMC (Genetically Modified MJMCMC),
 this is also done when running the algorithm, but this function allows for it to be done manually.}
 \usage{
 set.transforms(transforms)
@@ -11,6 +11,6 @@ set.transforms(transforms)
 \item{transforms}{The vector of non-linear transformations}
 }
 \description{
-Set the transformations option for GMJMCMC,
+Set the transformations option for GMJMCMC (Genetically Modified MJMCMC),
 this is also done when running the algorithm, but this function allows for it to be done manually.
 }

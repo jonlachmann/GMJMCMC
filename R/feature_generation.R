@@ -1,4 +1,4 @@
-# Title     : Features generation for use in GMJMCMC
+# Title     : Features generation for use in GMJMCMC (Genetically Modified MJMCMC)
 # Objective : Generate features for use in GMJMCMC at the population transition step
 # Created by: jonlachmann
 # Created on: 2021-02-10
