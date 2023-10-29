@@ -326,7 +326,7 @@ string.population.models <- function(features, models, round = 2, link = "I") {
 #' @param pop The population to plot, defaults to last
 #' @param ... Not used.
 #'
-#' @return NULL
+#' @return No return value, just creates a plot
 #'
 #' @export
 plot.gmjmcmc <- function (x, count = "all", pop = "last", ...) {
@@ -348,7 +348,7 @@ plot.gmjmcmc <- function (x, count = "all", pop = "last", ...) {
 #' @param count The number of features to plot, defaults to all
 #' @param ... Not used.
 #'
-#' @return NULL
+#' @return No return value, just creates a plot
 #'
 #' @export
 plot.mjmcmc <- function (x, count = "all", ...) {
@@ -379,7 +379,7 @@ marg.prob.plot <- function (feats.strings, marg.probs, count = "all", ...) {
 
 #' Plot a mjmcmc_parallel run
 #' @inheritParams plot.mjmcmc
-#' @return NULL
+#' @return No return value, just creates a plot
 #' @export
 plot.mjmcmc_parallel <- function (x, count = "all", ...) {
   merged <- merge.mjmcmc_parallel(x)
@@ -410,7 +410,7 @@ run.weigths <- function (results) {
 
 #' Plot a gmjmcmc_merged run
 #' @inheritParams plot.gmjmcmc
-#' @return NULL
+#' @return No return value, just creates a plot
 #' @export
 plot.gmjmcmc_merged <- function (x, count = "all", ...) {
   marg.prob.plot(sapply(x$features, print), x$marg.probs, count = count)

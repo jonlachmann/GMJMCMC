@@ -14,6 +14,9 @@ merged results from merge.results}
 
 \item{...}{Not used.}
 }
+\value{
+No return value, just creates a plot
+}
 \description{
 Function to plot the results, works both for results from gmjmcmc and
 merged results from merge.results

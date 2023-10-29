@@ -8,7 +8,7 @@
 #'
 #' @param transforms The vector of non-linear transformations
 #'
-#' @return NULL
+#' @return No return value, just sets the gmjmcmc-transformations option
 #'
 #' @export set.transforms
 set.transforms <- function (transforms) {

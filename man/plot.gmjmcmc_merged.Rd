@@ -13,6 +13,9 @@
 
 \item{...}{Not used.}
 }
+\value{
+No return value, just creates a plot
+}
 \description{
 Plot a gmjmcmc_merged run
 }

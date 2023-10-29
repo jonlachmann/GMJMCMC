@@ -10,6 +10,9 @@ set.transforms(transforms)
 \arguments{
 \item{transforms}{The vector of non-linear transformations}
 }
+\value{
+No return value, just sets the gmjmcmc-transformations option
+}
 \description{
 Set the transformations option for GMJMCMC (Genetically Modified MJMCMC),
 this is also done when running the algorithm, but this function allows for it to be done manually.
