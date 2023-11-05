@@ -1,5 +1,5 @@
 #' Fit a BGNLM  model using Genetically Modified Mode Jumping Markov Chain Monte Carlo (MCMC) sampling.
-#' Or Fit a BGLM  model using Modified Mode Jumping Markov Chain Monte Carlo (MCMC) sampling.
+#' Or Fit a BGLM model using Modified Mode Jumping Markov Chain Monte Carlo (MCMC) sampling.
 #' 
 #' This function fits a model using the relevant MCMC sampling. The user can specify the formula,
 #' family, data, transforms, and other parameters to customize the model.
@@ -30,43 +30,37 @@
 fbms <- function(formula = NULL, family = "gaussian", data = NULL, transforms = NULL,
                  loglik.pi = gaussian.loglik,
                  loglik.alpha = gaussian.loglik.alpha,
-                 P = 10, runs = 10, cores = 1,verbose = FALSE,...)
-{
-  cal <- match.call()
-  if(family=="gaussian")
+                 P = 10, runs = 10, cores = 1,verbose = FALSE, ...) {
+  if (family == "gaussian")
     loglik.pi <- gaussian.loglik
-  else if(family=="binomial")
+  else if(family == "binomial")
     loglik.pi <- logistic.loglik
   else if(family == "custom")
     loglik.pi <- loglik.pi
   if (missing(data)) 
     data <- environment(formula)
-  mf <- match.call(expand.dots=FALSE)
+  mf <- match.call(expand.dots = FALSE)
   m <- match(c("formula", "data"), names(mf), 0L)
   mf <- mf[c(1L, m)]
   mf$drop.unused.levels <- TRUE
   mf[[1L]] <- quote(stats::model.frame)
   mf <- eval(mf, parent.frame())
   Y <- model.response(mf, "any")
-  X <- model.matrix(formula,data=data)[,-1]
-  mt <- attr(mf,"terms")
-  df <- data.frame(Y,X)
-  if(is.null(transforms))
-  {
-    if(cores>1)
-      res <- mjmcmc.parallel(df, loglik.pi, verbose=FALSE,...)
+  X <- model.matrix(formula, data = data)[, -1]
+  df <- data.frame(Y, X)
+  if (is.null(transforms)) {
+    if (cores > 1)
+      res <- mjmcmc.parallel(df, loglik.pi, verbose = FALSE, ...)
     else
-      res <- mjmcmc(df, loglik.pi, verbose=FALSE,...)
-  }
-  else
-  {
-    if(cores>1)
-      res <-  gmjmcmc.parallel(runs, cores,data=df,loglik.pi=loglik.pi,
-                               loglik.alpha=gaussian.loglik.alpha,transforms=transforms,
-                               P=P,...)
+      res <- mjmcmc(df, loglik.pi, verbose = FALSE, ...)
+  } else {
+    if (cores > 1)
+      res <- gmjmcmc.parallel(runs, cores, data = df, loglik.pi = loglik.pi,
+                              loglik.alpha = gaussian.loglik.alpha, transforms = transforms,
+                              P = P, ...)
     else
       res <- gmjmcmc(df, loglik.pi, gaussian.loglik.alpha, transforms, 
-                     verbose=FALSE,P,...)
+                     verbose = FALSE, P, ...)
   }
-  res
+  return(res)
 }

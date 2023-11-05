@@ -16,7 +16,7 @@
 #' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 #'
 #' @examples
-#' logistic.loglik(as.integer(rnorm(100)>0),matrix(rnorm(100)),c(TRUE),c(list(oc=1)))
+#' logistic.loglik(as.integer(rnorm(100) > 0), matrix(rnorm(100)), TRUE, list(oc = 1))
 #' 
 #'
 #' @export logistic.loglik
@@ -55,7 +55,7 @@ logistic.loglik.alpha <- function (a, data, mu_func) {
 #' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 #'
 #' @examples
-#' gaussian.loglik(rnorm(100),matrix(rnorm(100)),c(TRUE),c(list(oc=1)),NULL)
+#' gaussian.loglik(rnorm(100), matrix(rnorm(100)), TRUE, list(oc = 1), NULL)
 #'   
 #'
 #' @export gaussian.loglik
@@ -96,7 +96,7 @@ gaussian.loglik.alpha <- function (a, data, mu_func) {
 #' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 #'
 #' @examples
-#' linear.g.prior.loglik(rnorm(100),matrix(rnorm(100)),c(TRUE),c(list(oc=1)))
+#' linear.g.prior.loglik(rnorm(100), matrix(rnorm(100)), TRUE, list(oc=1))
 #'
 #' @export linear.g.prior.loglik
 linear.g.prior.loglik <- function (y, x, model, complex, params = list(g = 4)) {

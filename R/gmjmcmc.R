@@ -40,7 +40,7 @@ NULL
 #' \item{best}{Best marginal model probability throughout the run, represented as the maximum value in \code{unlist(best.margs)}.}
 #'
 #' @examples
-#' result <- gmjmcmc(matrix(rnorm(600), 100),gaussian.loglik, NULL, c("p0", "exp_dbl"))
+#' result <- gmjmcmc(matrix(rnorm(600), 100), gaussian.loglik, NULL, c("p0", "exp_dbl"))
 #' summary(result)
 #' plot(result)
 #'
