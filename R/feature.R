@@ -105,9 +105,8 @@ update.alphas <- function (feature, alphas, recurse=FALSE) {
 #' @return String representation of a feature
 #' 
 #' @examples
-#' 
 #' result <- gmjmcmc(matrix(rnorm(600), 100),gaussian.loglik, NULL, c("p0", "exp_dbl"))
-#' print.feature(result$populations[[1]][1])
+#' print(result$populations[[1]][1])
 #' 
 #' @export
 print.feature <- function (x, dataset = FALSE, alphas = FALSE, labels = FALSE, round = FALSE, ...) {

@@ -18,7 +18,7 @@
 #'  loglik.alpha = gaussian.loglik.alpha,
 #'  c("p0", "exp_dbl")
 #' )
-#' preds <- predict.gmjmcmc(result, matrix(rnorm(600), 100))
+#' preds <- predict(result, matrix(rnorm(600), 100))
 #' 
 #' 
 #' @export
@@ -66,7 +66,7 @@ predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.
 #'  loglik.alpha = gaussian.loglik.alpha,
 #'  c("p0", "exp_dbl")
 #' )
-#' preds <- predict.gmjmcmc_merged(result, matrix(rnorm(600), 100))
+#' preds <- predict(result, matrix(rnorm(600), 100))
 #'
 #' @export
 predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
@@ -119,7 +119,7 @@ predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles =
 #' 
 #' @examples
 #' result <- mjmcmc(matrix(rnorm(600), 100), gaussian.loglik)
-#' preds <- predict.mjmcmc(result, matrix(rnorm(600), 100))
+#' preds <- predict(result, matrix(rnorm(600), 100))
 #' 
 #' @export
 predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
@@ -148,8 +148,7 @@ predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025
 #' 
 #' @examples
 #' result <- mjmcmc.parallel(runs = 1, cores = 1, matrix(rnorm(600), 100), gaussian.loglik)
-#' preds <- predict.mjmcmc_parallel(result, matrix(rnorm(600), 100))
-#' 
+#' preds <- predict(result, matrix(rnorm(600), 100))
 #' 
 #' @export
 predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
@@ -198,7 +197,7 @@ predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles 
 #'  loglik.alpha = gaussian.loglik.alpha,
 #'  c("p0", "exp_dbl")
 #' )
-#' preds <- predict.gmjmcmc_parallel(result$results, matrix(rnorm(600), 100))
+#' preds <- predict(result$results, matrix(rnorm(600), 100))
 #' 
 #' @export
 predict.gmjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {

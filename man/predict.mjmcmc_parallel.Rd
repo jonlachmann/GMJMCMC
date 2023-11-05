@@ -27,7 +27,6 @@ Predict using a mjmcmc result object from a parallel run.
 }
 \examples{
 result <- mjmcmc.parallel(runs = 1, cores = 1, matrix(rnorm(600), 100), gaussian.loglik)
-preds <- predict.mjmcmc_parallel(result, matrix(rnorm(600), 100))
-
+preds <- predict(result, matrix(rnorm(600), 100))
 
 }

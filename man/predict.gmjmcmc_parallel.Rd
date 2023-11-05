@@ -39,6 +39,6 @@ result <- gmjmcmc.parallel(
  loglik.alpha = gaussian.loglik.alpha,
  c("p0", "exp_dbl")
 )
-preds <- predict.gmjmcmc_parallel(result$results, matrix(rnorm(600), 100))
+preds <- predict(result$results, matrix(rnorm(600), 100))
 
 }
