@@ -22,7 +22,7 @@ A matrix of character representations of a list of models.
 Function to get a character respresentation of a list of models
 }
 \examples{
-result <- gmjmcmc(matrix(rnorm(600), 100), gaussian.loglik, NULL, c("p0", "exp_dbl"))
+result <- gmjmcmc(matrix(rnorm(600), 100), P = 2, gaussian.loglik, NULL, c("p0", "exp_dbl"))
 string.population.models(result$populations[[2]], result$models[[2]])
 
 }

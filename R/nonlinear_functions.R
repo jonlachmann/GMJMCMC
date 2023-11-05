@@ -79,7 +79,7 @@ troot <- function(x) abs(x)^(1/3)
 #' @examples
 #' to23(2)
 #'
-#' @export troot
+#' @export to23
 to23 <- function(x) abs(x)^(2.3)
 
 #' To the 7/2  power function
@@ -90,7 +90,7 @@ to23 <- function(x) abs(x)^(2.3)
 #' @examples
 #' to72(2)
 #'
-#' @export troot
+#' @export to72
 to72 <- function(x) abs(x)^(7/2)
 
 #' Gaussian function

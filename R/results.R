@@ -33,6 +33,7 @@
 #'  cores = 1,
 #'  list(populations = "best", complex.measure = 2, tol = 0.0000001),
 #'  matrix(rnorm(600), 100),
+#'  P = 2,
 #'  gaussian.loglik,
 #'  loglik.alpha = gaussian.loglik.alpha,
 #'  c("p0", "exp_dbl")
@@ -182,7 +183,7 @@ population.weigths <- function (results, pops.use) {
 #' @return A character representation of a model
 #'
 #' @examples
-#' result <- gmjmcmc(matrix(rnorm(600), 100), gaussian.loglik, NULL, c("p0", "exp_dbl"))
+#' result <- gmjmcmc(matrix(rnorm(600), 100), P = 2, gaussian.loglik, NULL, c("p0", "exp_dbl"))
 #' summary(result)
 #' plot(result)
 #' model.string(c(TRUE, FALSE, TRUE, FALSE, TRUE), result$populations[[1]])
@@ -209,7 +210,7 @@ model.string <- function (model, features, link = "I", round = 2) {
 #' \item{marg.probs}{Marginal probabilities corresponding to the ordered feature strings.}
 #'  
 #' @examples
-#' result <- gmjmcmc(matrix(rnorm(600), 100), gaussian.loglik, NULL, c("p0", "exp_dbl"))
+#' result <- gmjmcmc(matrix(rnorm(600), 100), P = 2, gaussian.loglik, NULL, c("p0", "exp_dbl"))
 #' summary(result)
 #'
 #' @export
@@ -246,11 +247,12 @@ summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, labels = FALSE,
 #'  cores = 1,
 #'  list(populations = "best", complex.measure = 2, tol = 0.0000001),
 #'  matrix(rnorm(600), 100),
+#'  P = 2,
 #'  gaussian.loglik,
 #'  loglik.alpha = gaussian.loglik.alpha,
 #'  c("p0", "exp_dbl")
 #' )
-#' summary.gmjmcmc_merged(result)
+#' summary(result)
 #'
 #' @export
 summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, ...) {
@@ -294,7 +296,7 @@ summary.mjmcmc <- function (object, tol = 0.0001, labels = FALSE, ...) {
 #'
 #' @examples
 #' result <- mjmcmc.parallel(runs = 1, cores = 1, matrix(rnorm(600), 100), gaussian.loglik)
-#' summary.mjmcmc_parallel(result)
+#' summary(result)
 #'
 #' @export
 summary.mjmcmc_parallel <- function (object, tol = 0.0001, labels = FALSE, ...) {
@@ -347,7 +349,7 @@ summary_internal <- function (best, feats.strings, marg.probs, tol = 0.0001, bes
 #' @return A matrix of character representations of the features of a model.
 #'
 #' @examples
-#' result <- gmjmcmc(matrix(rnorm(600), 100), gaussian.loglik, NULL, c("p0", "exp_dbl"))
+#' result <- gmjmcmc(matrix(rnorm(600), 100), P = 2, gaussian.loglik, NULL, c("p0", "exp_dbl"))
 #' string.population(result$populations[[1]])
 #'
 #' @export
@@ -365,7 +367,7 @@ string.population <- function(x, round = 2) {
 #' @return A matrix of character representations of a list of models.
 #'
 #' @examples
-#' result <- gmjmcmc(matrix(rnorm(600), 100), gaussian.loglik, NULL, c("p0", "exp_dbl"))
+#' result <- gmjmcmc(matrix(rnorm(600), 100), P = 2, gaussian.loglik, NULL, c("p0", "exp_dbl"))
 #' string.population.models(result$populations[[2]], result$models[[2]])
 #'
 #' @export
@@ -384,7 +386,7 @@ string.population.models <- function(features, models, round = 2, link = "I") {
 #' @return No return value, just creates a plot
 #'
 #' @examples
-#' result <- gmjmcmc(matrix(rnorm(600), 100), gaussian.loglik, NULL, c("p0", "exp_dbl"))
+#' result <- gmjmcmc(matrix(rnorm(600), 100), P = 2, gaussian.loglik, NULL, c("p0", "exp_dbl"))
 #' plot(result)
 #' 
 #'
@@ -487,6 +489,7 @@ run.weigths <- function (results) {
 #'  cores = 1,
 #'  list(populations = "best", complex.measure = 2, tol = 0.0000001),
 #'  matrix(rnorm(600), 100),
+#'  P = 2,
 #'  gaussian.loglik,
 #'  loglik.alpha = gaussian.loglik.alpha,
 #'  c("p0", "exp_dbl")

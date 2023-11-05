@@ -29,10 +29,11 @@ result <- gmjmcmc.parallel(
  cores = 1,
  list(populations = "best", complex.measure = 2, tol = 0.0000001),
  matrix(rnorm(600), 100),
+ P = 2,
  gaussian.loglik,
  loglik.alpha = gaussian.loglik.alpha,
  c("p0", "exp_dbl")
 )
-summary.gmjmcmc_merged(result)
+summary(result)
 
 }

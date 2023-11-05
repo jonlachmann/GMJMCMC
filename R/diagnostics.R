@@ -16,7 +16,7 @@
 #' @return A list of summary statistics for checking convergence with given confidence intervals
 #' 
 #' @examples
-#' result <- gmjmcmc(matrix(rnorm(600), 100), gaussian.loglik, NULL, c("p0", "exp_dbl"))
+#' result <- gmjmcmc(matrix(rnorm(600), 100), P = 2, gaussian.loglik, NULL, c("p0", "exp_dbl"))
 #' diagnstats <- diagn_plot(result)
 #' 
 #' @export
