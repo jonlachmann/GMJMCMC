@@ -10,6 +10,7 @@ fbms(
   family = "gaussian",
   data = NULL,
   transforms = NULL,
+  loglik.pi = gaussian.loglik,
   loglik.alpha = gaussian.loglik.alpha,
   P = 10,
   runs = 10,
@@ -26,6 +27,8 @@ fbms(
 \item{data}{A data frame containing the variables in the model. If NULL, the variables are taken from the environment of the formula. Default is NULL.}
 
 \item{transforms}{A list of transformations for BGNLM model. Default is NULL.}
+
+\item{loglik.pi}{The log-likelihood function for estimating the marginal likelihood and posterior modes (only used if family = "custom")}
 
 \item{loglik.alpha}{The log-likelihood function for the alpha parameter in the model. Default is gaussian.loglik.alpha.}
 
