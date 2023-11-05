@@ -12,7 +12,12 @@
 #' \item{preds}{A list of lists containing individual predictions per model per population in object.}
 #' 
 #' @examples
-#' result <- gmjmcmc(matrix(rnorm(600), 100), gaussian.loglik, loglik.alpha = gaussian.loglik.alpha, c("p0", "exp_dbl"))
+#' result <- gmjmcmc(
+#'  matrix(rnorm(600), 100),
+#'  gaussian.loglik,
+#'  loglik.alpha = gaussian.loglik.alpha,
+#'  c("p0", "exp_dbl")
+#' )
 #' preds <- predict.gmjmcmc(result, matrix(rnorm(600), 100))
 #' 
 #' 
@@ -52,7 +57,15 @@ predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.
 #' \item{preds}{A list of lists containing individual predictions per model per population in object.}
 #'
 #' @examples
-#' result <- gmjmcmc.parallel(runs = 1, cores = 1,list(populations = "best", complex.measure = 2, tol = 0.0000001), matrix(rnorm(600), 100), gaussian.loglik, loglik.alpha = gaussian.loglik.alpha, c("p0", "exp_dbl"))
+#' result <- gmjmcmc.parallel(
+#'  runs = 1,
+#'  cores = 1,
+#'  list(populations = "best", complex.measure = 2, tol = 0.0000001),
+#'  matrix(rnorm(600), 100),
+#'  gaussian.loglik,
+#'  loglik.alpha = gaussian.loglik.alpha,
+#'  c("p0", "exp_dbl")
+#' )
 #' preds <- predict.gmjmcmc_merged(result, matrix(rnorm(600), 100))
 #'
 #' @export
@@ -176,7 +189,15 @@ predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles 
 #' \item{preds}{A list of lists containing individual predictions per model per population in object.}
 #' 
 #' @examples
-#' result <- gmjmcmc.parallel(runs = 1, cores = 1,list(populations = "best", complex.measure = 2, tol = 0.0000001), matrix(rnorm(600), 100), gaussian.loglik, loglik.alpha = gaussian.loglik.alpha, c("p0", "exp_dbl"))
+#' result <- gmjmcmc.parallel(
+#'  runs = 1,
+#'  cores = 1,
+#'  list(populations = "best", complex.measure = 2, tol = 0.0000001),
+#'  matrix(rnorm(600), 100),
+#'  gaussian.loglik,
+#'  loglik.alpha = gaussian.loglik.alpha,
+#'  c("p0", "exp_dbl")
+#' )
 #' preds <- predict.gmjmcmc_parallel(result$results, matrix(rnorm(600), 100))
 #' 
 #' @export

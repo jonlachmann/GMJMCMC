@@ -18,7 +18,7 @@ A matrix of character representations of the features of a model.
 Function to get a character respresentation of a list of features
 }
 \examples{
-result <- gmjmcmc(matrix(rnorm(600), 100),gaussian.loglik, NULL, c("p0", "exp_dbl"))
+result <- gmjmcmc(matrix(rnorm(600), 100), gaussian.loglik, NULL, c("p0", "exp_dbl"))
 string.population(result$populations[[1]])
 
 }

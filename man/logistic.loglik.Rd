@@ -28,7 +28,7 @@ This function is created as an example of how to create an estimator that is use
 to calculate the marginal likelihood of a model.
 }
 \examples{
-logistic.loglik(as.integer(rnorm(100)>0),matrix(rnorm(100)),c(TRUE),c(list(oc=1)))
+logistic.loglik(as.integer(rnorm(100) > 0), matrix(rnorm(100)), TRUE, list(oc = 1))
 
 
 }

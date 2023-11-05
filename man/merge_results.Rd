@@ -41,7 +41,15 @@ An object of class "gmjmcmc_merged" containing the following elements:
 \item{best.log.posteriors}{A matrix where the first column contains the population indices and the second column contains the model with the highest log marginal posterior within that population.}
 \item{rep.thread}{The index of the thread which contains reported.}
 
-result <- gmjmcmc.parallel(runs = 1, cores = 1,list(populations = "best", complex.measure = 2, tol = 0.0000001), matrix(rnorm(600), 100), gaussian.loglik, loglik.alpha = gaussian.loglik.alpha, c("p0", "exp_dbl"))
+result <- gmjmcmc.parallel(
+runs = 1,
+cores = 1,
+list(populations = "best", complex.measure = 2, tol = 0.0000001),
+matrix(rnorm(600), 100),
+gaussian.loglik,
+loglik.alpha = gaussian.loglik.alpha,
+c("p0", "exp_dbl")
+)
 
 summary(result)
 

@@ -24,6 +24,6 @@ A list with the log marginal likelihood combined with the log prior (crit) and t
 Log likelihood function for linear regression using Zellners g-prior
 }
 \examples{
-linear.g.prior.loglik(rnorm(100),matrix(rnorm(100)),c(TRUE),c(list(oc=1)))
+linear.g.prior.loglik(rnorm(100), matrix(rnorm(100)), TRUE, list(oc=1))
 
 }

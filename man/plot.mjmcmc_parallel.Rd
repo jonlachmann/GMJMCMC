@@ -20,7 +20,7 @@ No return value, just creates a plot
 Plot a mjmcmc_parallel run
 }
 \examples{
-result <- mjmcmc.parallel(runs = 1, cores = 1, matrix(rnorm(600), 100),gaussian.loglik)
+result <- mjmcmc.parallel(runs = 1, cores = 1, matrix(rnorm(600), 100), gaussian.loglik)
 plot(result)
 
 }

@@ -3,7 +3,7 @@
 \name{fbms}
 \alias{fbms}
 \title{Fit a BGNLM  model using Genetically Modified Mode Jumping Markov Chain Monte Carlo (MCMC) sampling.
-Or Fit a BGLM  model using Modified Mode Jumping Markov Chain Monte Carlo (MCMC) sampling.}
+Or Fit a BGLM model using Modified Mode Jumping Markov Chain Monte Carlo (MCMC) sampling.}
 \usage{
 fbms(
   formula = NULL,
@@ -51,7 +51,14 @@ family, data, transforms, and other parameters to customize the model.
 }
 \examples{
 # Fit a Gaussian multivariate time series model
-fbms_result <- fbms(X1 ~ ., family = "gaussian", data = data.frame(matrix(rnorm(600), 100)), P = 10, runs = 1, cores = 1)
+fbms_result <- fbms(
+ X1 ~ .,
+ family = "gaussian",
+ data = data.frame(matrix(rnorm(600), 100)),
+ P = 10,
+ runs = 1,
+ cores = 1
+)
 summary(fbms_result)
 plot(fbms_result)
 

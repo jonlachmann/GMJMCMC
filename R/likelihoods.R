@@ -38,7 +38,7 @@ logistic.loglik <- function (y, x, model, complex, params = list(r = 1)) {
 #'
 #' @return A numeric with the log likelihood.
 #'
-#' @noRd
+#' @export logistic.loglik.alpha
 logistic.loglik.alpha <- function (a, data, mu_func) {
   m <- 1 / (1 + exp(-eval(parse(text = mu_func))))
   -sum((data[,1] * log(m) + (1 - data[, 1]) * log(1 - m)))
@@ -79,7 +79,7 @@ gaussian.loglik <- function (y, x, model, complex, params) {
 #'
 #' @return A numeric with the log likelihood.
 #'
-#' @noRd
+#' @export gaussian.loglik.alpha
 gaussian.loglik.alpha <- function (a, data, mu_func) {
   m <- eval(parse(text=mu_func))
   sum((data[,1]-m)^2)

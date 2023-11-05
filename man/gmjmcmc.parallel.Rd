@@ -42,7 +42,15 @@ Results from multiple gmjmcmc runs
 Run multiple gmjmcmc (Genetically Modified MJMCMC) runs in parallel returning a list of all results.
 }
 \examples{
-result <- gmjmcmc.parallel(runs = 1, cores = 1,list(populations = "best", complex.measure = 2, tol = 0.0000001), matrix(rnorm(600), 100), gaussian.loglik, loglik.alpha = gaussian.loglik.alpha, c("p0", "exp_dbl"))
+result <- gmjmcmc.parallel(
+ runs = 1,
+ cores = 1,
+ list(populations = "best", complex.measure = 2, tol = 0.0000001),
+ matrix(rnorm(600), 100),
+ gaussian.loglik,
+ loglik.alpha = gaussian.loglik.alpha,
+ c("p0", "exp_dbl")
+)
 
 summary(result)
 
