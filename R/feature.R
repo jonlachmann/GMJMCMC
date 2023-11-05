@@ -101,14 +101,14 @@ update.alphas <- function (feature, alphas, recurse=FALSE) {
 #' @param labels Should the covariates be named, or just referred to as their place in the data.frame.
 #' @param round Should numbers be rounded when printing? Default is FALSE, otherwise it can be set to the number of decimal places.
 #' @param ... Not used.
-#'
-#' @return A character representation of a feature
-#'
+#' 
+#' @return String representation of a feature
+#' 
 #' @examples
+#' 
 #' result <- gmjmcmc(matrix(rnorm(600), 100),gaussian.loglik, NULL, c("p0", "exp_dbl"))
 #' print.feature(result$populations[[1]][1])
 #' 
-#'
 #' @export
 print.feature <- function (x, dataset = FALSE, alphas = FALSE, labels = FALSE, round = FALSE, ...) {
   fString <- ""
@@ -154,7 +154,7 @@ print.feature <- function (x, dataset = FALSE, alphas = FALSE, labels = FALSE, r
   # This is a plain covariate
   else if (is.numeric(feat)) {
     if (dataset) fString <- paste0("data[,", feat+2, "]")
-    else if (labels[1] != FALSE) fString <- labels[feat]
+    else if (labels[1] != F) fString <- labels[feat]
     else fString <- paste0("x", feat)
   } else stop("Invalid feature structure")
   return(fString)
