@@ -24,3 +24,8 @@ Log likelihood function for gaussian regression for alpha calculation
 This function is just the bare likelihood function
 Note that it only gives a proportional value and is equivalent to least squares
 }
+\examples{
+\dontrun{
+gaussian.loglik.alpha(my_alpha,my_data,my_mu)
+}
+}
