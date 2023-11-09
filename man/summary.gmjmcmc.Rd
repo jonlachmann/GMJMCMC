@@ -4,7 +4,7 @@
 \alias{summary.gmjmcmc}
 \title{Function to print a quick summary of the results}
 \usage{
-\method{summary}{gmjmcmc}(object, pop = "last", tol = 1e-04, labels = FALSE, ...)
+\method{summary}{gmjmcmc}(object, pop = "last", tol = 1e-04, labels = FALSE, effects = NULL, ...)
 }
 \arguments{
 \item{object}{The results to use}
@@ -14,6 +14,8 @@
 \item{tol}{The tolerance to use as a threshold when reporting the results.}
 
 \item{labels}{Should the covariates be named, or just referred to as their place in the data.frame.}
+
+\item{effects}{Quantiles for posterior modes of the effects across models to be reported, if either effects are NULL or if labels are NULL, no effects are reported.}
 
 \item{...}{Not used.}
 }

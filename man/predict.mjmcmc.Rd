@@ -27,6 +27,6 @@ Predict using a mjmcmc result object.
 }
 \examples{
 result <- mjmcmc(matrix(rnorm(600), 100), gaussian.loglik)
-preds <- predict(result, matrix(rnorm(600), 100))
+preds <- predict(result, matrix(rnorm(500), 100))
 
 }

@@ -121,11 +121,14 @@ predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles =
 #' 
 #' @examples
 #' result <- mjmcmc(matrix(rnorm(600), 100), gaussian.loglik)
-#' preds <- predict(result, matrix(rnorm(600), 100))
+#' preds <- predict(result, matrix(rnorm(500), 100))
 #' 
 #' @export
 predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
   # Select the models and features to predict from at this iteration
+  
+  x <- as.matrix(cbind(rep(1,dim(x)[1]),x))
+  
   models <- c(object$models, object$lo.models)[object$model.probs.idx]
 
   yhat <- matrix(0, nrow=nrow(x), ncol=length(models))
@@ -150,7 +153,7 @@ predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025
 #' 
 #' @examples
 #' result <- mjmcmc.parallel(runs = 1, cores = 1, matrix(rnorm(600), 100), gaussian.loglik)
-#' preds <- predict(result, matrix(rnorm(600), 100))
+#' preds <- predict(result, matrix(rnorm(500), 100))
 #' 
 #' @export
 predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {

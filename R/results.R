@@ -203,6 +203,7 @@ model.string <- function (model, features, link = "I", round = 2) {
 #' @param pop The population to print for, defaults to last
 #' @param tol The tolerance to use as a threshold when reporting the results.
 #' @param labels Should the covariates be named, or just referred to as their place in the data.frame.
+#' @param effects Quantiles for posterior modes of the effects across models to be reported, if either effects are NULL or if labels are NULL, no effects are reported.
 #' @param ... Not used.
 #'
 #' @return A data frame containing the following columns:
@@ -214,14 +215,20 @@ model.string <- function (model, features, link = "I", round = 2) {
 #' summary(result)
 #'
 #' @export
-summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, labels = FALSE, ...) {
+summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, labels = FALSE, effects = NULL, ...) {
   if (pop == "last") pop <- length(object$models)
   else if (pop == "best") pop <- which.max(unlist(object$best.margs))
   feats.strings <- sapply(object$populations[[pop]], FUN = function(x) print.feature(x = x, labels = labels, round = 2))
   
+  if(!is.null(effects) & !is.null(labels))
+  {
+    effects <- compute_effects(object,labels = labels, quantiles = effects)
+  }
+  
   summary_internal(
     best = object$best,
     marg.probs = object$marg.probs[[pop]],
+    effects = effects,
     feats.strings = feats.strings,
     best.pop = which.max(unlist(object$best.margs)),
     reported = object$best.margs[[pop]],
@@ -235,6 +242,7 @@ summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, labels = FALSE,
 #' @param object The results to use
 #' @param tol The tolerance to use as a threshold when reporting the results.
 #' @param labels Should the covariates be named, or just referred to as their place in the data.frame.
+#' @param effects Quantiles for posterior modes of the effects across models to be reported, if either effects are NULL or if labels are NULL, no effects are reported.
 #' @param ... Not used.
 #'
 #' @return A data frame containing the following columns:
@@ -255,10 +263,17 @@ summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, labels = FALSE,
 #' summary(result)
 #'
 #' @export
-summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, ...) {
+summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, effects = NULL, ...) {
   best <- max(sapply(object$results, function (y) y$best))
   feats.strings <- sapply(object$features, FUN = function(x) print.feature(x = x, labels = labels, round = 2))
-  summary_internal(best = object$crit.best, feats.strings, object$marg.probs, 
+  
+  if(!is.null(effects) & !is.null(labels))
+  {
+    effects <- compute_effects(object,labels = labels, quantiles = effects)
+  }
+  
+  
+  summary_internal(best = object$crit.best, feats.strings, object$marg.probs, effects = effects,
                    best.pop = object$pop.best, thread.best = object$thread.best,  
                    reported = object$reported, rep.pop = object$rep.pop, rep.thread = object$rep.thread, tol = tol)
 }
@@ -268,6 +283,7 @@ summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, ...) {
 #' @param object The results to use
 #' @param tol The tolerance to use as a threshold when reporting the results.
 #' @param labels Should the covariates be named, or just referred to as their place in the data.frame.
+#' @param effects Quantiles for posterior modes of the effects across models to be reported, if either effects are NULL or if labels are NULL, no effects are reported.
 #' @param ... Not used.
 #'
 #' @return A data frame containing the following columns:
@@ -279,8 +295,14 @@ summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, ...) {
 #' summary(result)
 #'
 #' @export
-summary.mjmcmc <- function (object, tol = 0.0001, labels = FALSE, ...) {
-  return(summary.mjmcmc_parallel(list(object), tol = tol, labels = labels))
+summary.mjmcmc <- function (object, tol = 0.0001, labels = FALSE, effects = NULL, ...) {
+  
+  if(!is.null(effects) & !is.null(labels))
+  {
+    effects <- compute_effects(object = object,labels = labels, quantiles = effects)
+  }
+  
+  return(summary.mjmcmc_parallel(list(object), tol = tol, labels = labels, effects = effects))
 }
 
 #' Function to print a quick summary of the results
@@ -288,6 +310,7 @@ summary.mjmcmc <- function (object, tol = 0.0001, labels = FALSE, ...) {
 #' @param object The results to use
 #' @param tol The tolerance to use as a threshold when reporting the results.
 #' @param labels Should the covariates be named, or just referred to as their place in the data.frame.
+#' @param effects Quantiles for posterior modes of the effects across models to be reported, if either effects are NULL or if labels are NULL, no effects are reported.
 #' @param ... Not used.
 #'
 #' @return A data frame containing the following columns:
@@ -299,17 +322,23 @@ summary.mjmcmc <- function (object, tol = 0.0001, labels = FALSE, ...) {
 #' summary(result)
 #'
 #' @export
-summary.mjmcmc_parallel <- function (object, tol = 0.0001, labels = FALSE, ...) {
+summary.mjmcmc_parallel <- function (object, tol = 0.0001, labels = FALSE, effects = NULL, ...) {
   # Get features as strings for printing
   feats.strings <- sapply(object[[1]]$populations, FUN = function(x) print.feature(x = x, labels = labels, round = 2))
   # Get marginal posterior of features
   models <- unlist(lapply(object, function (x) x$models), recursive = FALSE)
   marg.probs <- marginal.probs.renorm(models)$probs
   best <- max(sapply(object, function (x) x$best))
-  return(summary_internal(best, feats.strings, marg.probs, tol = tol))
+  if(!is.null(effects) & !is.null(labels))
+  {
+    effects <- compute_effects(object,labels = labels, quantiles = effects)
+  }
+  
+  
+  return(summary_internal(best, feats.strings, marg.probs, effects, tol = tol))
 }
 
-summary_internal <- function (best, feats.strings, marg.probs, tol = 0.0001, best.pop = NULL,reported = NULL, rep.pop = NULL, rep.thread = NULL, thread.best = NULL) {
+summary_internal <- function (best, feats.strings, marg.probs, effects = NULL, tol = 0.0001, best.pop = NULL,reported = NULL, rep.pop = NULL, rep.thread = NULL, thread.best = NULL) {
   # Print the final distribution
   keep <- which(marg.probs[1, ] > tol)
   cat("                   Importance | Feature\n")
@@ -335,8 +364,14 @@ summary_internal <- function (best, feats.strings, marg.probs, tol = 0.0001, bes
   feats.strings <- feats.strings[keep]
   marg.probs <- marg.probs[1,keep]
   
+
+  
   ord.marg <- order(marg.probs, decreasing = TRUE)
   
+  if(!is.null(effects))
+  {
+    return(list(PIP = data.frame(feats.strings = feats.strings[ord.marg], marg.probs = marg.probs[ord.marg]), EFF = effects))
+  }
   
   return(data.frame(feats.strings = feats.strings[ord.marg], marg.probs = marg.probs[ord.marg]))
 }
@@ -499,4 +534,46 @@ run.weigths <- function (results) {
 #' @export
 plot.gmjmcmc_merged <- function (x, count = "all", ...) {
   marg.prob.plot(sapply(x$features, print), x$marg.probs, count = count)
+}
+
+
+#' Compute treatment effects for specified labels using a fitted model.
+#'
+#' This function computes model averaged effects for specified covariates using a fitted model object.
+#' The effects are expected change in the BMA linear predictor having an increase of the corresponding covariate by one unit, while other covariates are fixed.
+#' Users can provide custom labels and specify quantiles for the computation of effects.
+#'
+#' @param object A fitted model object, typically the result of a regression or predictive modeling.
+#' @param labels A vector of labels for which effects are to be computed.
+#' @param quantiles A numeric vector specifying the quantiles to be calculated. Default is c(0.025, 0.5, 0.975).
+#'
+#' @return A matrix of treatment effects for the specified labels, with rows corresponding to labels and columns to quantiles.
+#'
+#' @examples
+#'
+#' data <- data.frame(matrix(rnorm(600), 100))
+#' result <- mjmcmc.parallel(runs = 2, cores = 2, data, gaussian.loglik)
+#' compute_effects(result,labels = names(data)[-1])
+#'
+#'
+#'
+#' @seealso \code{\link{predict}}
+#' @export
+compute_effects <- function(object,labels, quantiles = c(0.025, 0.5, 0.975))
+{
+  effects =  matrix(0,length(labels)+1,length(labels))
+  for(i in 1:length(labels))
+    effects[i,i] = 1
+  effects = effects[c(length(labels)+1,1:length(labels)),]
+  preds.eff = predict(object = object, x = as.matrix(effects), quantiles = quantiles)
+  if(length(preds.eff$aggr)>0)
+    preds.eff = t(preds.eff$aggr$quantiles)
+  else
+    preds.eff = t(preds.eff$quantiles)
+  preds.eff[2:(length(labels)+1),] = preds.eff[2:(length(labels)+1),] - preds.eff[1,]
+  
+  
+  summ = data.frame(cbind(c("intercept",labels),round(preds.eff,4)))
+  names(summ) = c("Covariate",paste0("quant_",quantiles))
+  return(summ)
 }
