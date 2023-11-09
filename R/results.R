@@ -297,11 +297,6 @@ summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, effect
 #' @export
 summary.mjmcmc <- function (object, tol = 0.0001, labels = FALSE, effects = NULL, ...) {
   
-  if(!is.null(effects) & !is.null(labels))
-  {
-    effects <- compute_effects(object = object,labels = labels, quantiles = effects)
-  }
-  
   return(summary.mjmcmc_parallel(list(object), tol = tol, labels = labels, effects = effects))
 }
 
@@ -331,7 +326,10 @@ summary.mjmcmc_parallel <- function (object, tol = 0.0001, labels = FALSE, effec
   best <- max(sapply(object, function (x) x$best))
   if(!is.null(effects) & !is.null(labels))
   {
-    effects <- compute_effects(object,labels = labels, quantiles = effects)
+    if(class(object) == "list")
+      effects <- compute_effects(object[[1]],labels = labels, quantiles = effects)
+    else
+      effects <- compute_effects(object,labels = labels, quantiles = effects)
   }
   
   
@@ -537,10 +535,10 @@ plot.gmjmcmc_merged <- function (x, count = "all", ...) {
 }
 
 
-#' Compute treatment effects for specified labels using a fitted model.
+#' Compute effects for specified in labels covariates using a fitted model.
 #'
 #' This function computes model averaged effects for specified covariates using a fitted model object.
-#' The effects are expected change in the BMA linear predictor having an increase of the corresponding covariate by one unit, while other covariates are fixed.
+#' The effects are expected change in the BMA linear predictor having an increase of the corresponding covariate by one unit, while other covariates are fixed to 0.
 #' Users can provide custom labels and specify quantiles for the computation of effects.
 #'
 #' @param object A fitted model object, typically the result of a regression or predictive modeling.

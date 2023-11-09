@@ -2,7 +2,7 @@
 % Please edit documentation in R/results.R
 \name{compute_effects}
 \alias{compute_effects}
-\title{Compute treatment effects for specified labels using a fitted model.}
+\title{Compute effects for specified in labels covariates using a fitted model.}
 \usage{
 compute_effects(object, labels, quantiles = c(0.025, 0.5, 0.975))
 }
@@ -18,7 +18,7 @@ A matrix of treatment effects for the specified labels, with rows corresponding 
 }
 \description{
 This function computes model averaged effects for specified covariates using a fitted model object.
-The effects are expected change in the BMA linear predictor having an increase of the corresponding covariate by one unit, while other covariates are fixed.
+The effects are expected change in the BMA linear predictor having an increase of the corresponding covariate by one unit, while other covariates are fixed to 0.
 Users can provide custom labels and specify quantiles for the computation of effects.
 }
 \examples{
