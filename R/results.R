@@ -220,9 +220,8 @@ summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, labels = FALSE,
   else if (pop == "best") pop <- which.max(unlist(object$best.margs))
   feats.strings <- sapply(object$populations[[pop]], FUN = function(x) print.feature(x = x, labels = labels, round = 2))
   
-  if(!is.null(effects) & !is.null(labels))
-  {
-    effects <- compute_effects(object,labels = labels, quantiles = effects)
+  if (!is.null(effects) & !is.null(labels)) {
+    effects <- compute_effects(object, labels = labels, quantiles = effects)
   }
   
   summary_internal(
@@ -267,11 +266,9 @@ summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, effect
   best <- max(sapply(object$results, function (y) y$best))
   feats.strings <- sapply(object$features, FUN = function(x) print.feature(x = x, labels = labels, round = 2))
   
-  if(!is.null(effects) & !is.null(labels))
-  {
+  if (!is.null(effects) & !is.null(labels)) {
     effects <- compute_effects(object,labels = labels, quantiles = effects)
   }
-  
   
   summary_internal(best = object$crit.best, feats.strings, object$marg.probs, effects = effects,
                    best.pop = object$pop.best, thread.best = object$thread.best,  
@@ -296,7 +293,6 @@ summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, effect
 #'
 #' @export
 summary.mjmcmc <- function (object, tol = 0.0001, labels = FALSE, effects = NULL, ...) {
-  
   return(summary.mjmcmc_parallel(list(object), tol = tol, labels = labels, effects = effects))
 }
 
@@ -324,15 +320,12 @@ summary.mjmcmc_parallel <- function (object, tol = 0.0001, labels = FALSE, effec
   models <- unlist(lapply(object, function (x) x$models), recursive = FALSE)
   marg.probs <- marginal.probs.renorm(models)$probs
   best <- max(sapply(object, function (x) x$best))
-  if(!is.null(effects) & !is.null(labels))
-  {
-    if(class(object) == "list")
+  if (!is.null(effects) & !is.null(labels)) {
+    if (is.list(object))
       effects <- compute_effects(object[[1]],labels = labels, quantiles = effects)
     else
       effects <- compute_effects(object,labels = labels, quantiles = effects)
   }
-  
-  
   return(summary_internal(best, feats.strings, marg.probs, effects, tol = tol))
 }
 
@@ -342,32 +335,24 @@ summary_internal <- function (best, feats.strings, marg.probs, effects = NULL, t
   cat("                   Importance | Feature\n")
   print.dist(marg.probs[keep], feats.strings[keep], -1)
   # Print the best log marginal posterior
-  if(length(best.pop) > 0){
-    
-    if(length(thread.best) > 0)
-    {
+  if (length(best.pop) > 0) {
+    if (length(thread.best) > 0) {
       cat("\nBest   population:", best.pop, " thread:", thread.best,  " log marginal posterior:", best,"\n")
       cat("Report population:", rep.pop," thread:", rep.thread,  " log marginal posterior:", reported,"\n")
-      
-    }else{
+    } else {
       cat("\nBest   population:", best.pop,  " log marginal posterior:", best,"\n")
       cat("Report population:", rep.pop,  " log marginal posterior:", reported,"\n")
     }
-  }else
-  {
+  } else {
     cat("\nBest log marginal posterior: ", best,"\n")
   }
-  
   cat("\n")
-  feats.strings <- feats.strings[keep]
-  marg.probs <- marg.probs[1,keep]
-  
 
-  
+  feats.strings <- feats.strings[keep]
+  marg.probs <- marg.probs[1, keep]
   ord.marg <- order(marg.probs, decreasing = TRUE)
   
-  if(!is.null(effects))
-  {
+  if (!is.null(effects)) {
     return(list(PIP = data.frame(feats.strings = feats.strings[ord.marg], marg.probs = marg.probs[ord.marg]), EFF = effects))
   }
   
