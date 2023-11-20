@@ -5,10 +5,6 @@
 #' @inheritParams predict.gmjmcmc_merged
 #' @return A list containing aggregated predictions and per model predictions.
 #' \item{aggr}{Aggregated predictions with mean and quantiles.}
-#'   \itemize{
-#'     \item{mean}{Mean of aggregated predictions.}
-#'     \item{quantiles}{Quantiles of aggregated predictions.}
-#'   }
 #' \item{preds}{A list of lists containing individual predictions per model per population in object.}
 #' 
 #' @examples
@@ -51,10 +47,6 @@ predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.
 #' @param ... Not used.
 #' @return A list containing aggregated predictions and per model predictions.
 #' \item{aggr}{Aggregated predictions with mean and quantiles.}
-#'   \itemize{
-#'     \item{mean}{Mean of aggregated predictions.}
-#'     \item{quantiles}{Quantiles of aggregated predictions.}
-#'   }
 #' \item{preds}{A list of lists containing individual predictions per model per population in object.}
 #'
 #' @examples
@@ -186,10 +178,6 @@ predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles 
 #' @param ... Additional arguments to pass to merge_results.
 #' @return A list containing aggregated predictions and per model predictions.
 #' \item{aggr}{Aggregated predictions with mean and quantiles.}
-#'   \itemize{
-#'     \item{mean}{Mean of aggregated predictions.}
-#'     \item{quantiles}{Quantiles of aggregated predictions.}
-#'   }
 #' \item{preds}{A list of lists containing individual predictions per model per population in object.}
 #' 
 #' @examples

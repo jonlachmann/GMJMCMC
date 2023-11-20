@@ -535,28 +535,21 @@ plot.gmjmcmc_merged <- function (x, count = "all", ...) {
 #' @examples
 #'
 #' data <- data.frame(matrix(rnorm(600), 100))
-#' result <- mjmcmc.parallel(runs = 2, cores = 2, data, gaussian.loglik)
+#' result <- mjmcmc.parallel(runs = 2, cores = 1, data, gaussian.loglik)
 #' compute_effects(result,labels = names(data)[-1])
-#'
-#'
 #'
 #' @seealso \code{\link{predict}}
 #' @export
-compute_effects <- function(object,labels, quantiles = c(0.025, 0.5, 0.975))
-{
-  effects =  matrix(0,length(labels)+1,length(labels))
-  for(i in 1:length(labels))
-    effects[i,i] = 1
-  effects = effects[c(length(labels)+1,1:length(labels)),]
-  preds.eff = predict(object = object, x = as.matrix(effects), quantiles = quantiles)
-  if(length(preds.eff$aggr)>0)
-    preds.eff = t(preds.eff$aggr$quantiles)
+compute_effects <- function(object, labels, quantiles = c(0.025, 0.5, 0.975)) {
+  effects <- rbind(0, diag(length(labels)))
+  preds.eff <- predict(object = object, x = as.matrix(effects), quantiles = quantiles)
+  if (length(preds.eff$aggr) > 0)
+    preds.eff <- t(preds.eff$aggr$quantiles)
   else
-    preds.eff = t(preds.eff$quantiles)
-  preds.eff[2:(length(labels)+1),] = preds.eff[2:(length(labels)+1),] - preds.eff[1,]
-  
-  
-  summ = data.frame(cbind(c("intercept",labels),round(preds.eff,4)))
-  names(summ) = c("Covariate",paste0("quant_",quantiles))
+    preds.eff <- t(preds.eff$quantiles)
+  preds.eff[2:(length(labels) + 1), ] <- preds.eff[2:(length(labels) + 1), ] - preds.eff[1, ]
+
+  summ <- data.frame(cbind(c("intercept", labels), round(preds.eff, 4)))
+  names(summ) <- c("Covariate", paste0("quant_", quantiles))
   return(summ)
 }

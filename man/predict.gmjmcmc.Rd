@@ -20,10 +20,6 @@
 \value{
 A list containing aggregated predictions and per model predictions.
 \item{aggr}{Aggregated predictions with mean and quantiles.}
-\itemize{
-\item{mean}{Mean of aggregated predictions.}
-\item{quantiles}{Quantiles of aggregated predictions.}
-}
 \item{preds}{A list of lists containing individual predictions per model per population in object.}
 }
 \description{
