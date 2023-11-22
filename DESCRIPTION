@@ -8,7 +8,7 @@ Authors@R: c(
     person("Jon", "Lachmann", email = "jon@lachmann.nu", role = c("cre", "aut")),
     person("Aliaksandr", "Hubin", email = "aliaksah@math.uio.no", role = "aut")
     )
-Description: Implements the MJMCMC (mode jumping MCMC) described in Hubin and Storvik (2018) <doi:10.1016/j.csda.2018.05.020> and GMJMCMC (genetically modified MJMCMC) described in Hubin et al. (2021) <doi:10.1613/jair.1.13047> algorithms as well as the subsampling counterpart described in Lachmann et al. (2022) <doi:10.1016/j.ijar.2022.08.018> for flexible Bayesian model selection and model averaging.
+Description: Implements the Mode Jumping Markov Chain Monte Carlo algorithm described in <doi:10.1016/j.csda.2018.05.020> and its Genetically Modified counterpart described in <doi:10.1613/jair.1.13047> as well as the subsampling versions described in <doi:10.1016/j.ijar.2022.08.018> for flexible Bayesian model selection and model averaging.
 License: GPL-2
 Depends:
     R (>= 3.5.0),
