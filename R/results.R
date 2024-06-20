@@ -56,6 +56,31 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
     tol <- 0.0000001
 
   res.count <- length(results)
+  
+  res.converged <- sum(sapply(results,function(x)length(x)>1))
+
+  if(res.converged<res.count)
+  {
+    if(res.converged == 0)
+      stop("All chains resulted in an error! Please debug and restart")
+    warning(paste0("Warning! Some chains resulted in an error, only ",res.converged, " chains finished! \n Only finished chains will be used further!"))
+    
+    results.buf <- list()
+    j <- 1
+    for (i in 1:res.count)
+    {
+      print(results[[i]])
+      if(length(results[[i]])>1)
+      {
+        results.buf[[j]] <- results[[i]]
+        j <- j + 1
+      }
+      
+    }
+    results <- results.buf
+    res.count <- res.converged
+    rm(results.buf)
+  }
 
   # Select populations to use
   res.lengths <- vector("list")
@@ -73,7 +98,7 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
   pop.best <- 1
   thread.best <- 1
   for (i in seq_along(results)) {
-    for (pop in 1:(length(results[[1]]$populations))) {
+    for (pop in 1:(length(results[[i]]$populations))) {
       bests[pop, i] <- results[[i]]$best.margs[[pop]]
       if (results[[i]]$best.margs[[pop]] > crit.best) {
         crit.best <- results[[i]]$best.margs[[pop]]
