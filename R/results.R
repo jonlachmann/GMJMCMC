@@ -62,8 +62,8 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
   if(res.converged<res.count)
   {
     if(res.converged == 0)
-      stop("All chains resulted in an error! Please debug and restart")
-    warning(paste0("Warning! Some chains resulted in an error, only ",res.converged, " chains finished! \n Only finished chains will be used further!"))
+      stop(paste0("All chains resulted in an error!", results[[1]],"\n Please debug and restart"))
+    warning(paste0("Warning! Some chains resulted in an error: ", results[[which(!sapply(results,function(x)length(x)>1))[1]]],  "'\n Only ",res.converged, " chains finished! \n Only finished chains will be used further!"))
     
     results.buf <- list()
     j <- 1
