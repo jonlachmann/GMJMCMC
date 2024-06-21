@@ -500,6 +500,7 @@ plot.mjmcmc_parallel <- function (x, count = "all", ...) {
   marg.prob.plot(merged$features, merged$marg.probs, count)
 }
 
+#' @export
 merge.mjmcmc_parallel <- function (x) {
   run.weights <- run.weigths(x)
   marg.probs <- x[[1]]$marg.probs * run.weights[1]
