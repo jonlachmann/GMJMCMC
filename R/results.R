@@ -239,7 +239,7 @@ model.string <- function (model, features, link = "I", round = 2) {
 #' result <- gmjmcmc(matrix(rnorm(600), 100), P = 2, gaussian.loglik, NULL, c("p0", "exp_dbl"))
 #' summary(result)
 #'
-#' @export summary.gmjmcmc
+#' @export 
 summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, labels = FALSE, effects = NULL, ...) {
   if (pop == "last") pop <- length(object$models)
   else if (pop == "best") pop <- which.max(unlist(object$best.margs))
@@ -286,7 +286,7 @@ summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, labels = FALSE,
 #' )
 #' summary(result)
 #'
-#' @export summary.gmjmcmc_merged
+#' @export 
 summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, effects = NULL, ...) {
   best <- max(sapply(object$results, function (y) y$best))
   feats.strings <- sapply(object$features, FUN = function(x) print.feature(x = x, labels = labels, round = 2))
@@ -316,7 +316,7 @@ summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, effect
 #' result <- mjmcmc(matrix(rnorm(600), 100), gaussian.loglik)
 #' summary(result)
 #'
-#' @export summary.mjmcmc
+#' @export 
 summary.mjmcmc <- function (object, tol = 0.0001, labels = FALSE, effects = NULL, ...) {
   return(summary.mjmcmc_parallel(list(object), tol = tol, labels = labels, effects = effects))
 }
@@ -337,7 +337,7 @@ summary.mjmcmc <- function (object, tol = 0.0001, labels = FALSE, effects = NULL
 #' result <- mjmcmc.parallel(runs = 1, cores = 1, matrix(rnorm(600), 100), gaussian.loglik)
 #' summary(result)
 #'
-#' @export summary.mjmcmc_parallel
+#' @export 
 summary.mjmcmc_parallel <- function (object, tol = 0.0001, labels = FALSE, effects = NULL, ...) {
   # Get features as strings for printing
   feats.strings <- sapply(object[[1]]$populations, FUN = function(x) print.feature(x = x, labels = labels, round = 2))
@@ -433,7 +433,7 @@ string.population.models <- function(features, models, round = 2, link = "I") {
 #' plot(result)
 #' 
 #'
-#' @export plot.gmjmcmc
+#' @export 
 plot.gmjmcmc <- function (x, count = "all", pop = "last", ...) {
   if (pop == "last") pop <- length(x$populations)
   if (is.null(x$populations)) {
@@ -459,7 +459,7 @@ plot.gmjmcmc <- function (x, count = "all", pop = "last", ...) {
 #' result <- mjmcmc(matrix(rnorm(600), 100), gaussian.loglik)
 #' plot(result)
 #'
-#' @export plot.mjmcmc
+#' @export 
 plot.mjmcmc <- function (x, count = "all", ...) {
   ## Get features as strings for printing and marginal posteriors
   # If this is a merged results the structure is one way
@@ -494,7 +494,7 @@ marg.prob.plot <- function (feats.strings, marg.probs, count = "all", ...) {
 #' result <- mjmcmc.parallel(runs = 1, cores = 1, matrix(rnorm(600), 100), gaussian.loglik)
 #' plot(result)
 #' 
-#' @export plot.mjmcmc_parallel
+#' @export 
 plot.mjmcmc_parallel <- function (x, count = "all", ...) {
   merged <- merge.mjmcmc_parallel(x)
   marg.prob.plot(merged$features, merged$marg.probs, count)
@@ -540,7 +540,7 @@ run.weigths <- function (results) {
 #' )
 #' plot(result)
 #' 
-#' @export plot.gmjmcmc_merged
+#' @export 
 plot.gmjmcmc_merged <- function (x, count = "all", ...) {
   marg.prob.plot(sapply(x$features, print), x$marg.probs, count = count)
 }
