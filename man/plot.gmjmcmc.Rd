@@ -5,7 +5,7 @@
 \title{Function to plot the results, works both for results from gmjmcmc and
 merged results from merge.results}
 \usage{
-\method{plot}{gmjmcmc}(x, count = "all", pop = "last", ...)
+\method{plot}{gmjmcmc}(x, count = "all", pop = "all", tol = 1e-07, ...)
 }
 \arguments{
 \item{x}{The results to use}
@@ -13,6 +13,8 @@ merged results from merge.results}
 \item{count}{The number of features to plot, defaults to all}
 
 \item{pop}{The population to plot, defaults to last}
+
+\item{tol}{The tolerance to use for the correlation when finding equivalent features, default is 0.0000001}
 
 \item{...}{Not used.}
 }

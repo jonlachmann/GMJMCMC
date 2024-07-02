@@ -22,7 +22,7 @@ merge_results(
 \item{complex.measure}{The complex measure to use when finding the simplest equivalent feature,
 1=total width, 2=operation count and 3=depth.}
 
-\item{tol}{The tolerance to use for the correlation when finding equivalent features, default is 0.}
+\item{tol}{The tolerance to use for the correlation when finding equivalent features, default is 0.0000001}
 
 \item{data}{Data to use when comparing features, default is NULL meaning that mock data will be generated,
 if data is supplied it should be of the same form as is required by gmjmcmc, i.e. with both x, y and an intercept.}

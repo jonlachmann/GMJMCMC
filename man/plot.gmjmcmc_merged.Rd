@@ -4,12 +4,16 @@
 \alias{plot.gmjmcmc_merged}
 \title{Plot a gmjmcmc_merged run}
 \usage{
-\method{plot}{gmjmcmc_merged}(x, count = "all", ...)
+\method{plot}{gmjmcmc_merged}(x, count = "all", pop = NULL, tol = 1e-07, ...)
 }
 \arguments{
 \item{x}{The results to use}
 
 \item{count}{The number of features to plot, defaults to all}
+
+\item{pop}{The population to plot, defaults to last}
+
+\item{tol}{The tolerance to use for the correlation when finding equivalent features, default is 0.0000001}
 
 \item{...}{Not used.}
 }

@@ -11,7 +11,7 @@
 #' @param populations Which populations should be merged from the results, can be "all", "last" (default) or "best".
 #' @param complex.measure The complex measure to use when finding the simplest equivalent feature,
 #' 1=total width, 2=operation count and 3=depth.
-#' @param tol The tolerance to use for the correlation when finding equivalent features, default is 0.
+#' @param tol The tolerance to use for the correlation when finding equivalent features, default is 0.0000001
 #' @param data Data to use when comparing features, default is NULL meaning that mock data will be generated,
 #' if data is supplied it should be of the same form as is required by gmjmcmc, i.e. with both x, y and an intercept.
 #'
@@ -49,7 +49,7 @@
 merge_results <- function (results, populations = NULL, complex.measure = NULL, tol = NULL, data = NULL) {
   # Default values
   if (is.null(populations))
-    populations <- "last"
+    populations <-"best"
   if (is.null(complex.measure))
     complex.measure <- 2
   if (is.null(tol))
@@ -237,10 +237,29 @@ model.string <- function (model, features, link = "I", round = 2) {
 #'  
 #' @examples
 #' result <- gmjmcmc(matrix(rnorm(600), 100), P = 2, gaussian.loglik, NULL, c("p0", "exp_dbl"))
-#' summary(result)
+#' summary(result, pop = "all")
 #'
 #' @export 
-summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, labels = FALSE, effects = NULL, ...) {
+summary.gmjmcmc <- function (object, pop = "all", tol = 0.0001, labels = FALSE, effects = NULL, ...) {
+  
+  if (pop == "all")
+  {
+    results <- list()
+    results[[1]] <- object
+    merged <- merge_results(results, pop, 2, 0.0000001, data = NULL)
+    
+    best <- max(sapply(merged$results, function (y) y$best))
+    feats.strings <- sapply(merged$features, FUN = function(x) print.feature(x = x, labels = labels, round = 2))
+    
+    if (!is.null(effects) & !is.null(labels)) {
+      effects <- compute_effects(merged,labels = labels, quantiles = effects)
+    }
+    
+    return(summary_internal(best = merged$crit.best, feats.strings, merged$marg.probs, effects = effects,
+                     best.pop = merged$pop.best, thread.best = merged$thread.best,  
+                     reported = merged$reported, rep.pop = merged$rep.pop, rep.thread = merged$rep.thread, tol = tol))
+  }
+  
   if (pop == "last") pop <- length(object$models)
   else if (pop == "best") pop <- which.max(unlist(object$best.margs))
   feats.strings <- sapply(object$populations[[pop]], FUN = function(x) print.feature(x = x, labels = labels, round = 2))
@@ -267,6 +286,7 @@ summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, labels = FALSE,
 #' @param tol The tolerance to use as a threshold when reporting the results.
 #' @param labels Should the covariates be named, or just referred to as their place in the data.frame.
 #' @param effects Quantiles for posterior modes of the effects across models to be reported, if either effects are NULL or if labels are NULL, no effects are reported.
+#' @param pop If null same as in merge.options for running parallel gmjmcmc otherwise results will be re-merged according to pop that can be "all", "last", "best"
 #' @param ... Not used.
 #'
 #' @return A data frame containing the following columns:
@@ -287,9 +307,14 @@ summary.gmjmcmc <- function (object, pop = "last", tol = 0.0001, labels = FALSE,
 #' summary(result)
 #'
 #' @export 
-summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, effects = NULL, ...) {
+summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, effects = NULL, pop = NULL, ...) {
+  
+  if(!is.null(pop))
+    object <- merge_results(object$results, pop, 2, 0.0000001, data = NULL)
+  
   best <- max(sapply(object$results, function (y) y$best))
   feats.strings <- sapply(object$features, FUN = function(x) print.feature(x = x, labels = labels, round = 2))
+  
   
   if (!is.null(effects) & !is.null(labels)) {
     effects <- compute_effects(object,labels = labels, quantiles = effects)
@@ -424,6 +449,7 @@ string.population.models <- function(features, models, round = 2, link = "I") {
 #' @param x The results to use
 #' @param count The number of features to plot, defaults to all
 #' @param pop The population to plot, defaults to last
+#' @param tol The tolerance to use for the correlation when finding equivalent features, default is 0.0000001
 #' @param ... Not used.
 #'
 #' @return No return value, just creates a plot
@@ -434,7 +460,17 @@ string.population.models <- function(features, models, round = 2, link = "I") {
 #' 
 #'
 #' @export 
-plot.gmjmcmc <- function (x, count = "all", pop = "last", ...) {
+plot.gmjmcmc <- function (x, count = "all", pop = "all",tol =  0.0000001, ...) {
+  
+  if(pop!="last")
+  {
+    results <- list()
+    results[[1]] <- x
+    x <- merge_results(results, pop, 2, 0.0000001, data = NULL)
+    return(marg.prob.plot(sapply(x$features, print), x$marg.probs, count = count))
+    
+  }
+ 
   if (pop == "last") pop <- length(x$populations)
   if (is.null(x$populations)) {
     pops <- x$features
@@ -541,7 +577,13 @@ run.weigths <- function (results) {
 #' plot(result)
 #' 
 #' @export 
-plot.gmjmcmc_merged <- function (x, count = "all", ...) {
+plot.gmjmcmc_merged <- function (x, count = "all", pop = NULL,tol =  0.0000001, ...) {
+  
+  if(!is.null(pop))
+  {
+    x <- merge_results(x$results, pop, 2, 0.0000001, data = NULL)
+  }
+  
   marg.prob.plot(sapply(x$features, print), x$marg.probs, count = count)
 }
 

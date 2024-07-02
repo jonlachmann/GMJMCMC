@@ -19,8 +19,8 @@
 #' 
 #' 
 #' @export
-predict.gmjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
-  merged <- merge_results(list(object),data = cbind(1,x))
+predict.gmjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975),  pop = NULL,tol =  0.0000001, ...) {
+  merged <- merge_results(list(object),data = cbind(1,x),populations = pop,tol = tol)
   return(predict.gmjmcmc_merged(merged, x, link, quantiles))
 }
 
@@ -44,6 +44,9 @@ predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.
 #' @param x The new data to use for the prediction, a matrix where each row is an observation.
 #' @param link The link function to use
 #' @param quantiles The quantiles to calculate credible intervals for the posterior moddes (in model space).
+#' @param pop The population to plot, defaults to last
+#' @param tol The tolerance to use for the correlation when finding equivalent features, default is 0.0000001
+#' 
 #' @param ... Not used.
 #' @return A list containing aggregated predictions and per model predictions.
 #' \item{aggr}{Aggregated predictions with mean and quantiles.}
@@ -63,8 +66,12 @@ predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.
 #' preds <- predict(result, matrix(rnorm(600), 100))
 #'
 #' @export
-predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
+predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = NULL,tol =  0.0000001, ...) {
   x <- as.matrix(x)
+  
+  if(!is.null(pop))
+    object <- merge_results(object$results, pop, 2, tol, data = NULL)
+  
   preds <- list()
   for (i in seq_along(object$results)) {
     preds[[i]] <- list()

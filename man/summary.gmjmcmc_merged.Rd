@@ -4,7 +4,7 @@
 \alias{summary.gmjmcmc_merged}
 \title{Function to print a quick summary of the results}
 \usage{
-\method{summary}{gmjmcmc_merged}(object, tol = 1e-04, labels = FALSE, effects = NULL, ...)
+\method{summary}{gmjmcmc_merged}(object, tol = 1e-04, labels = FALSE, effects = NULL, pop = NULL, ...)
 }
 \arguments{
 \item{object}{The results to use}
@@ -14,6 +14,8 @@
 \item{labels}{Should the covariates be named, or just referred to as their place in the data.frame.}
 
 \item{effects}{Quantiles for posterior modes of the effects across models to be reported, if either effects are NULL or if labels are NULL, no effects are reported.}
+
+\item{pop}{If null same as in merge.options for running parallel gmjmcmc otherwise results will be re-merged according to pop that can be "all", "last", "best"}
 
 \item{...}{Not used.}
 }
