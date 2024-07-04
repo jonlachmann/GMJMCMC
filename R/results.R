@@ -237,10 +237,10 @@ model.string <- function (model, features, link = "I", round = 2) {
 #'  
 #' @examples
 #' result <- gmjmcmc(matrix(rnorm(600), 100), P = 2, gaussian.loglik, NULL, c("p0", "exp_dbl"))
-#' summary(result, pop = "all")
+#' summary(result, pop = "best")
 #'
 #' @export 
-summary.gmjmcmc <- function (object, pop = "all", tol = 0.0001, labels = FALSE, effects = NULL, ...) {
+summary.gmjmcmc <- function (object, pop = "best", tol = 0.0001, labels = FALSE, effects = NULL, ...) {
   
   if (pop == "all")
   {
@@ -460,7 +460,7 @@ string.population.models <- function(features, models, round = 2, link = "I") {
 #' 
 #'
 #' @export 
-plot.gmjmcmc <- function (x, count = "all", pop = "all",tol =  0.0000001, ...) {
+plot.gmjmcmc <- function (x, count = "all", pop = "best",tol =  0.0000001, ...) {
   
   if(pop!="last")
   {

@@ -4,7 +4,7 @@
 \alias{summary.gmjmcmc}
 \title{Function to print a quick summary of the results}
 \usage{
-\method{summary}{gmjmcmc}(object, pop = "all", tol = 1e-04, labels = FALSE, effects = NULL, ...)
+\method{summary}{gmjmcmc}(object, pop = "best", tol = 1e-04, labels = FALSE, effects = NULL, ...)
 }
 \arguments{
 \item{object}{The results to use}
@@ -29,6 +29,6 @@ Function to print a quick summary of the results
 }
 \examples{
 result <- gmjmcmc(matrix(rnorm(600), 100), P = 2, gaussian.loglik, NULL, c("p0", "exp_dbl"))
-summary(result, pop = "all")
+summary(result, pop = "best")
 
 }

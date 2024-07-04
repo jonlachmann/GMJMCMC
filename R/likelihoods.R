@@ -28,6 +28,42 @@ logistic.loglik <- function (y, x, model, complex, params = list(r = exp(-0.5)))
   return(list(crit=ret, coefs=mod$coefficients))
 }
 
+#' Log likelihood function for logistic regression with an approximate Laplace approximations used
+#' This function is created as an example of how to create an estimator that is used
+#' to calculate the marginal likelihood of a model.
+#'
+#' @param y A vector containing the dependent variable
+#' @param x The matrix containing the precalculated features
+#' @param model The model to estimate as a logical vector
+#' @param complex A list of complexity measures for the features
+#' @param params A list of parameters for the log likelihood, supplied by the user
+#'
+#' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
+#'
+#' @examples
+#' logistic.loglik.ala(as.integer(rnorm(100) > 0), matrix(rnorm(100)), TRUE, list(oc = 1))
+#' 
+#'
+#' @export logistic.loglik.ala
+logistic.loglik.ala <- function (y, x, model, complex, params = list(r = exp(-0.5))) {
+  if (length(params) == 0)
+    params <- list(r = 1/dim(x)[1])
+  suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = binomial(),maxit = 1)})
+  ret <- (-(mod$deviance -2 * log(params$r) * sum(complex$oc))) / 2
+  return(list(crit=ret, coefs=mod$coefficients))
+}
+
+#' Log model prior function 
+#' @param params list of passed parameters of the likelihood in GMJMCMC
+#' @param complex list of complexity measures of the features included into the model 
+#' @return A numeric with the log  model prior.
+#' @export log.prior
+log.prior <- function(params,complex){
+  
+  pl =  log(params$r) * (sum(complex$oc))
+  return(pl)
+}
+
 #' Log likelihood function for logistic regression for alpha calculation
 #' This function is just the bare likelihood function
 #'
