@@ -22,7 +22,7 @@ model.proposal.1_4 <- function (model.size, neigh.min, neigh.max, indices, probs
   if (neigh.max == neigh.min) neigh.size <- neigh.min
   else neigh.size <- sample.int(n = neigh.max - neigh.min, size = 1) + neigh.min - 1
   # Select the negihborhood by sampling from the p covariates
-  neighborhood <- sample2((1:model.size)[indices], size = neigh.size, prob = probs[indices])
+  neighborhood <- sample2((1:model.size)[indices], size = neigh.size, prob = probs[indices] + 0.000001)
 
   # Sample which variables to change based on the probs vector
   swaps <- as.logical(rbinom(neigh.size, 1, probs[neighborhood]))
