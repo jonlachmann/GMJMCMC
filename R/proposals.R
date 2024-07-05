@@ -17,7 +17,11 @@
 # Indices tells the sampler which indices it is allowed to sample from
 model.proposal.1_4 <- function (model.size, neigh.min, neigh.max, indices, probs=NULL, prob=FALSE) {
   # If no probs, set all to 1 as we are doing a swap
+  if(model.size < 1)
+    model.size <- 1
   if (is.null(probs)) probs <- rep(1,model.size)
+  if(length(indices) == 0)
+    indices <- 1:model.size
   # Set neighborhood size, random or fixed
   if (neigh.max == neigh.min) neigh.size <- neigh.min
   else neigh.size <- sample.int(n = neigh.max - neigh.min, size = 1) + neigh.min - 1
