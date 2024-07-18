@@ -88,10 +88,10 @@ gmjmcmc <- function (
 
   # Create first population
   F.0 <- gen.covariates(ncol(data) - 2)
-  if (is.null(params$feat$prel.filter))
+  if (is.null(params$prel.select))
     S[[1]] <- F.0
   else
-    S[[1]] <- F.0[params$feat$prel.filter]
+    S[[1]] <- F.0[params$prel.select]
 
   complex <- complex.features(S[[1]])
 

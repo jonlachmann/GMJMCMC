@@ -128,7 +128,7 @@ gen.params.gmjmcmc <- function (data) {
                       alpha = 0,                                    # alpha strategy (0 = None, 1,2,3 = strategies as per Hubin et al.) TODO: Fully Bayesian
                       pop.max = min(100,as.integer(ncov * 1.5)),    # Max features population size
                       keep.org = FALSE,                             # Always keep original covariates in every population
-                      prel.filter = NULL,                           # Filtration threshold for first population (i.e. filter covariates even if keep.org=TRUE)
+                      prel.filter = 0,                           # Filtration threshold for first population (i.e. filter covariates even if keep.org=TRUE)
                       keep.min = 0.8,                               # Minimum proportion of features to always keep [0,1]
                       eps = 0.05,                                   # Inclusion probability limit for feature generation
                       check.col = TRUE,                             # Whether the colinearity should be checked
@@ -136,7 +136,7 @@ gen.params.gmjmcmc <- function (data) {
                       max.proj.size = 15)                           # Maximum projection size
   params$feat <- feat_params
   params$rescale.large <- FALSE
-  params$prel.filter <- NULL                                        # Specify which covariates to keep in the first population. See Issue #15.
+  params$prel.select <- NULL                                        # Specify which covariates to keep in the first population. See Issue #15.
 
   return(params)
 }
