@@ -44,17 +44,21 @@ fbms <- function(formula = NULL, family = "gaussian", data = NULL, transforms = 
     loglik.pi <- logistic.loglik
   else if(family == "custom")
     loglik.pi <- loglik.pi
-  if (missing(data)) 
-    data <- environment(formula)
-  mf <- match.call(expand.dots = FALSE)
-  m <- match(c("formula", "data"), names(mf), 0L)
-  mf <- mf[c(1L, m)]
-  mf$drop.unused.levels <- TRUE
-  mf[[1L]] <- quote(stats::model.frame)
-  mf <- eval(mf, parent.frame())
-  Y <- model.response(mf, "any")
-  X <- model.matrix(formula, data = data)[, -1]
-  df <- data.frame(Y, X)
+  if(!is.null(formula))
+  {
+    if (missing(data)) 
+      data <- environment(formula)
+    mf <- match.call(expand.dots = FALSE)
+    m <- match(c("formula", "data"), names(mf), 0L)
+    mf <- mf[c(1L, m)]
+    mf$drop.unused.levels <- TRUE
+    mf[[1L]] <- quote(stats::model.frame)
+    mf <- eval(mf, parent.frame())
+    Y <- model.response(mf, "any")
+    X <- model.matrix(formula, data = data)[, -1]
+    df <- data.frame(Y, X)
+  }else
+    df <- data
   if (is.null(transforms)) {
     if (cores > 1)
       res <- mjmcmc.parallel(df, loglik.pi, verbose = FALSE, ...)

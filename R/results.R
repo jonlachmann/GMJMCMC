@@ -584,7 +584,7 @@ plot.gmjmcmc_merged <- function (x, count = "all", pop = NULL,tol =  0.0000001, 
     x <- merge_results(x$results, pop, 2, 0.0000001, data = NULL)
   }
   
-  marg.prob.plot(sapply(x$features, print), x$marg.probs, count = count)
+  marg.prob.plot(sapply(x$features[x$marg.probs>tol], print), x$marg.probs[x$marg.probs>tol], count = count)
 }
 
 
