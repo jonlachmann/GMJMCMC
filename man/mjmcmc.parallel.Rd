@@ -4,7 +4,7 @@
 \alias{mjmcmc.parallel}
 \title{Run multiple mjmcmc runs in parallel, merging the results before returning.}
 \usage{
-mjmcmc.parallel(runs, cores = getOption("mc.cores", 2L), ...)
+mjmcmc.parallel(runs = 2, cores = getOption("mc.cores", 2L), ...)
 }
 \arguments{
 \item{runs}{The number of runs to run}

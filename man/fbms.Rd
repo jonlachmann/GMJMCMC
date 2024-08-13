@@ -9,12 +9,8 @@ fbms(
   formula = NULL,
   family = "gaussian",
   data = NULL,
-  transforms = NULL,
   loglik.pi = gaussian.loglik,
-  loglik.alpha = gaussian.loglik.alpha,
-  P = 10,
-  runs = 10,
-  cores = 1,
+  method = "mjmcmc",
   verbose = FALSE,
   ...
 )
@@ -26,17 +22,9 @@ fbms(
 
 \item{data}{A data frame containing the variables in the model. If NULL, the variables are taken from the environment of the formula. Default is NULL.}
 
-\item{transforms}{A list of transformations for BGNLM model. Default is NULL.}
-
 \item{loglik.pi}{The log-likelihood function for estimating the marginal likelihood and posterior modes (only used if family = "custom")}
 
-\item{loglik.alpha}{The log-likelihood function for the alpha parameter in the model. Default is gaussian.loglik.alpha.}
-
-\item{P}{The number of GMJMCMC generations. Default is 10.}
-
-\item{runs}{The number of parallel chains in case of parallel processing. Default is 2.}
-
-\item{cores}{The number of CPU cores to use for parallel processing. Default is 2.}
+\item{method}{which fitting algorithm should be used, currently implemented options include "gmjmcmc", "gmjmcmc.parallel", "mjmcmc" and "mjmcmc.parallel" with "gmjmcmc.parallel" being the default}
 
 \item{verbose}{If TRUE, print detailed progress information during the fitting process. Default is FALSE.}
 
@@ -54,7 +42,9 @@ family, data, transforms, and other parameters to customize the model.
 fbms_result <- fbms(
  X1 ~ .,
  family = "gaussian",
+ method = "gmjmcmc.parallel",
  data = data.frame(matrix(rnorm(600), 100)),
+ transforms = c("sin","cos"),
  P = 10,
  runs = 1,
  cores = 1

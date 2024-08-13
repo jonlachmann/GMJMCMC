@@ -6,13 +6,9 @@
 #'
 #' @param formula A formula object specifying the model structure. Default is NULL.
 #' @param family The distribution family of the response variable. Currently supports "gaussian" and "binomial". Default is "gaussian".
-#' @param data A data frame containing the variables in the model. If NULL, the variables are taken from the environment of the formula. Default is NULL.
-#' @param transforms A list of transformations for BGNLM model. Default is NULL.
 #' @param loglik.pi The log-likelihood function for estimating the marginal likelihood and posterior modes (only used if family = "custom")
-#' @param loglik.alpha The log-likelihood function for the alpha parameter in the model. Default is gaussian.loglik.alpha.
-#' @param P The number of GMJMCMC generations. Default is 10.
-#' @param runs The number of parallel chains in case of parallel processing. Default is 2.
-#' @param cores The number of CPU cores to use for parallel processing. Default is 2.
+#' @param data A data frame containing the variables in the model. If NULL, the variables are taken from the environment of the formula. Default is NULL.
+#' @param method which fitting algorithm should be used, currently implemented options include "gmjmcmc", "gmjmcmc.parallel", "mjmcmc" and "mjmcmc.parallel" with "gmjmcmc.parallel" being the default
 #' @param verbose If TRUE, print detailed progress information during the fitting process. Default is FALSE.
 #' @param ... Additional parameters to be passed to the underlying MCMC fitting functions.
 #'
@@ -23,7 +19,9 @@
 #' fbms_result <- fbms(
 #'  X1 ~ .,
 #'  family = "gaussian",
+#'  method = "gmjmcmc.parallel",
 #'  data = data.frame(matrix(rnorm(600), 100)),
+#'  transforms = c("sin","cos"),
 #'  P = 10,
 #'  runs = 1,
 #'  cores = 1
@@ -34,10 +32,9 @@
 #'
 #' @seealso \code{\link{mjmcmc}}, \code{\link{gmjmcmc}}, \code{\link{gmjmcmc.parallel}}
 #' @export
-fbms <- function(formula = NULL, family = "gaussian", data = NULL, transforms = NULL,
+fbms <- function(formula = NULL, family = "gaussian", data = NULL, 
                  loglik.pi = gaussian.loglik,
-                 loglik.alpha = gaussian.loglik.alpha,
-                 P = 10, runs = 1, cores = 1,verbose = FALSE, ...) {
+                 method = "mjmcmc",verbose = FALSE, ...) {
   if (family == "gaussian")
     loglik.pi <- gaussian.loglik
   else if(family == "binomial")
@@ -59,19 +56,17 @@ fbms <- function(formula = NULL, family = "gaussian", data = NULL, transforms = 
     df <- data.frame(Y, X)
   }else
     df <- data
-  if (is.null(transforms)) {
-    if (cores > 1)
+ 
+  if(method == "mjmcmc.parallel")
       res <- mjmcmc.parallel(df, loglik.pi, verbose = verbose, ...)
-    else
+  else if(method == "mjmcmc")
       res <- mjmcmc(df, loglik.pi, verbose = verbose, ...)
-  } else {
-    if (cores > 1 | runs > 1)
-      res <- gmjmcmc.parallel(runs, cores, data = df, loglik.pi = loglik.pi,
-                              loglik.alpha = gaussian.loglik.alpha, transforms = transforms,
-                              P = P, ...)
-    else
-      res <- gmjmcmc(df, loglik.pi, gaussian.loglik.alpha, transforms, 
-                     verbose = verbose, P, ...)
-  }
+  else if(method == "gmjmcmc.parallel")
+      res <- gmjmcmc.parallel(data = df, loglik.pi = loglik.pi, verbose = verbose,...)
+  else if(method == "gmjmcmc")
+      res <- gmjmcmc(df, loglik.pi, verbose = verbose, ...)
+  else
+    stop("Error: Method must be one of gmjmcmc, gmjmcmc.parallel,mjmcmc or mjmcmc.parallel!")
+  
   return(res)
 }

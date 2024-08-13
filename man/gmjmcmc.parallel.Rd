@@ -5,7 +5,7 @@
 \title{Run multiple gmjmcmc (Genetically Modified MJMCMC) runs in parallel returning a list of all results.}
 \usage{
 gmjmcmc.parallel(
-  runs,
+  runs = 2,
   cores = getOption("mc.cores", 2L),
   merge.options = list(populations = "best", complex.measure = 2, tol = 1e-07),
   data,
