@@ -61,17 +61,17 @@ fbms <- function(formula = NULL, family = "gaussian", data = NULL, transforms = 
     df <- data
   if (is.null(transforms)) {
     if (cores > 1)
-      res <- mjmcmc.parallel(df, loglik.pi, verbose = FALSE, ...)
+      res <- mjmcmc.parallel(df, loglik.pi, verbose = verbose, ...)
     else
-      res <- mjmcmc(df, loglik.pi, verbose = FALSE, ...)
+      res <- mjmcmc(df, loglik.pi, verbose = verbose, ...)
   } else {
-    if (cores > 1)
+    if (cores > 1 | runs > 1)
       res <- gmjmcmc.parallel(runs, cores, data = df, loglik.pi = loglik.pi,
                               loglik.alpha = gaussian.loglik.alpha, transforms = transforms,
                               P = P, ...)
     else
       res <- gmjmcmc(df, loglik.pi, gaussian.loglik.alpha, transforms, 
-                     verbose = FALSE, P, ...)
+                     verbose = verbose, P, ...)
   }
   return(res)
 }
