@@ -8,9 +8,9 @@
 #' @param family The distribution family of the response variable. Currently supports "gaussian" and "binomial". Default is "gaussian".
 #' @param loglik.pi The log-likelihood function for estimating the marginal likelihood and posterior modes (only used if family = "custom")
 #' @param data A data frame containing the variables in the model. If NULL, the variables are taken from the environment of the formula. Default is NULL.
-#' @param method which fitting algorithm should be used, currently implemented options include "gmjmcmc", "gmjmcmc.parallel", "mjmcmc" and "mjmcmc.parallel" with "gmjmcmc.parallel" being the default
-#' @param verbose If TRUE, print detailed progress information during the fitting process. Default is FALSE.
-#' @param ... Additional parameters to be passed to the underlying MCMC fitting functions.
+#' @param method Which fitting algorithm should be used, currently implemented options include "gmjmcmc", "gmjmcmc.parallel", "mjmcmc" and "mjmcmc.parallel" with "gmjmcmc.parallel" being the default
+#' @param verbose If TRUE, print detailed progress information during the fitting process. Default is TRUE.
+#' @param ... Additional parameters to be passed to the underlying method.
 #'
 #' @return An object containing the results of the fitted model and MCMC sampling.
 #'
@@ -34,7 +34,7 @@
 #' @export
 fbms <- function(formula = NULL, family = "gaussian", data = NULL, 
                  loglik.pi = gaussian.loglik,
-                 method = "mjmcmc",verbose = FALSE, ...) {
+                 method = "mjmcmc",verbose = TRUE, ...) {
   if (family == "gaussian")
     loglik.pi <- gaussian.loglik
   else if(family == "binomial")

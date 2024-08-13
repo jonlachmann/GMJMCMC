@@ -11,7 +11,7 @@ fbms(
   data = NULL,
   loglik.pi = gaussian.loglik,
   method = "mjmcmc",
-  verbose = FALSE,
+  verbose = TRUE,
   ...
 )
 }
@@ -24,11 +24,11 @@ fbms(
 
 \item{loglik.pi}{The log-likelihood function for estimating the marginal likelihood and posterior modes (only used if family = "custom")}
 
-\item{method}{which fitting algorithm should be used, currently implemented options include "gmjmcmc", "gmjmcmc.parallel", "mjmcmc" and "mjmcmc.parallel" with "gmjmcmc.parallel" being the default}
+\item{method}{Which fitting algorithm should be used, currently implemented options include "gmjmcmc", "gmjmcmc.parallel", "mjmcmc" and "mjmcmc.parallel" with "gmjmcmc.parallel" being the default}
 
-\item{verbose}{If TRUE, print detailed progress information during the fitting process. Default is FALSE.}
+\item{verbose}{If TRUE, print detailed progress information during the fitting process. Default is TRUE.}
 
-\item{...}{Additional parameters to be passed to the underlying MCMC fitting functions.}
+\item{...}{Additional parameters to be passed to the underlying method.}
 }
 \value{
 An object containing the results of the fitted model and MCMC sampling.
