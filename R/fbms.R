@@ -37,7 +37,7 @@
 fbms <- function(formula = NULL, family = "gaussian", data = NULL, transforms = NULL,
                  loglik.pi = gaussian.loglik,
                  loglik.alpha = gaussian.loglik.alpha,
-                 P = 10, runs = 10, cores = 1,verbose = FALSE, ...) {
+                 P = 10, runs = 1, cores = 1,verbose = FALSE, ...) {
   if (family == "gaussian")
     loglik.pi <- gaussian.loglik
   else if(family == "binomial")
