@@ -18,13 +18,13 @@ fbms(
 \arguments{
 \item{formula}{A formula object specifying the model structure. Default is NULL.}
 
-\item{family}{The distribution family of the response variable. Currently supports "gaussian" and "binomial". Default is "gaussian".}
+\item{family}{The distribution family of the response variable. Currently supports "gaussian", "binomial" and  "custom". Default is "gaussian".}
 
 \item{data}{A data frame containing the variables in the model. If NULL, the variables are taken from the environment of the formula. Default is NULL.}
 
-\item{loglik.pi}{The log-likelihood function for estimating the marginal likelihood and posterior modes (only used if family = "custom")}
+\item{loglik.pi}{Custom function to compute the logarithm of the posterior mode based on logarithm of marginal likelihood and logarithm of prior functions (needs specification only used if family = "custom")}
 
-\item{method}{Which fitting algorithm should be used, currently implemented options include "gmjmcmc", "gmjmcmc.parallel", "mjmcmc" and "mjmcmc.parallel" with "gmjmcmc.parallel" being the default}
+\item{method}{Which fitting algorithm should be used, currently implemented options include "gmjmcmc", "gmjmcmc.parallel", "mjmcmc" and "mjmcmc.parallel" with "mjmcmc" being the default}
 
 \item{verbose}{If TRUE, print detailed progress information during the fitting process. Default is TRUE.}
 

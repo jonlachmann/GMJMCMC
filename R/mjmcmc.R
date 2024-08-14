@@ -31,7 +31,7 @@
 #' plot(result)
 #'
 #' @export mjmcmc
-mjmcmc <- function (data, loglik.pi, N = 100, probs = NULL, params = NULL, sub = FALSE, verbose = TRUE) {
+mjmcmc <- function (data, loglik.pi = gaussian.loglik, N = 100, probs = NULL, params = NULL, sub = FALSE, verbose = TRUE) {
   # Verify that data is well-formed
   data <- check.data(data, verbose)
 

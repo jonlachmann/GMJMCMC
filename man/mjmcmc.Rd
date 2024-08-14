@@ -6,7 +6,7 @@
 \usage{
 mjmcmc(
   data,
-  loglik.pi,
+  loglik.pi = gaussian.loglik,
   N = 100,
   probs = NULL,
   params = NULL,
