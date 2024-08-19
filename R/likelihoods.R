@@ -56,7 +56,11 @@ logistic.loglik.ala <- function (y, x, model, complex, params = list(r = exp(-0.
 #' Log model prior function 
 #' @param params list of passed parameters of the likelihood in GMJMCMC
 #' @param complex list of complexity measures of the features included into the model 
+#' 
 #' @return A numeric with the log  model prior.
+#' 
+#' @examples
+#' log.prior(params = list(r=2), complex = list(oc = 2))
 #' 
 #' @export log.prior
 log.prior <- function(params,complex){
