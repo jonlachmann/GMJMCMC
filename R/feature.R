@@ -119,7 +119,7 @@ print.feature <- function (x, dataset = FALSE, alphas = FALSE, labels = FALSE, r
     # Assume that we are not doing multiplication
     op <- "+"
     # Add the outer transform is there is one
-    if (feat[1,1] > 0) fString <- paste0(fString, transforms[[feat[1,1]]], "(")
+    if (feat[1, 1] > 0) fString <- paste0(fString, transforms[[feat[1, 1]]], "(")
     # If g = 0, we are doing multiplication
     else {
       op <- "*"
@@ -127,21 +127,21 @@ print.feature <- function (x, dataset = FALSE, alphas = FALSE, labels = FALSE, r
     }
     # If we are printing rounded features for neat output, round all alphas
     if (round) {
-      feat[,3] <- round(feat[,3], round)
+      feat[, 3] <- round(feat[, 3], round)
     }
     for (j in seq_len(nrow(feat))) {
       # No plus or multiplication sign on the last one
       if (j == nrow(feat)) op <- ""
       # If this is an intercept just add it in
-      if (j == 1 && feat[j,3] != 0) {
-        if (!alphas) fString <- paste0(fString, feat[j,3], op)
+      if (j == 1 && feat[j, 3] != 0) {
+        if (!alphas) fString <- paste0(fString, feat[j, 3], op)
         else fString <- paste0(fString, "?", op)
       }
       # Otherwise this is a feature or covariate, do a recursive conversion
       if (j != 1) {
         # Process alphas, which are only present if there is more than one term in the feature
         # this implies that the feature is not a multiplication (i.e. only one _term_).
-        if ((nrow(feat) > 2 || feat[1,3] != 0) && feat[1,1] > 0) {
+        if ((nrow(feat) > 2 || feat[1, 3] != 0) && feat[1, 1] > 0) {
           if (alphas) fString <- paste0(fString, "?*")
           else fString <- paste0(fString, feat[j,3], "*")
         }
@@ -152,7 +152,7 @@ print.feature <- function (x, dataset = FALSE, alphas = FALSE, labels = FALSE, r
   }
   # This is a plain covariate
   else if (is.numeric(feat)) {
-    if (dataset) fString <- paste0("data[,", feat+2, "]")
+    if (dataset) fString <- paste0("data[,", feat + 2, "]")
     else if (labels[1] != F) fString <- labels[feat]
     else fString <- paste0("x", feat)
   } else stop("Invalid feature structure")

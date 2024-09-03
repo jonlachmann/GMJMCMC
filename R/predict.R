@@ -125,8 +125,7 @@ predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles =
 #' @export
 predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
   # Select the models and features to predict from at this iteration
-  
-  x <- as.matrix(cbind(rep(1,dim(x)[1]),x))
+  x <- as.matrix(cbind(rep(1, dim(x)[1]), x))
   
   models <- c(object$models, object$lo.models)[object$model.probs.idx]
 

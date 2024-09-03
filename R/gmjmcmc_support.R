@@ -16,7 +16,9 @@
 #'
 #' @export set.transforms
 set.transforms <- function (transforms) {
-  options("gmjmcmc-transformations"=transforms)
+  old_transforms <- getOption("gmjmcmc-transformations")
+  options("gmjmcmc-transformations" = transforms)
+  return(old_transforms)
 }
 
 # Function to verify inputs and help the user find if they did anything wrong

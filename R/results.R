@@ -104,7 +104,9 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
     }
     accept.tot <- results[[i]]$accept.tot
     best <- results[[i]]$best
-    results[[i]] <- lapply(results[[i]], function (x) x[pops.use[[i]]])
+    for (item in names(results[[i]])) {
+      if (!(item %in% (c("accept.tot", "best", "transforms")))) results[[i]][[item]] <- results[[i]][[item]][pops.use[[i]]]
+    }
     results[[i]]$accept.tot <- accept.tot
     results[[i]]$best <- best
   }
@@ -148,8 +150,20 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
   counts <- sapply(feats.simplest.ids, function(x) sum(feats.map[complex.measure,] == x))
   feats.simplest <- features[feats.simplest.ids]
   importance <- feats.map[4, feats.simplest.ids, drop = FALSE]
-  merged <- list(features = feats.simplest, marg.probs = importance, counts = counts, results = results, pop.best = pop.best, thread.best = thread.best, crit.best = crit.best, 
-                 reported = pw$best, rep.pop = pw$pop.best, best.log.posteriors = bests, rep.thread = pw$thread.best)
+  merged <- list(
+    features = feats.simplest,
+    marg.probs = importance,
+    counts = counts,
+    results = results,
+    pop.best = pop.best,
+    thread.best = thread.best,
+    crit.best = crit.best,
+    reported = pw$best,
+    rep.pop = pw$pop.best,
+    best.log.posteriors = bests,
+    rep.thread = pw$thread.best,
+    transforms = results[[1]]$transforms
+  )
   attr(merged, "class") <- "gmjmcmc_merged"
   return(merged)
 }
@@ -236,9 +250,8 @@ model.string <- function (model, features, link = "I", round = 2) {
 #'
 #' @export 
 summary.gmjmcmc <- function (object, pop = "best", tol = 0.0001, labels = FALSE, effects = NULL, ...) {
-  
-  if (pop == "all")
-  {
+  transforms.bak <- set.transforms(object$transforms)
+  if (pop == "all") {
     results <- list()
     results[[1]] <- object
     merged <- merge_results(results, pop, 2, 0.0000001, data = NULL)
@@ -273,6 +286,7 @@ summary.gmjmcmc <- function (object, pop = "best", tol = 0.0001, labels = FALSE,
     rep.pop = pop,
     tol = tol
   )
+  set.transforms(transforms.bak)
 }
 
 #' Function to print a quick summary of the results
@@ -303,9 +317,10 @@ summary.gmjmcmc <- function (object, pop = "best", tol = 0.0001, labels = FALSE,
 #'
 #' @export 
 summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, effects = NULL, pop = NULL, ...) {
-  
-  if(!is.null(pop))
+  transforms.bak <- set.transforms(object$transforms)
+  if (!is.null(pop)) {
     object <- merge_results(object$results, pop, 2, 0.0000001, data = NULL)
+  }
   
   best <- max(sapply(object$results, function (y) y$best))
   feats.strings <- sapply(object$features, FUN = function(x) print.feature(x = x, labels = labels, round = 2))
@@ -318,6 +333,7 @@ summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, effect
   summary_internal(best = object$crit.best, feats.strings, object$marg.probs, effects = effects,
                    best.pop = object$pop.best, thread.best = object$thread.best,  
                    reported = object$reported, rep.pop = object$rep.pop, rep.thread = object$rep.thread, tol = tol)
+  set.transforms(transforms.bak)
 }
 
 #' Function to print a quick summary of the results
@@ -456,14 +472,12 @@ string.population.models <- function(features, models, round = 2, link = "I") {
 #'
 #' @export 
 plot.gmjmcmc <- function (x, count = "all", pop = "best",tol =  0.0000001, ...) {
-  
-  if(pop!="last")
-  {
+  transforms.bak <- set.transforms(x$transforms)
+  if (pop != "last") {
     results <- list()
     results[[1]] <- x
     x <- merge_results(results, pop, 2, 0.0000001, data = NULL)
     return(marg.prob.plot(sapply(x$features, print), x$marg.probs, count = count))
-    
   }
  
   if (pop == "last") pop <- length(x$populations)
@@ -475,6 +489,7 @@ plot.gmjmcmc <- function (x, count = "all", pop = "best",tol =  0.0000001, ...) 
     marg.probs <- x$marg.probs[[pop]]
   }
   plot.mjmcmc(list(populations = pops, marg.probs = marg.probs), count)
+  set.transforms(transforms.bak)
 }
 
 #' Function to plot the results, works both for results from gmjmcmc and
@@ -492,6 +507,7 @@ plot.gmjmcmc <- function (x, count = "all", pop = "best",tol =  0.0000001, ...) 
 #'
 #' @export 
 plot.mjmcmc <- function (x, count = "all", ...) {
+  transforms.bak <- set.transforms(x$transforms)
   ## Get features as strings for printing and marginal posteriors
   # If this is a merged results the structure is one way
   if (is.null(x$populations)) {
@@ -505,6 +521,7 @@ plot.mjmcmc <- function (x, count = "all", ...) {
   }
 
   marg.prob.plot(feats.strings, marg.probs, count)
+  set.transforms(transforms.bak)
 }
 
 marg.prob.plot <- function (feats.strings, marg.probs, count = "all", ...) {
@@ -573,13 +590,13 @@ run.weigths <- function (results) {
 #' 
 #' @export 
 plot.gmjmcmc_merged <- function (x, count = "all", pop = NULL,tol =  0.0000001, ...) {
-  
-  if(!is.null(pop))
-  {
+  transforms.bak <- set.transforms(x$transforms)
+  if (!is.null(pop)) {
     x <- merge_results(x$results, pop, 2, 0.0000001, data = NULL)
   }
   
-  marg.prob.plot(sapply(x$features[x$marg.probs>tol], print), x$marg.probs[x$marg.probs>tol], count = count)
+  marg.prob.plot(sapply(x$features[x$marg.probs > tol], print), x$marg.probs[x$marg.probs > tol], count = count)
+  set.transforms(transforms.bak)
 }
 
 

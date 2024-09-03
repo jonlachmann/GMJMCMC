@@ -68,7 +68,7 @@ gmjmcmc <- function (
   # Extract labels from column names in dataframe
   labels <- get.labels(data, verbose)
   # Set the transformations option
-  options("gmjmcmc-transformations" = transforms)
+  set.transforms(transforms)
   # Acceptance probability per population
   accept <- vector("list", P)
   accept <- lapply(accept, function (x) x <- 0)
@@ -155,7 +155,8 @@ gmjmcmc <- function (
     best.margs = best.margs,           # Best marginal model probability per population
     accept = accept,                   # Acceptance rate per population
     accept.tot = accept.tot,           # Overall acceptance rate
-    best = max(unlist(best.margs))     # Best marginal model probability throughout the run
+    best = max(unlist(best.margs)),    # Best marginal model probability throughout the run
+    transforms = transforms            # Transformations used by the model
   )
   attr(results, "class") <- "gmjmcmc"
   return(results)
