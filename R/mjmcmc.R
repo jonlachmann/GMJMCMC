@@ -120,7 +120,7 @@ mjmcmc.loop <- function (data, complex, loglik.pi, model.cur, N, probs, params, 
       if (sub) {
         for (mod in seq_along(proposal$models)) {
           # Check if we have seen this model before
-          mod.idx <- vec_in_mat(visited.models$models[1:visited.models$count,,drop=FALSE], proposal$models[[mod]]$model)
+          mod.idx <- vec_in_mat(visited.models$models[seq_len(visited.models$count), , drop = FALSE], proposal$models[[mod]]$model)
           if (mod.idx == 0) {
             # If we have not seen the model before, add it
             visited.models$count <- visited.models$count + 1
@@ -134,7 +134,7 @@ mjmcmc.loop <- function (data, complex, loglik.pi, model.cur, N, probs, params, 
     }
     if (sub) {
       # Check if we have seen this model before
-      mod.idx <- vec_in_mat(visited.models$models[1:visited.models$count,,drop=FALSE], proposal$model)
+      mod.idx <- vec_in_mat(visited.models$models[seq_len(visited.models$count), , drop = FALSE], proposal$model)
       if (mod.idx == 0) {
         # If we have not seen the model before, add it
         visited.models$count <- visited.models$count + 1

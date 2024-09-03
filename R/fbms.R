@@ -34,17 +34,17 @@
 #' @export
 fbms <- function(formula = NULL, family = "gaussian", data = NULL, 
                  loglik.pi = gaussian.loglik,
-                 method = "mjmcmc",verbose = TRUE, ...) {
+                 method = "mjmcmc", verbose = TRUE, ...) {
   if (family == "gaussian")
     loglik.pi <- gaussian.loglik
-  else if(family == "binomial")
+  else if (family == "binomial")
     loglik.pi <- logistic.loglik
-  else if(family == "custom")
+  else if (family == "custom")
     loglik.pi <- loglik.pi
-  if(!is.null(formula))
-  {
-    if (missing(data)) 
+  if (!is.null(formula)) {
+    if (missing(data)) {
       data <- environment(formula)
+    }
     mf <- match.call(expand.dots = FALSE)
     m <- match(c("formula", "data"), names(mf), 0L)
     mf <- mf[c(1L, m)]
@@ -54,17 +54,18 @@ fbms <- function(formula = NULL, family = "gaussian", data = NULL,
     Y <- model.response(mf, "any")
     X <- model.matrix(formula, data = data)[, -1]
     df <- data.frame(Y, X)
-  }else
+  } else {
     df <- data
- 
-  if(method == "mjmcmc.parallel")
-      res <- mjmcmc.parallel(df, loglik.pi, verbose = verbose, ...)
-  else if(method == "mjmcmc")
-      res <- mjmcmc(df, loglik.pi, verbose = verbose, ...)
-  else if(method == "gmjmcmc.parallel")
-      res <- gmjmcmc.parallel(data = df, loglik.pi = loglik.pi, verbose = verbose,...)
-  else if(method == "gmjmcmc")
-      res <- gmjmcmc(df, loglik.pi, verbose = verbose, ...)
+  }
+
+  if (method == "mjmcmc.parallel")
+    res <- mjmcmc.parallel(df, loglik.pi, verbose = verbose, ...)
+  else if (method == "mjmcmc")
+    res <- mjmcmc(df, loglik.pi, verbose = verbose, ...)
+  else if (method == "gmjmcmc.parallel")
+    res <- gmjmcmc.parallel(data = df, loglik.pi = loglik.pi, verbose = verbose,...)
+  else if (method == "gmjmcmc")
+    res <- gmjmcmc(df, loglik.pi, verbose = verbose, ...)
   else
     stop("Error: Method must be one of gmjmcmc, gmjmcmc.parallel,mjmcmc or mjmcmc.parallel!")
   

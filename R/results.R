@@ -55,32 +55,9 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
   if (is.null(tol))
     tol <- 0.0000001
 
+  # Check and filter results that did not run successfully
+  results <- filter.results(results)
   res.count <- length(results)
-  
-  res.converged <- sum(sapply(results,function(x)length(x)>1))
-
-  if(res.converged<res.count)
-  {
-    if(res.converged == 0)
-      stop(paste0("All chains resulted in an error!", results[[1]],"\n Please debug and restart"))
-    warning(paste0("Warning! Some chains resulted in an error: ", results[[which(!sapply(results,function(x)length(x)>1))[1]]],  "'\n Only ",res.converged, " chains finished! \n Only finished chains will be used further!"))
-    
-    results.buf <- list()
-    j <- 1
-    for (i in 1:res.count)
-    {
-      print(results[[i]])
-      if(length(results[[i]])>1)
-      {
-        results.buf[[j]] <- results[[i]]
-        j <- j + 1
-      }
-      
-    }
-    results <- results.buf
-    res.count <- res.converged
-    rm(results.buf)
-  }
 
   # Select populations to use
   res.lengths <- vector("list")
@@ -145,7 +122,7 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
 
   ## Detect equivalent features
   # Generate mock data to compare features with
-  if (is.null(data)) mock.data <- matrix(runif((feat.count+2)^2, -100, 100), ncol=feat.count+2)
+  if (is.null(data)) mock.data <- matrix(runif((feat.count + 2)^2, -100, 100), ncol = feat.count + 2)
   else mock.data <- check.data(data, FALSE)
   
   mock.data.precalc <- precalc.features(mock.data, features)[,-(1:2)]
@@ -175,6 +152,24 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
                  reported = pw$best, rep.pop = pw$pop.best, best.log.posteriors = bests, rep.thread = pw$thread.best)
   attr(merged, "class") <- "gmjmcmc_merged"
   return(merged)
+}
+
+filter.results <- function (results) {
+  res.count <- length(results)
+  res.converged <- sum(sapply(results, function(x) length(x) > 1))
+
+  if (res.converged == 0) {
+    stop(paste0("All chains resulted in an error!", results[[1]],"\n Please debug and restart"))
+  }
+  if (res.converged < res.count) {
+    warning(paste0("Warning! Some chains resulted in an error: ", results[[which(!sapply(results,function(x)length(x)>1))[1]]],  "'\n Only ",res.converged, " chains finished! \n Only finished chains will be used further!"))
+    results <- lapply(results, function (x) {
+      if (length(x) > 1) return(x)
+      else return(NULL)
+    })
+    results <- results[sapply(results, function (x) !is.null(x))]
+  }
+  return(results)
 }
 
 # Function for calculating the weights of different populations based on best mlik
