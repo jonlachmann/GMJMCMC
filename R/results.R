@@ -276,7 +276,7 @@ summary.gmjmcmc <- function (object, pop = "best", tol = 0.0001, labels = FALSE,
     effects <- compute_effects(object, labels = labels, quantiles = effects)
   }
   
-  summary_internal(
+  obj <- summary_internal(
     best = object$best,
     marg.probs = object$marg.probs[[pop]],
     effects = effects,
@@ -287,6 +287,7 @@ summary.gmjmcmc <- function (object, pop = "best", tol = 0.0001, labels = FALSE,
     tol = tol
   )
   set.transforms(transforms.bak)
+  return(obj)
 }
 
 #' Function to print a quick summary of the results
@@ -330,10 +331,11 @@ summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, effect
     effects <- compute_effects(object,labels = labels, quantiles = effects)
   }
   
-  summary_internal(best = object$crit.best, feats.strings, object$marg.probs, effects = effects,
+  obj <- summary_internal(best = object$crit.best, feats.strings, object$marg.probs, effects = effects,
                    best.pop = object$pop.best, thread.best = object$thread.best,  
                    reported = object$reported, rep.pop = object$rep.pop, rep.thread = object$rep.thread, tol = tol)
   set.transforms(transforms.bak)
+  return(obj)
 }
 
 #' Function to print a quick summary of the results
@@ -490,6 +492,7 @@ plot.gmjmcmc <- function (x, count = "all", pop = "best",tol =  0.0000001, ...) 
   }
   plot.mjmcmc(list(populations = pops, marg.probs = marg.probs), count)
   set.transforms(transforms.bak)
+  return("done")
 }
 
 #' Function to plot the results, works both for results from gmjmcmc and
@@ -522,6 +525,7 @@ plot.mjmcmc <- function (x, count = "all", ...) {
 
   marg.prob.plot(feats.strings, marg.probs, count)
   set.transforms(transforms.bak)
+  return("done")
 }
 
 marg.prob.plot <- function (feats.strings, marg.probs, count = "all", ...) {
@@ -597,6 +601,7 @@ plot.gmjmcmc_merged <- function (x, count = "all", pop = NULL,tol =  0.0000001, 
   
   marg.prob.plot(sapply(x$features[x$marg.probs > tol], print), x$marg.probs[x$marg.probs > tol], count = count)
   set.transforms(transforms.bak)
+  return("done")
 }
 
 

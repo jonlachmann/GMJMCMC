@@ -24,7 +24,7 @@ fbms(
 
 \item{loglik.pi}{Custom function to compute the logarithm of the posterior mode based on logarithm of marginal likelihood and logarithm of prior functions (needs specification only used if family = "custom")}
 
-\item{method}{Which fitting algorithm should be used, currently implemented options include "gmjmcmc", "gmjmcmc.parallel", "mjmcmc" and "mjmcmc.parallel" with "mjmcmc" being the default}
+\item{method}{Which fitting algorithm should be used, currently implemented options include "gmjmcmc", "gmjmcmc.parallel", "mjmcmc" and "mjmcmc.parallel" with "mjmcmc" being the default and 'mjmcmc' means that only linear models will be estimated}
 
 \item{verbose}{If TRUE, print detailed progress information during the fitting process. Default is TRUE.}
 
