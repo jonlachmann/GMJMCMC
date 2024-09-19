@@ -20,7 +20,9 @@
 #' 
 #' @export
 predict.gmjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975),  pop = NULL,tol =  0.0000001, ...) {
+  transforms.bak <- set.transforms(object$transforms)
   merged <- merge_results(list(object),data = cbind(1,x),populations = pop,tol = tol)
+  set.transforms(transforms.bak)
   return(predict.gmjmcmc_merged(merged, x, link, quantiles))
 }
 
@@ -30,11 +32,12 @@ predict.gmjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.02
 #' @param pop The population to use.
 #' @noRd
 predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = 1, ...) {
-
+  transforms.bak <- set.transforms(object$transforms)
   mmodel <- lapply(object[1:8], function (x) x[[pop]])
 
   # Precalculate the features for the new data (c(0,1...) is because precalc features thinks there is an intercept and y col).
   x.precalc <- precalc.features(cbind(0, 1, x), mmodel$populations)[, -1]
+  set.transforms(transforms.bak)
   return(predict.mjmcmc(mmodel, x.precalc, link, quantiles))
 }
 
@@ -68,7 +71,7 @@ predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.
 #' @export
 predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = NULL,tol =  0.0000001, ...) {
   x <- as.matrix(x)
-  
+  transforms.bak <- set.transforms(object$transforms)
   if(!is.null(pop))
     object <- merge_results(object$results, pop, 2, tol, data = NULL)
   
@@ -107,7 +110,7 @@ predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles =
       aggr$quantiles <- aggr$quantiles + preds[[i]][[j]]$quantiles * object$results[[i]]$pop.weights[j]
     }
   }
-
+  set.transforms(transforms.bak)
   return(list(aggr = aggr, preds = preds))
 }
 
@@ -126,7 +129,6 @@ predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles =
 predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
   # Select the models and features to predict from at this iteration
   x <- as.matrix(cbind(rep(1, dim(x)[1]), x))
-  
   models <- c(object$models, object$lo.models)[object$model.probs.idx]
 
   yhat <- matrix(0, nrow=nrow(x), ncol=length(models))
@@ -201,8 +203,11 @@ predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles 
 #' 
 #' @export
 predict.gmjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
+  transforms.bak <- set.transforms(object$transforms)
   merged <- merge_results(object,data = cbind(1, x), ...)
-  predict.gmjmcmc_merged(merged, x, link, quantiles)
+  results <- predict.gmjmcmc_merged(merged, x, link, quantiles)
+  set.transforms(transforms.bak)
+  return(results)
 }
 
 #' Calculate weighted quantiles
