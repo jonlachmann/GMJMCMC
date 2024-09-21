@@ -1,5 +1,3 @@
-# Load the parallel library
-library(parallel)
 
 #' rmclapply: Cross-platform rmclapply/parLapply function
 #'
@@ -24,22 +22,36 @@ library(parallel)
 #' result <- rmclapply(1:10, my_function, mc.cores = 2)
 #' print(result)
 #'
-#' @import parallel
 #' @export
-rmclapply <- function(X, FUN, mc.cores = NULL, ...) {
+rmclapply <- function(X, FUN, mc.cores = NULL,varlist, ...) {
   # Check the operating system
-  os_type <- .Platform$OS.type
+  os_type <- "windows"#.Platform$OS.type
   
   # Use provided cores or default to detectCores() - 1
   if (is.null(mc.cores)) {
-    cores <- detectCores() - 1
+    mc.cores <- detectCores() - 1
   }
   
   if (os_type == "windows") {
     # For Windows, use parLapply
-    cl <- makeCluster(mc.cores)  # Use the provided or default core count
-    result <- parLapply(cl, X, FUN, ...)  # Apply the function in parallel
-    stopCluster(cl)  # Stop the cluster
+    # Set the future plan
+    cl <- makeCluster(mc.cores)
+    
+    clusterExport(cl, varlist = "FUN", envir = environment())
+    
+    # Capture additional arguments
+    args <- list(...)
+    clusterExport(cl, varlist = names(args), envir = environment())
+    
+    # Call parLapply with the captured arguments
+    result <- parLapply(cl, X, function(x) {
+      do.call(FUN, c(list(x), args))
+    })
+    
+    stopCluster(cl)
+    
+    
+
   } else {
     # For other OS (Linux/macOS), use rmclapply
     result <- mclapply(X, FUN, mc.cores = mc.cores, ... )  # Use the provided or default core count
@@ -98,9 +110,54 @@ mjmcmc.parallel <- function (runs = 2, cores = getOption("mc.cores", 2L), ...) {
 #' @export
 gmjmcmc.parallel <- function (runs = 2, cores = getOption("mc.cores", 2L), merge.options = list(populations = "best", complex.measure = 2, tol = 0.0000001), data, loglik.pi = gaussian.loglik, loglik.alpha = gaussian.loglik.alpha(), transforms, ...) {
   options("gmjmcmc-transformations" = transforms)
-  results <- rmclapply(seq_len(runs), function (x) {
-    gmjmcmc(data = data, loglik.pi = loglik.pi, loglik.alpha = loglik.alpha, transforms = transforms, ...)
-  }, mc.cores = cores)
+  
+  #to fix
+  os_type <- "linux"
+  
+  if (os_type == "windows") {
+    # For Windows, use parLapply
+    # Set the future plan
+    # Combine additional arguments into a list
+    extra_args <- list(...)
+    
+    # Prepare arguments for gmjmcmc
+    gmjmcmc_args <- c(list(data = data, 
+                           loglik.pi = loglik.pi, 
+                           loglik.alpha = loglik.alpha, 
+                           transforms = transforms), 
+                           extra_args)
+    
+    #list2env(extra_args)
+    
+    # Set up the cluster
+    cl <- makeCluster(cores)
+    clusterExport(cl, varlist = ls(envir = environment()), envir = environment())
+    #clusterExport(cl, varlist = names(gmjmcmc_args), envir = environment())
+    clusterExport(cl, varlist = "gmjmcmc_args", envir = environment())
+    # Run gmjmcmc in parallel using parLapply
+    results <- parLapply(cl, seq_len(runs), function(x) {
+      # Create a new environment for each worker
+     
+      # Call gmjmcmc using do.call in the local environment
+      result <- tryCatch({
+        do.call(gmjmcmc, gmjmcmc_args,envir = new.env())
+      }, error = function(e) {
+        cat("Error in iteration", x, ":", e$message, "\n")
+        e  # Return NULL in case of an error
+      })
+      return(result)
+    })
+    
+    print(results)
+    # Stop the cluster
+    stopCluster(cl)
+  }else
+  {
+    results <- mclapply(seq_len(runs), function (x) {
+      gmjmcmc(data = data, loglik.pi = loglik.pi, loglik.alpha = loglik.alpha, transforms = transforms, ...)
+    }, mc.cores = cores)
+  }
+  
   class(results) <- "gmjmcmc_parallel"
   merged <- merge_results(results, merge.options$populations, merge.options$complex.measure, merge.options$tol, data = data)
   return(merged)
