@@ -1,3 +1,89 @@
+#' rmclapply: Cross-platform mclapply/forking hack for Windows
+#'
+#' This function applies a function in parallel to a list or vector (`X`) using multiple cores.
+#' On Linux/macOS, it uses `mclapply`, while on Windows it uses a hackish version of parallelism.
+#' The Windows version is based on a function by Nathan VanHoudnos, mimicking forking with `parLapply`.
+#' @param ... Additional arguments to pass to `FUN`.
+#' @param mc.cores Number of cores to use for parallel processing. Defaults to `detectCores()`.
+#' @param verbose Should a message be shown for Windows users? Defaults to FALSE.
+#'
+#'
+rmclapply <- function(..., verbose=FALSE, mc.cores=NULL) {
+  
+  if(is.null(mc.cores) ) {
+    size.of.list <- length(list(...)[[1]])
+    mc.cores <- min(size.of.list, detectCores())
+  }
+  
+  if (Sys.info()[['sysname']] == 'Windows' & mc.cores > 1) {
+      if (verbose) {
+        message("Using parallelization hack for Windows with parLapply.")
+      }
+      
+ 
+    ## N.B. setting outfile to blank redirects output to
+    ##      the master console, as is the default with
+    ##      mclapply() on Linux / Mac
+    cl <- makeCluster( mc.cores, outfile="" )
+    
+    ## Find out the names of the loaded packages
+    loaded.package.names <- c(
+      ## Base packages
+      sessionInfo()$basePkgs,
+      ## Additional packages
+      names( sessionInfo()$otherPkgs ))
+    
+    tryCatch( {
+      
+      ## Copy over all of the objects within scope to
+      ## all clusters.
+      this.env <- environment()
+      while( identical( this.env, globalenv() ) == FALSE ) {
+        clusterExport(cl,
+                      ls(all.names=TRUE, env=this.env),
+                      envir=this.env)
+        this.env <- parent.env(environment())
+      }
+      clusterExport(cl,
+                    ls(all.names=TRUE, env=globalenv()),
+                    envir=globalenv())
+      
+      ## Load the libraries on all the clusters
+      ## N.B. length(cl) returns the number of clusters
+      parLapply( cl, 1:length(cl), function(xx){
+        lapply(loaded.package.names, function(yy) {
+          require(yy , character.only=TRUE)})
+      })
+      
+      ## Run the lapply in parallel
+      return( parLapply( cl, ...) )
+    }, finally = {
+      ## Stop the cluster
+      stopCluster(cl)
+    })
+    
+    ## Warn the user if they are using Windows
+    if( Sys.info()[['sysname']] == 'Windows' & verbose == TRUE){
+      message(paste(
+        "\n",
+        "   *** Microsoft Windows detected ***\n",
+        "   \n",
+        "   For technical reasons, the MS Windows version of mclapply()\n",
+        "   is implemented as a serial function instead of a parallel\n",
+        "   function.",
+        "   \n\n",
+        "   As a quick hack, we replace this serial version of mclapply()\n",
+        "   with a wrapper to parLapply() for this R session. Please see\n\n",
+        "     http://www.stat.cmu.edu/~nmv/2014/07/14/implementing-mclapply-on-windows \n\n",
+        "   for details.\n\n"))
+    }
+  }else
+  {
+    return(mclapply(..., mc.cores = mc.cores))
+  }
+}
+
+
 
 #' Run multiple mjmcmc runs in parallel, merging the results before returning.
 #' @param runs The number of runs to run
@@ -12,7 +98,7 @@
 #' 
 #' @export
 mjmcmc.parallel <- function (runs = 2, cores = getOption("mc.cores", 2L), ...) {
-  results <- mclapply(seq_len(runs), function (x) { mjmcmc(...) }, mc.cores = cores)
+  results <- rmclapply(seq_len(runs), function (x) { mjmcmc(...) }, mc.cores = cores)
   class(results) <- "mjmcmc_parallel"
   return(results)
 }
@@ -47,52 +133,9 @@ mjmcmc.parallel <- function (runs = 2, cores = getOption("mc.cores", 2L), ...) {
 gmjmcmc.parallel <- function (runs = 2, cores = getOption("mc.cores", 2L), merge.options = list(populations = "best", complex.measure = 2, tol = 0.0000001), data, loglik.pi = gaussian.loglik, loglik.alpha = gaussian.loglik.alpha(), transforms, ...) {
   options("gmjmcmc-transformations" = transforms)
   
-  #to fix
-  os_type <- "linux"
-  
-  if (os_type == "windows") {
-    # For Windows, use parLapply
-    # Set the future plan
-    # Combine additional arguments into a list
-    extra_args <- list(...)
-    
-    # Prepare arguments for gmjmcmc
-    gmjmcmc_args <- c(list(data = data, 
-                           loglik.pi = loglik.pi, 
-                           loglik.alpha = loglik.alpha, 
-                           transforms = transforms), 
-                           extra_args)
-    
-    # #list2env(extra_args)
-    # 
-    # # Set up the cluster
-    # cl <- makeCluster(cores)
-    # clusterExport(cl, varlist = ls(envir = environment()), envir = environment())
-    # #clusterExport(cl, varlist = names(gmjmcmc_args), envir = environment())
-    # clusterExport(cl, varlist = "gmjmcmc_args", envir = environment())
-    # # Run gmjmcmc in parallel using parLapply
-    # results <- parLapply(cl, seq_len(runs), function(x) {
-    #   # Create a new environment for each worker
-    #  
-    #   # Call gmjmcmc using do.call in the local environment
-    #   result <- tryCatch({
-    #     do.call(gmjmcmc, gmjmcmc_args,envir = new.env())
-    #   }, error = function(e) {
-    #     cat("Error in iteration", x, ":", e$message, "\n")
-    #     e  # Return NULL in case of an error
-    #   })
-    #   return(result)
-    # })
-    # 
-    # print(results)
-    # # Stop the cluster
-    # stopCluster(cl)
-  }else
-  {
-    results <- mclapply(seq_len(runs), function (x) {
-      gmjmcmc(data = data, loglik.pi = loglik.pi, loglik.alpha = loglik.alpha, transforms = transforms, ...)
-    }, mc.cores = cores)
-  }
+  results <- rmclapply(seq_len(runs), function (x) {
+    gmjmcmc(data = data, loglik.pi = loglik.pi, loglik.alpha = loglik.alpha, transforms = transforms, ...)
+  }, mc.cores = cores)
   
   class(results) <- "gmjmcmc_parallel"
   merged <- merge_results(results, merge.options$populations, merge.options$complex.measure, merge.options$tol, data = data)

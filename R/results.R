@@ -569,6 +569,7 @@ merge.mjmcmc_parallel <- function (x) {
   ))
 }
 
+
 run.weigths <- function (results) {
   best.crits <- sapply(results, function (x) x$best.crit)
   max.crit <- max(best.crits)
