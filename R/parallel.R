@@ -1,68 +1,4 @@
 
-#' rmclapply: Cross-platform rmclapply/parLapply function
-#'
-#' This function applies a function in parallel to a list or vector (`X`) using multiple cores.
-#' It automatically chooses the appropriate parallel method based on the operating system.
-#' On Windows, it uses `parLapply`, while on Linux/macOS it uses `rmclapply`.
-#'
-#' @param X A vector or list to which the function will be applied.
-#' @param FUN The function to be applied to each element of `X`.
-#' @param ... Additional arguments to pass to `FUN`.
-#' @param mc.cores Number of cores to use for parallel processing. If not provided, defaults to `detectCores() - 1`.
-#'
-#' @return A list with the results of applying `FUN` to each element of `X`.
-#'
-#' @examples
-#' # Define a function
-#' my_function <- function(x) {
-#'   return(x^2)
-#' }
-#' 
-#' # Apply rrmclapply with 2 cores
-#' result <- rmclapply(1:10, my_function, mc.cores = 2)
-#' print(result)
-#'
-#' @export
-rmclapply <- function(X, FUN, mc.cores = NULL,varlist, ...) {
-  # Check the operating system
-  os_type <- "windows"#.Platform$OS.type
-  
-  # Use provided cores or default to detectCores() - 1
-  if (is.null(mc.cores)) {
-    mc.cores <- detectCores() - 1
-  }
-  
-  if (os_type == "windows") {
-    # For Windows, use parLapply
-    # Set the future plan
-    cl <- makeCluster(mc.cores)
-    
-    clusterExport(cl, varlist = "FUN", envir = environment())
-    
-    # Capture additional arguments
-    args <- list(...)
-    clusterExport(cl, varlist = names(args), envir = environment())
-    
-    # Call parLapply with the captured arguments
-    result <- parLapply(cl, X, function(x) {
-      do.call(FUN, c(list(x), args))
-    })
-    
-    stopCluster(cl)
-    
-    
-
-  } else {
-    # For other OS (Linux/macOS), use rmclapply
-    result <- mclapply(X, FUN, mc.cores = mc.cores, ... )  # Use the provided or default core count
-  }
-  
-  return(result)
-}
-
-
-
-
 #' Run multiple mjmcmc runs in parallel, merging the results before returning.
 #' @param runs The number of runs to run
 #' @param cores The number of cores to run on
@@ -76,7 +12,7 @@ rmclapply <- function(X, FUN, mc.cores = NULL,varlist, ...) {
 #' 
 #' @export
 mjmcmc.parallel <- function (runs = 2, cores = getOption("mc.cores", 2L), ...) {
-  results <- rmclapply(seq_len(runs), function (x) { mjmcmc(...) }, mc.cores = cores)
+  results <- mclapply(seq_len(runs), function (x) { mjmcmc(...) }, mc.cores = cores)
   class(results) <- "mjmcmc_parallel"
   return(results)
 }
@@ -127,30 +63,30 @@ gmjmcmc.parallel <- function (runs = 2, cores = getOption("mc.cores", 2L), merge
                            transforms = transforms), 
                            extra_args)
     
-    #list2env(extra_args)
-    
-    # Set up the cluster
-    cl <- makeCluster(cores)
-    clusterExport(cl, varlist = ls(envir = environment()), envir = environment())
-    #clusterExport(cl, varlist = names(gmjmcmc_args), envir = environment())
-    clusterExport(cl, varlist = "gmjmcmc_args", envir = environment())
-    # Run gmjmcmc in parallel using parLapply
-    results <- parLapply(cl, seq_len(runs), function(x) {
-      # Create a new environment for each worker
-     
-      # Call gmjmcmc using do.call in the local environment
-      result <- tryCatch({
-        do.call(gmjmcmc, gmjmcmc_args,envir = new.env())
-      }, error = function(e) {
-        cat("Error in iteration", x, ":", e$message, "\n")
-        e  # Return NULL in case of an error
-      })
-      return(result)
-    })
-    
-    print(results)
-    # Stop the cluster
-    stopCluster(cl)
+    # #list2env(extra_args)
+    # 
+    # # Set up the cluster
+    # cl <- makeCluster(cores)
+    # clusterExport(cl, varlist = ls(envir = environment()), envir = environment())
+    # #clusterExport(cl, varlist = names(gmjmcmc_args), envir = environment())
+    # clusterExport(cl, varlist = "gmjmcmc_args", envir = environment())
+    # # Run gmjmcmc in parallel using parLapply
+    # results <- parLapply(cl, seq_len(runs), function(x) {
+    #   # Create a new environment for each worker
+    #  
+    #   # Call gmjmcmc using do.call in the local environment
+    #   result <- tryCatch({
+    #     do.call(gmjmcmc, gmjmcmc_args,envir = new.env())
+    #   }, error = function(e) {
+    #     cat("Error in iteration", x, ":", e$message, "\n")
+    #     e  # Return NULL in case of an error
+    #   })
+    #   return(result)
+    # })
+    # 
+    # print(results)
+    # # Stop the cluster
+    # stopCluster(cl)
   }else
   {
     results <- mclapply(seq_len(runs), function (x) {
