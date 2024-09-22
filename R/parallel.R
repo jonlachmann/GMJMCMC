@@ -2,12 +2,24 @@
 #'
 #' This function applies a function in parallel to a list or vector (`X`) using multiple cores.
 #' On Linux/macOS, it uses `mclapply`, while on Windows it uses a hackish version of parallelism.
-#' The Windows version is based on a function by Nathan VanHoudnos, mimicking forking with `parLapply`.
+#' The Windows version is based on `parLapply` to mimic forking following Nathan VanHoudnos.
 #' @param ... Additional arguments to pass to `FUN`.
 #' @param mc.cores Number of cores to use for parallel processing. Defaults to `detectCores()`.
 #' @param verbose Should a message be shown for Windows users? Defaults to FALSE.
 #'
 #'
+#' @return A list of results, with one element for each element of `X`.
+#' @export
+#'
+#' @examples
+#' # Simple example: Square numbers from 1 to 10 using parallel processing
+#' result <- rmclapply(1:10, function(x) x^2, mc.cores = 2)
+#' print(result)
+#'
+#' # Example with a custom function and more cores
+#' my_func <- function(x) { Sys.sleep(1); return(x * 2) }
+#' result <- rmclapply(1:5, my_func, mc.cores = 2, verbose = TRUE)
+#' print(result)
 rmclapply <- function(..., verbose=FALSE, mc.cores=NULL) {
   
   if(is.null(mc.cores) ) {
