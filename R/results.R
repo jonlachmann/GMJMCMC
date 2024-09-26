@@ -396,7 +396,7 @@ summary_internal <- function (best, feats.strings, marg.probs, effects = NULL, t
   # Print the final distribution
   keep <- which(marg.probs[1, ] > tol)
   cat("                   Importance | Feature\n")
-  print.dist(marg.probs[keep], feats.strings[keep], -1)
+  print_dist(marg.probs[keep], feats.strings[keep], -1)
   # Print the best log marginal posterior
   if (length(best.pop) > 0) {
     if (length(thread.best) > 0) {
@@ -548,12 +548,11 @@ marg.prob.plot <- function (feats.strings, marg.probs, count = "all", ...) {
 #' 
 #' @export 
 plot.mjmcmc_parallel <- function (x, count = "all", ...) {
-  merged <- merge.mjmcmc_parallel(x)
+  merged <- merge_mjmcmc_parallel(x)
   marg.prob.plot(merged$features, merged$marg.probs, count)
 }
 
-#' @export
-merge.mjmcmc_parallel <- function (x) {
+merge_mjmcmc_parallel <- function (x) {
   run.weights <- run.weigths(x)
   marg.probs <- x[[1]]$marg.probs * run.weights[1]
   for (i in seq_along(x[-1])) {

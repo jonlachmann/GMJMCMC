@@ -102,7 +102,7 @@ mjmcmc.loop <- function (data, complex, loglik.pi, model.cur, N, probs, params, 
   progress <- 0
   mcmc_total <- as.numeric(model.cur$model)
   for (i in seq_len(N)) {
-    if (verbose && N > 40 && i %% floor(N / 40) == 0) progress <- print.progressbar(progress, 40)
+    if (verbose && N > 40 && i %% floor(N / 40) == 0) progress <- print_progressbar(progress, 40)
 
     if (i > params$burn_in) pip_estimate <- mcmc_total / i
     else pip_estimate <- rep(1 / covar_count, covar_count)

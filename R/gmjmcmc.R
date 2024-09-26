@@ -130,7 +130,7 @@ gmjmcmc <- function (
     if (verbose) {
       cat(paste("\rCurrent best crit:", mjmcmc_res$best.crit, "\n"))
       cat("Feature importance:\n")
-      print.dist(marg.probs[[p]], sapply(S[[p]], print.feature, labels = labels, round = 2), probs$filter)
+      print_dist(marg.probs[[p]], sapply(S[[p]], print.feature, labels = labels, round = 2), probs$filter)
     }
     if (params$rescale.large) prev.large <- params$large
     # Generate a new population of features for the next iteration (if this is not the last)

@@ -37,3 +37,17 @@ test_that("Testing MJMCMC algorithm", {
   plot(respg)
   pred_pg <- predict(respg, data[, -1, drop = FALSE])
 })
+
+
+
+fbms_result <- fbms(
+ X1 ~ .,
+ family = "gaussian",
+ method = "gmjmcmc.parallel",
+ data = data.frame(matrix(rnorm(600), 100)),
+ transforms = c("sin","cos"),
+ P = 10,
+ runs = 1,
+ cores = 1
+)
+
