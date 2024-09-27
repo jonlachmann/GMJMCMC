@@ -62,8 +62,10 @@ fbms <- function(formula = NULL, family = "gaussian", data = NULL,
     res <- mjmcmc.parallel(df, loglik.pi, verbose = verbose, ...)
   else if (method == "mjmcmc")
     res <- mjmcmc(df, loglik.pi, verbose = verbose, ...)
-  else if (method == "gmjmcmc.parallel")
+  else if (method == "gmjmcmc.parallel") {
     res <- gmjmcmc.parallel(data = df, loglik.pi = loglik.pi, verbose = verbose,...)
+  }
+
   else if (method == "gmjmcmc")
     res <- gmjmcmc(df, loglik.pi, verbose = verbose, ...)
   else

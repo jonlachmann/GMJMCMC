@@ -18,8 +18,7 @@ replace.infinite.data.frame <- function(df, replacewith = c(.Machine$double.xmin
 }
 
 # Print a progress bar while iterating over a population
-#' @export
-print.progressbar <- function (progress, size=40) {
+print_progressbar <- function (progress, size=40) {
   cat("\r", "|")
   for (p in 1:size-1) {
     if (progress >= p) cat("=")
@@ -30,8 +29,7 @@ print.progressbar <- function (progress, size=40) {
 }
 
 # Print a distribution as a horizontal histogram
-#' @export
-print.dist <- function(probs, labels, threshold, size=30) {
+print_dist <- function(probs, labels, threshold, size=30) {
   threshold <- round((1 - threshold) * size)
   for (i in seq_along(probs)) {
     for (p in 1:size - 1) {
