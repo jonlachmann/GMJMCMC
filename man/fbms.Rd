@@ -9,6 +9,7 @@ fbms(
   formula = NULL,
   family = "gaussian",
   data = NULL,
+  impute = TRUE,
   loglik.pi = gaussian.loglik,
   method = "mjmcmc",
   verbose = TRUE,
@@ -29,6 +30,8 @@ fbms(
 \item{verbose}{If TRUE, print detailed progress information during the fitting process. Default is TRUE.}
 
 \item{...}{Additional parameters to be passed to the underlying method.}
+
+\item{handle.missing}{TRUE (default) means imputation combined with adding a dummy column with indicators of imputed values, FALSE means only full data is used.}
 }
 \value{
 An object containing the results of the fitted model and MCMC sampling.

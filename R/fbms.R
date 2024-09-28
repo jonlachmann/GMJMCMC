@@ -10,6 +10,7 @@
 #' @param data A data frame containing the variables in the model. If NULL, the variables are taken from the environment of the formula. Default is NULL.
 #' @param method Which fitting algorithm should be used, currently implemented options include "gmjmcmc", "gmjmcmc.parallel", "mjmcmc" and "mjmcmc.parallel" with "mjmcmc" being the default and 'mjmcmc' means that only linear models will be estimated
 #' @param verbose If TRUE, print detailed progress information during the fitting process. Default is TRUE.
+#' @param handle.missing TRUE (default) means imputation combined with adding a dummy column with indicators of imputed values, FALSE means only full data is used.
 #' @param ... Additional parameters to be passed to the underlying method.
 #'
 #' @return An object containing the results of the fitted model and MCMC sampling.
@@ -32,7 +33,7 @@
 #'
 #' @seealso \code{\link{mjmcmc}}, \code{\link{gmjmcmc}}, \code{\link{gmjmcmc.parallel}}
 #' @export
-fbms <- function(formula = NULL, family = "gaussian", data = NULL, 
+fbms <- function(formula = NULL, family = "gaussian", data = NULL, impute = TRUE,
                  loglik.pi = gaussian.loglik,
                  method = "mjmcmc", verbose = TRUE, ...) {
   if (family == "gaussian")
@@ -51,9 +52,41 @@ fbms <- function(formula = NULL, family = "gaussian", data = NULL,
     mf$drop.unused.levels <- TRUE
     mf[[1L]] <- quote(stats::model.frame)
     mf <- eval(mf, parent.frame())
+    if(impute)
+      options(na.action='na.pass')
+    else
+      options(na.action='na.omit')
+    
     Y <- model.response(mf, "any")
     X <- model.matrix(formula, data = data)[, -1]
-    df <- data.frame(Y, X)
+    mis.Y <- which(is.na(Y))
+    if(length(mis.Y)>0)
+    {
+      warning("Missing values in the response. Dropped.")
+      df <- data.frame(Y[-c(mis.Y)], X[-c(mis.Y),])
+    } else df <- data.frame(Y, X)
+    
+    mis.All <- sum(is.na(df))
+    imputed <- NULL
+    if(impute & mis.All>0)
+    {
+      print("Imputing missing values!")
+      na.matr <- data.frame(1*(is.na(df)))
+      names(na.matr) <- paste0("mis_",names(na.matr))
+      cm <- colMeans(na.matr)
+      na.matr <- na.matr[,cm!=0]
+      for (i in seq_along(df)){
+          df[[i]][is.na(df[[i]])] <- median(df[[i]], na.rm = TRUE)
+      }
+      imputed <- names(df)[cm!=0]
+      df <- data.frame(df,na.matr)
+      
+      rm(na.matr)
+      rm(cm)
+      print("Continue to sampling!")
+    } else if(mis.All>0){
+      print("Dropping missing values!")
+    }
   } else {
     df <- data
   }
@@ -71,5 +104,7 @@ fbms <- function(formula = NULL, family = "gaussian", data = NULL,
   else
     stop("Error: Method must be one of gmjmcmc, gmjmcmc.parallel,mjmcmc or mjmcmc.parallel!")
   
+  attr(res, "imputed") <- imputed
+  attr(res, "all_names") <- names(df)[1:(dim(df)[2]-1)]
   return(res)
 }
