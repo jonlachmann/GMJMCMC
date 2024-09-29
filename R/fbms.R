@@ -10,7 +10,7 @@
 #' @param data A data frame containing the variables in the model. If NULL, the variables are taken from the environment of the formula. Default is NULL.
 #' @param method Which fitting algorithm should be used, currently implemented options include "gmjmcmc", "gmjmcmc.parallel", "mjmcmc" and "mjmcmc.parallel" with "mjmcmc" being the default and 'mjmcmc' means that only linear models will be estimated
 #' @param verbose If TRUE, print detailed progress information during the fitting process. Default is TRUE.
-#' @param handle.missing TRUE  means imputation combined with adding a dummy column with indicators of imputed values, FALSE (default) means only full data is used.
+#' @param impute TRUE  means imputation combined with adding a dummy column with indicators of imputed values, FALSE (default) means only full data is used.
 #' @param ... Additional parameters to be passed to the underlying method.
 #'
 #' @return An object containing the results of the fitted model and MCMC sampling.
