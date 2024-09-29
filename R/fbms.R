@@ -46,17 +46,19 @@ fbms <- function(formula = NULL, family = "gaussian", data = NULL, impute = FALS
     if (missing(data)) {
       data <- environment(formula)
     }
+    
+    na.opt <- getOption("na.action")
+    if(impute)
+      options(na.action='na.pass')
+    else
+      options(na.action='na.omit')
     mf <- match.call(expand.dots = FALSE)
     m <- match(c("formula", "data"), names(mf), 0L)
     mf <- mf[c(1L, m)]
     mf$drop.unused.levels <- TRUE
     mf[[1L]] <- quote(stats::model.frame)
     mf <- eval(mf, parent.frame())
-    na.opt <- getOption("na.action")
-    if(impute)
-      options(na.action='na.pass')
-    else
-      options(na.action='na.omit')
+    
     
     Y <- model.response(mf, "any")
     X <- model.matrix(formula, data = data)[, -1]
