@@ -10,7 +10,7 @@
 #' @param data A data frame containing the variables in the model. If NULL, the variables are taken from the environment of the formula. Default is NULL.
 #' @param method Which fitting algorithm should be used, currently implemented options include "gmjmcmc", "gmjmcmc.parallel", "mjmcmc" and "mjmcmc.parallel" with "mjmcmc" being the default and 'mjmcmc' means that only linear models will be estimated
 #' @param verbose If TRUE, print detailed progress information during the fitting process. Default is TRUE.
-#' @param handle.missing TRUE (default) means imputation combined with adding a dummy column with indicators of imputed values, FALSE means only full data is used.
+#' @param handle.missing TRUE  means imputation combined with adding a dummy column with indicators of imputed values, FALSE (default) means only full data is used.
 #' @param ... Additional parameters to be passed to the underlying method.
 #'
 #' @return An object containing the results of the fitted model and MCMC sampling.
@@ -33,7 +33,7 @@
 #'
 #' @seealso \code{\link{mjmcmc}}, \code{\link{gmjmcmc}}, \code{\link{gmjmcmc.parallel}}
 #' @export
-fbms <- function(formula = NULL, family = "gaussian", data = NULL, impute = TRUE,
+fbms <- function(formula = NULL, family = "gaussian", data = NULL, impute = FALSE,
                  loglik.pi = gaussian.loglik,
                  method = "mjmcmc", verbose = TRUE, ...) {
   if (family == "gaussian")
@@ -52,6 +52,7 @@ fbms <- function(formula = NULL, family = "gaussian", data = NULL, impute = TRUE
     mf$drop.unused.levels <- TRUE
     mf[[1L]] <- quote(stats::model.frame)
     mf <- eval(mf, parent.frame())
+    na.opt <- getOption("na.action")
     if(impute)
       options(na.action='na.pass')
     else
@@ -106,5 +107,6 @@ fbms <- function(formula = NULL, family = "gaussian", data = NULL, impute = TRUE
   
   attr(res, "imputed") <- imputed
   attr(res, "all_names") <- names(df)[1:(dim(df)[2]-1)]
+  options(na.action=na.opt)
   return(res)
 }
