@@ -26,12 +26,23 @@ rmclapply <- function(runs, args, fun, mc.cores = NULL) {
     ##      the master console, as is the default with
     ##      mclapply() on Linux / Mac
     cl <- makeCluster(mc.cores, outfile = "")
-
+    loaded.package.names <- c(
+      sessionInfo()$basePkgs,
+      names(sessionInfo()$otherPkgs)
+    )
+    
     tryCatch({
       ## Copy over all of the objects within scope to
       ## all clusters.
       clusterEvalQ(cl, library(FBMS))
       clusterExport(cl, "args")
+      clusterExport(cl, ls(all.names = TRUE, env = globalenv()), envir = globalenv())
+      # Load required packages on each cluster node
+      parLapply(cl, seq_along(cl), function(xx) {
+        lapply(loaded.package.names, function(pkg) {
+          require(pkg, character.only = TRUE)
+        })
+      })
       ## Run the lapply in parallel
       return(parLapply(cl, runs, function(x) {
         do.call(fun, args)

@@ -9,6 +9,7 @@ fbms(
   formula = NULL,
   family = "gaussian",
   data = NULL,
+  impute = FALSE,
   loglik.pi = gaussian.loglik,
   method = "mjmcmc",
   verbose = TRUE,
@@ -21,6 +22,8 @@ fbms(
 \item{family}{The distribution family of the response variable. Currently supports "gaussian", "binomial" and  "custom". Default is "gaussian".}
 
 \item{data}{A data frame containing the variables in the model. If NULL, the variables are taken from the environment of the formula. Default is NULL.}
+
+\item{impute}{TRUE  means imputation combined with adding a dummy column with indicators of imputed values, FALSE (default) means only full data is used.}
 
 \item{loglik.pi}{Custom function to compute the logarithm of the posterior mode based on logarithm of marginal likelihood and logarithm of prior functions (needs specification only used if family = "custom")}
 

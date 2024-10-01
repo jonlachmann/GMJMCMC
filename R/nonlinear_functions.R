@@ -13,7 +13,7 @@
 #' 
 #'
 #' @export sigmoid
-sigmoid <- function(x)  1 / (1 - exp(-x))
+sigmoid <- function(x)  1 / (1 + exp(-x))
 
 #' Sine function for degrees
 #'
