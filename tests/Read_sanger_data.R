@@ -22,7 +22,4 @@ x = rbind(x1,x2,x3,x4)
 colnames(x) = nam
 
 #Choose response variable
-n = 24266
-x = cbind(x[,n],x[,-n])
-
 SangerData = x
