@@ -11,24 +11,18 @@ path = "/mn/sarpanitu/ansatte-u2/geirs/prj/FBMS/data/"
 x1 = t(read.table(paste(path,"CEU_parents_norm_march2007.txt",sep=""),header=T))
 x2 = t(read.table(paste(path,"CHB_unrelated_norm_march2007.txt",sep=""),header=T))
 x3 = t(read.table(paste(path,"JPT_unrelated_norm_march2007.txt",sep=""),header=T))
-x4 = t(read.table(paste("YRI_parents_norm_march2007.txt",sep=""),header=T))
+x4 = t(read.table(paste(path,"YRI_parents_norm_march2007.txt",sep=""),header=T))
 
-x = data.frame(y=rep(NA,nrow(df)),x=matrix(NA,nrow=nrow(df),ncol=ncol(df)-1))
-x = matrix(0,nrow=nrow(df),ncol=ncol(df))
-rownames(x) = rownames(df)
-ind = pmatch(rownames(x1)[-1],rownames(df))
+nam = x1[1,]
+x1 = apply(x1[-1,],2,as.numeric)
+x2 = apply(x2[-1,],2,as.numeric)
+x3 = apply(x3[-1,],2,as.numeric)
+x4 = apply(x4[-1,],2,as.numeric)
+x = rbind(x1,x2,x3,x4)
+colnames(x) = nam
+
+#Choose response variable
 n = 24266
-#n = ncol(df)
-x[ind,-1] = as.numeric(as.matrix(x1[-1,-n]))
-x[ind,1] = as.numeric(x1[-1,n])
-ind = pmatch(rownames(x2)[-1],rownames(df))
-x[ind,-1] = as.numeric(x2[-1,-n])
-x[ind,1] = as.numeric(x2[-1,n])
-ind = pmatch(rownames(x3)[-1],rownames(df))
-x[ind,-1] = as.numeric(x3[-1,-n])
-x[ind,1] = as.numeric(x3[-1,n])
-ind = pmatch(rownames(x4)[-1],rownames(df))
-x[ind,-1] = as.numeric(x4[-1,-n])
-x[ind,1] = as.numeric(x4[-1,n])
+x = cbind(x[,n],x[,-n])
 
-show(range(df-x))
+SangerData = x
