@@ -183,7 +183,8 @@ gmjmcmc <- function (
 gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs.F.0, marg.probs, labels, probs, params, verbose = TRUE) {
   # Sample which features to keep based on marginal inclusion below probs$filter
   feats.keep <- as.logical(rbinom(n = length(marg.probs), size = 1, prob = pmin(marg.probs / probs$filter, 1)))
-
+  
+ 
   # Always keep original covariates if that setting is on
   if (params$keep.org) {
     if (params$prel.filter > 0) {
@@ -193,12 +194,23 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs.F.0, ma
     else feats.keep[seq_along(F.0)] <- T
   }
 
+
   # Avoid removing too many features
-  if (length(feats.keep) > 0 && mean(feats.keep) < params$keep.min) {
+  if (length(feats.keep) > 0 && mean(feats.keep) < params$keep.min & sum(feats.keep) < params$pop.max/2) {
     feats.add.n <- round((params$keep.min - mean(feats.keep)) * length(feats.keep))
     feats.add <- sample(which(!feats.keep), feats.add.n)
-    feats.keep[feats.add] <- T
+    if((length(feats.add) + sum(feats.keep))>=params$pop.max)
+      feats.keep[feats.add] <- T
   }
+  
+  if(sum(feats.keep)>params$pop.max)
+  {
+    warning("Number of features to keep greater than pop.max! 
+            Continue with pop.max features!
+            \n Check your tuning parameters!")
+    feats.keep[which(feats.keep==TRUE)[(params$pop.max+1):length(which(feats.keep==TRUE))]] <- FALSE
+  }
+  
 
   # Create a list of which features to replace
   feats.replace <- which(!feats.keep)
@@ -208,20 +220,30 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs.F.0, ma
   marg.probs.use <- c(rep(params$eps, length(F.0)), pmin(pmax(marg.probs, params$eps), (1-params$eps)))
 
   # Perform the replacements
+  if(length(S.t)>params$pop.max)
+    feats.replace <- sort(feats.replace,decreasing = T)
   for (i in feats.replace) {
     prev.size <- length(S.t)
     prev.feat.string <- print.feature(S.t[[i]], labels=labels, round = 2)
-    S.t[[i]] <- gen.feature(c(F.0, S.t), marg.probs.use, data, loglik.alpha, probs, length(F.0), params, verbose)
-    if (prev.size > length(S.t)) {
-      if (verbose) {
-        cat("Removed feature", prev.feat.string, "\n")
-        cat("Population shrinking, returning.\n")
-      }
-      return(S.t)
+    if(prev.size>params$pop.max)
+    {
+      cat("Removed feature", prev.feat.string, "\n")
+      S.t[[i]] <- NULL
     }
-    if (verbose) cat("Replaced feature", prev.feat.string, "with", print.feature(S.t[[i]], labels=labels, round = 2), "\n")
-    feats.keep[i] <- T
-    marg.probs.use[i] <- mean(marg.probs.use)
+    else
+    {
+      S.t[[i]] <- gen.feature(c(F.0, S.t), marg.probs.use, data, loglik.alpha, probs, length(F.0), params, verbose)
+      if (prev.size > length(S.t)) {
+        if (verbose) {
+          cat("Removed feature", prev.feat.string, "\n")
+          cat("Population shrinking, returning.\n")
+        }
+        return(S.t)
+      }
+      if (verbose) cat("Replaced feature", prev.feat.string, "with", print.feature(S.t[[i]], labels=labels, round = 2), "\n")
+      feats.keep[i] <- T
+      marg.probs.use[i] <- mean(marg.probs.use)
+    }
   }
 
   # Add additional features if the population is not at max size
