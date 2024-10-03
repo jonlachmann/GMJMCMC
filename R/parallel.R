@@ -44,9 +44,12 @@ rmclapply <- function(runs, args, fun, mc.cores = NULL) {
         })
       })
       ## Run the lapply in parallel
-      return(parLapply(cl, runs, function(x) {
+      res <- parLapply(cl, runs, function(x) {
+        set.seed(sample.int(100000,1))
         do.call(fun, args)
-      }))
+      })
+      gc()
+      return(res)
     }, finally = {
       ## Stop the cluster
       stopCluster(cl)
@@ -69,7 +72,9 @@ rmclapply <- function(runs, args, fun, mc.cores = NULL) {
       ))
     }
   } else {
-    return(mclapply(runs, function(x) do.call(fun, args), mc.cores = mc.cores))
+    res <- mclapply(runs, function(x) do.call(fun, args), mc.cores = mc.cores)
+    gc()
+    return(res)
   }
 }
 
