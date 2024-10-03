@@ -79,7 +79,7 @@ fbms <- function(formula = NULL, family = "gaussian", data = NULL, impute = FALS
       cm <- colMeans(na.matr)
       na.matr <- na.matr[,cm!=0]
       for (i in seq_along(df)){
-          df[[i]][is.na(df[[i]])] <- median(df[[i]], na.rm = TRUE)
+        df[[i]][is.na(df[[i]])] <- median(df[[i]], na.rm = TRUE)
       }
       imputed <- names(df)[cm!=0]
       df <- data.frame(df,na.matr)
@@ -93,7 +93,7 @@ fbms <- function(formula = NULL, family = "gaussian", data = NULL, impute = FALS
   } else {
     df <- data
   }
-
+  
   if (method == "mjmcmc.parallel")
     res <- mjmcmc.parallel(df, loglik.pi, verbose = verbose, ...)
   else if (method == "mjmcmc")
@@ -101,7 +101,7 @@ fbms <- function(formula = NULL, family = "gaussian", data = NULL, impute = FALS
   else if (method == "gmjmcmc.parallel") {
     res <- gmjmcmc.parallel(data = df, loglik.pi = loglik.pi, verbose = verbose,...)
   }
-
+  
   else if (method == "gmjmcmc")
     res <- gmjmcmc(df, loglik.pi, verbose = verbose, ...)
   else
