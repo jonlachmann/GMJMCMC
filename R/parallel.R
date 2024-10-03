@@ -45,7 +45,8 @@ rmclapply <- function(runs, args, fun, mc.cores = NULL) {
       })
       ## Run the lapply in parallel
       res <- parLapply(cl, runs, function(x) {
-        set.seed(sample.int(100000,1))
+        set.seed(NULL)
+        set.seed(as.integer(x) + sample.int(100000,1))
         do.call(fun, args)
       })
       gc()
