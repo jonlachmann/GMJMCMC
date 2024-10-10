@@ -238,6 +238,7 @@ model.string <- function (model, features, link = "I", round = 2) {
 #' @param tol The tolerance to use as a threshold when reporting the results.
 #' @param labels Should the covariates be named, or just referred to as their place in the data.frame.
 #' @param effects Quantiles for posterior modes of the effects across models to be reported, if either effects are NULL or if labels are NULL, no effects are reported.
+#' @param data Data to merge on, important if prefiltering was used
 #' @param ... Not used.
 #'
 #' @return A data frame containing the following columns:
@@ -249,12 +250,12 @@ model.string <- function (model, features, link = "I", round = 2) {
 #' summary(result, pop = "best")
 #'
 #' @export 
-summary.gmjmcmc <- function (object, pop = "best", tol = 0.0001, labels = FALSE, effects = NULL, ...) {
+summary.gmjmcmc <- function (object, pop = "best", tol = 0.0001, labels = FALSE, effects = NULL, data = NULL, ...) {
   transforms.bak <- set.transforms(object$transforms)
   if (pop == "all") {
     results <- list()
     results[[1]] <- object
-    merged <- merge_results(results, pop, 2, 0.0000001, data = NULL)
+    merged <- merge_results(results, pop, 2, 0.0000001, data = data)
     
     best <- max(sapply(merged$results, function (y) y$best))
     feats.strings <- sapply(merged$features, FUN = function(x) print.feature(x = x, labels = labels, round = 2))
@@ -297,6 +298,7 @@ summary.gmjmcmc <- function (object, pop = "best", tol = 0.0001, labels = FALSE,
 #' @param labels Should the covariates be named, or just referred to as their place in the data.frame.
 #' @param effects Quantiles for posterior modes of the effects across models to be reported, if either effects are NULL or if labels are NULL, no effects are reported.
 #' @param pop If null same as in merge.options for running parallel gmjmcmc otherwise results will be re-merged according to pop that can be "all", "last", "best"
+#' @param data Data to merge on, important if prefiltering was used
 #' @param ... Not used.
 #'
 #' @return A data frame containing the following columns:
@@ -317,10 +319,10 @@ summary.gmjmcmc <- function (object, pop = "best", tol = 0.0001, labels = FALSE,
 #' summary(result)
 #'
 #' @export 
-summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, effects = NULL, pop = NULL, ...) {
+summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, effects = NULL, pop = NULL, data = NULL, ...) {
   transforms.bak <- set.transforms(object$transforms)
   if (!is.null(pop)) {
-    object <- merge_results(object$results, pop, 2, 0.0000001, data = NULL)
+    object <- merge_results(object$results, pop, 2, 0.0000001, data = data)
   }
   
   best <- max(sapply(object$results, function (y) y$best))
@@ -463,6 +465,7 @@ string.population.models <- function(features, models, round = 2, link = "I") {
 #' @param count The number of features to plot, defaults to all
 #' @param pop The population to plot, defaults to last
 #' @param tol The tolerance to use for the correlation when finding equivalent features, default is 0.0000001
+#' @param data Data to merge on, important if prefiltering was used
 #' @param ... Not used.
 #'
 #' @return No return value, just creates a plot
@@ -473,12 +476,12 @@ string.population.models <- function(features, models, round = 2, link = "I") {
 #' 
 #'
 #' @export 
-plot.gmjmcmc <- function (x, count = "all", pop = "best",tol =  0.0000001, ...) {
+plot.gmjmcmc <- function (x, count = "all", pop = "best",tol =  0.0000001, data = NULL, ...) {
   transforms.bak <- set.transforms(x$transforms)
   if (pop != "last") {
     results <- list()
     results[[1]] <- x
-    x <- merge_results(results, pop, 2, 0.0000001, data = NULL)
+    x <- merge_results(results, pop, 2, 0.0000001, data = data)
     return(marg.prob.plot(sapply(x$features, print), x$marg.probs, count = count))
   }
  
@@ -593,10 +596,10 @@ run.weigths <- function (results) {
 #' plot(result)
 #' 
 #' @export 
-plot.gmjmcmc_merged <- function (x, count = "all", pop = NULL,tol =  0.0000001, ...) {
+plot.gmjmcmc_merged <- function (x, count = "all", pop = NULL,tol =  0.0000001, data = NULL, ...) {
   transforms.bak <- set.transforms(x$transforms)
   if (!is.null(pop)) {
-    x <- merge_results(x$results, pop, 2, 0.0000001, data = NULL)
+    x <- merge_results(x$results, pop, 2, 0.0000001, data = data)
   }
   
   marg.prob.plot(sapply(x$features[x$marg.probs > tol], print), x$marg.probs[x$marg.probs > tol], count = count)
