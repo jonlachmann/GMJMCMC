@@ -57,6 +57,7 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
 
   # Check and filter results that did not run successfully
   results <- filter.results(results)
+  raw.results <- results
   res.count <- length(results)
 
   # Select populations to use
@@ -155,6 +156,7 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
     marg.probs = importance,
     counts = counts,
     results = results,
+    results.raw = raw.results,
     pop.best = pop.best,
     thread.best = thread.best,
     crit.best = crit.best,
@@ -322,7 +324,8 @@ summary.gmjmcmc <- function (object, pop = "best", tol = 0.0001, labels = FALSE,
 summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, effects = NULL, pop = NULL, data = NULL, ...) {
   transforms.bak <- set.transforms(object$transforms)
   if (!is.null(pop)) {
-    object <- merge_results(object$results, pop, 2, 0.0000001, data = data)
+    
+    object <- merge_results(object$results.raw, populations = pop, complex.measure = 2, tol = 0.0000001, data = data)
   }
   
   best <- max(sapply(object$results, function (y) y$best))
@@ -599,7 +602,7 @@ run.weigths <- function (results) {
 plot.gmjmcmc_merged <- function (x, count = "all", pop = NULL,tol =  0.0000001, data = NULL, ...) {
   transforms.bak <- set.transforms(x$transforms)
   if (!is.null(pop)) {
-    x <- merge_results(x$results, pop, 2, 0.0000001, data = data)
+    x <- merge_results(x$results.raw, pop, 2, 0.0000001, data = data)
   }
   
   marg.prob.plot(sapply(x$features[x$marg.probs > tol], print), x$marg.probs[x$marg.probs > tol], count = count)

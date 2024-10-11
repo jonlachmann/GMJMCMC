@@ -105,6 +105,8 @@ predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.
 #' @export
 predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = NULL,tol =  0.0000001, ...) {
   
+
+  
   if(!is.null(attr(object,which = "imputed")))
   {
     df <- data.frame(x)
@@ -122,7 +124,7 @@ predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles =
   
   transforms.bak <- set.transforms(object$transforms)
   if(!is.null(pop))
-    object <- merge_results(object$results, pop, 2, tol, data = NULL)
+    object <- merge_results(object$results.raw, pop, 2, tol, data = x)
   
   preds <- list()
   for (i in seq_along(object$results)) {
