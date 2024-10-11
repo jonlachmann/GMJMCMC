@@ -19,24 +19,42 @@ x1 = apply(x1[-1,],2,as.numeric)
 x2 = apply(x2[-1,],2,as.numeric)
 x3 = apply(x3[-1,],2,as.numeric)
 x4 = apply(x4[-1,],2,as.numeric)
-x = rbind(x1,x2,x3,x4)
-colnames(x) = nam
-rownames(x) = rnames
+df = rbind(x1,x2,x3,x4)
+colnames(df) = nam
+rownames(df) = rnames
+
+#Make columnn 24266 the first column, corresponding to CCT8 
+#(from the 	illumina_Human_WG-6_array_content.csv file)
+df <- df[,c(24266,1:24265,24267:ncol(df))]
 
 #Choose response variable
-SangerData = x
+SangerData = df
 usethis::use_data(SangerData,overwrite=TRUE)
 
-#Reduced dataset 
-df <- SangerData[,c(24266,1:24265,24267:ncol(SangerData))]
 #Rename columns
-colnames(df) = c("y",paste0("x",1:47292))
+#colnames(df) = c("y",paste0("x",1:47292))
+
+#Reduced dataset first by those having maximum expression levels below the 
+#25-th percentile of all measured expresison levels
+q = quantile(df[,-1],0.25)
+foo = apply(df[,-1],2,max)
+nC = ncol(df)-1
+df = df[,c(1,1+c(1:nC)[foo>q])]
+
+#Reduced dataset by deleting rows with range<2
+drange = function(x){diff(range(x))}
+foo2 = apply(df,2,drange)
+nC = ncol(df)-1
+df = df[,c(1,1+c(1:nC)[foo2>2])]
+SangerData2 = as.data.frame(df)
+usethis::use_data(SangerData2,overwrite=TRUE)
+
 
 # Candidates  based on marginal p values
-p.vec = unlist(mclapply(2:47293, function(x)cor.test(df[,1],df[,x])$p.value))
-ids = sort(order(p.vec)[1:100])
+#p.vec = unlist(mclapply(2:47293, function(x)cor.test(df[,1],df[,x])$p.value))
+#ids = sort(order(p.vec)[1:100])
 
 #Reduce data
-df = df[,c(1,1+ids)]
-SangerData2 = df
-usethis::use_data(SangerData2)
+#df = df[,c(1,1+ids)]
+#SangerData2 = df
+#usethis::use_data(SangerData2)
