@@ -1,0 +1,188 @@
+#######################################################
+#
+# Example 3: Sanger data (Section 4.1)
+#
+# High dimensional analysis without nonlinearities
+#
+# This is the valid version for the JSS Paper
+#
+#######################################################
+
+# Logical to decide whether to perform analysis with fbms function
+# If FALSE then gmjmcmc or gmjmcmc.parallel function is used
+use.fbms = FALSE  
+
+library(FBMS)
+
+setwd("/home/florian/FBMS/")
+load("Sangerdata.Rdata")
+
+df = as.data.frame(cbind(as.numeric(data[24266,-1]),
+                         t(as.matrix(data[-24266,-1]))
+))
+
+names(df) = c("y",paste0("x",1:47292))
+
+# Candidates for the first MJMCMC round based on marginal p values
+p.vec = unlist(mclapply(2:47293, function(x)cor.test(df[,1],df[,x])$p.value))
+ids = sort(order(p.vec)[1:50])          
+
+
+####################################################
+#
+# single thread analysis (three different runs)
+#
+# Comparison of gmjmcmc.parallel with one thread and gmjmcmc
+#
+####################################################
+
+transforms = c("")
+params = gen.params.gmjmcmc(df[,ids])
+params$feat$check.col <- F
+params$feat$pop.max = 60
+params$feat$prel.filter <- ids
+probs = gen.probs.gmjmcmc(transforms)
+probs$gen = c(0,0,0,1)
+
+
+set.seed(123)
+
+if (use.fbms) {
+  result1 <- fbms(data = df, method = "gmjmcmc", transforms = transforms, 
+                  probs = probs, params = params, P=25)
+} else {
+  result1 =  gmjmcmc(data = df, transforms = transforms, 
+                     probs = probs, params = params, P=25)
+}
+summary(result1)
+
+
+################################
+
+
+set.seed(124)   #Same analysis using a different seed
+
+if (use.fbms) {
+  result2 <- fbms(data = df, method = "gmjmcmc", transforms = transforms, 
+                  probs = probs, params = params, P=25)
+} else {
+  result2 =  gmjmcmc(data = df, transforms = transforms, 
+                     probs = probs, params = params, P=25)
+}
+
+summary(result2)
+
+
+
+################################
+
+#Same analysis but using slightly different initial population           
+
+ids3 = sort(order(p.vec)[1:51]) 
+
+transforms = c("")
+params = gen.params.gmjmcmc(df[,ids3])
+params$feat$check.col <- F
+params$feat$pop.max = 60
+params$feat$prel.filter <- ids3
+probs = gen.probs.gmjmcmc(transforms)
+probs$gen = c(0,0,0,1)
+
+
+set.seed(123)
+
+if (use.fbms) {
+  result3 <- fbms(data = df, method = "gmjmcmc", transforms = transforms, 
+                  probs = probs, params = params, P=25)
+} else {
+  result3 =  gmjmcmc(data = df, transforms = transforms, 
+                     probs = probs, params = params, P=25)
+}
+
+summary(result3)
+
+# And again for the sake of comparison
+summary(result1)   
+summary(result2)
+
+
+
+
+
+
+
+
+
+####################################################
+#
+# multiple thread analysis
+#
+####################################################
+
+set.seed(123)
+
+if (use.fbms) {
+  result_parallel <- fbms(data = df, method = "gmjmcmc.parallel", runs = 40, cores = 40, 
+                                      transforms = transforms, probs = probs, params = params, 
+                                      P=25, N.init=500, N.final=2000)
+} else {
+  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 40,data = df,  
+                                      transforms = transforms, probs = probs, params = params, 
+                                      P=25, N.init=500, N.final=2000)
+}
+
+plot(result_parallel)
+summary(result_parallel)
+
+S = summary(result_parallel)
+names.best = S$feats.strings[1:50]
+
+X.best = df[,names.best]
+
+cor(X.best)
+min(cor(X.best))
+corrplot::corrplot(cor(X.best))
+hist(cor(X.best))
+
+
+######################################
+
+
+
+# repeat same analysis with different seed
+set.seed(1234)
+
+if (use.fbms) {
+  result_parallel2 <- fbms(data = df, method = "gmjmcmc.parallel", runs = 40, cores = 40, 
+                          transforms = transforms, probs = probs, params = params, 
+                          P=25, N.init=500, N.final=2000)
+} else {
+  result_parallel2 =  gmjmcmc.parallel(runs = 40, cores = 40,data = df, 
+                         transforms = transforms, probs = probs, params = params, 
+                         P=25, N.init=500, N.final=2000)
+}
+plot(result_parallel2)
+summary(result_parallel2)
+
+S2 = summary(result_parallel2)
+names.best2 = S2$feats.strings[1:50]
+
+X.best = df[,names.best2]
+
+cor(X.best)
+min(cor(X.best))
+corrplot::corrplot(cor(X.best))
+hist(cor(X.best))
+
+Cor.check = cor(X.best)
+diag(Cor.check) = 0
+max(Cor.check)
+which.max(Cor.check)
+
+# Comparison of the two parallel runs
+sum(is.element(names.best,names.best2))
+sum(is.element(names.best2,names.best))
+
+length(intersect(names.best,names.best2))
+
+cbind(sort(names.best),sort(names.best2))
