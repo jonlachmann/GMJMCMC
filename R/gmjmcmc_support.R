@@ -69,7 +69,10 @@ marginal.probs.renorm <- function (models, type = "features") {
   models.matrix <- matrix(unlist(models), ncol = model.size + 1, byrow = TRUE)
   duplicates <- duplicated(models.matrix[, 1:(model.size)], dim = 1, fromLast = TRUE)
   models.matrix <- models.matrix[!duplicates, ]
-  max_mlik <- max(models.matrix[, (model.size + 1)])
+  if(!is.matrix(models.matrix))
+    models.matrix <- t(as.matrix(models.matrix))
+  
+  max_mlik <- max(models.matrix[,(model.size + 1)])
   crit.sum <- sum(exp(models.matrix[, (model.size + 1)] - max_mlik))
   if (type == "features" || type == "both") {
     probs.f <- matrix(NA,1, model.size)
