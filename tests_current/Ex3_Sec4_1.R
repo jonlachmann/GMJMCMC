@@ -14,23 +14,19 @@ use.fbms = FALSE
 
 library(FBMS)
 
-setwd("/home/florian/FBMS/")
-load("Sangerdata.Rdata")
-
-df = as.data.frame(cbind(as.numeric(data[24266,-1]),
-                         t(as.matrix(data[-24266,-1]))
-))
-
-names(df) = c("y",paste0("x",1:47292))
+data(SangerData2)
+df = SangerData2
+#Rename columns
+colnames(df) = c("y",paste0("x",1:(ncol(df)-1)))
 
 # Candidates for the first MJMCMC round based on marginal p values
-p.vec = unlist(mclapply(2:47293, function(x)cor.test(df[,1],df[,x])$p.value))
-ids = sort(order(p.vec)[1:50])          
+c.vec = unlist(mclapply(2:ncol(df), function(x)abs(cor(df[,1],df[,x]))))
+ids = sort(order(c.vec,decreasing=TRUE)[1:60])          
 
 
 ####################################################
 #
-# single thread analysis (three different runs)
+# single thread analysis (four different runs)
 #
 # Comparison of gmjmcmc.parallel with one thread and gmjmcmc
 #
@@ -43,7 +39,6 @@ params$feat$pop.max = 60
 params$feat$prel.filter <- ids
 probs = gen.probs.gmjmcmc(transforms)
 probs$gen = c(0,0,0,1)
-
 
 set.seed(123)
 
