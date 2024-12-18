@@ -206,8 +206,9 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs.F.0, ma
   if(sum(feats.keep)>params$pop.max)
   {
     warning("Number of features to keep greater than pop.max! 
-            Continue with pop.max features!
-            \n Check your tuning parameters!")
+            Continue with first pop.max features to be kept!
+            \n Ignore if the final set of features with high probabilities is smaller than the specified $feat$pop.max
+            \n Otherwise check your tuning parameters and increase $feat$pop.max or probs$filter!")
     feats.keep[which(feats.keep==TRUE)[(params$pop.max+1):length(which(feats.keep==TRUE))]] <- FALSE
   }
   
