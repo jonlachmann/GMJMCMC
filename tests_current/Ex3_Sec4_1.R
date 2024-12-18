@@ -19,9 +19,9 @@ df = SangerData2
 #Rename columns
 colnames(df) = c("y",paste0("x",1:(ncol(df)-1)))
 
-# Candidates for the first MJMCMC round based on marginal p values
+# Candidates for the first MJMCMC round based on correlation with response
 c.vec = unlist(mclapply(2:ncol(df), function(x)abs(cor(df[,1],df[,x]))))
-ids = sort(order(c.vec,decreasing=TRUE)[1:60])          
+ids = sort(order(c.vec,decreasing=TRUE)[1:50])          
 
 
 ####################################################
@@ -32,11 +32,12 @@ ids = sort(order(c.vec,decreasing=TRUE)[1:60])
 #
 ####################################################
 
-transforms = c("")
-params = gen.params.gmjmcmc(df[,ids])
+params = gen.params.gmjmcmc(df)
 params$feat$check.col <- F
 params$feat$pop.max = 60
 params$feat$prel.filter <- ids
+
+transforms = c("")
 probs = gen.probs.gmjmcmc(transforms)
 probs$gen = c(0,0,0,1)
 
@@ -156,6 +157,7 @@ if (use.fbms) {
                          transforms = transforms, probs = probs, params = params, 
                          P=25, N.init=500, N.final=2000)
 }
+save(result_parallel2,file="Ex3_parallel2.RData")
 plot(result_parallel2)
 summary(result_parallel2)
 
