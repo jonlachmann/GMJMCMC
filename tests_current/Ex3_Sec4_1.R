@@ -35,7 +35,7 @@ ids = sort(order(c.vec,decreasing=TRUE)[1:50])
 params = gen.params.gmjmcmc(df)
 params$feat$check.col <- F
 params$feat$pop.max = 60
-params$feat$prel.filter <- ids
+params$prel.select <- ids
 
 transforms = c("")
 probs = gen.probs.gmjmcmc(transforms)
@@ -54,8 +54,6 @@ summary(result1)
 
 
 ################################
-
-
 set.seed(124)   #Same analysis using a different seed
 
 if (use.fbms) {
@@ -73,14 +71,14 @@ summary(result2)
 ################################
 
 #Same analysis but using slightly different initial population           
-
-ids3 = sort(order(p.vec)[1:51]) 
+# Candidates for the first MJMCMC round based on marginal p values
+ids3 = ids
 
 transforms = c("")
 params = gen.params.gmjmcmc(df[,ids3])
 params$feat$check.col <- F
 params$feat$pop.max = 60
-params$feat$prel.filter <- ids3
+params$prel.select <- ids3
 probs = gen.probs.gmjmcmc(transforms)
 probs$gen = c(0,0,0,1)
 
@@ -95,11 +93,11 @@ if (use.fbms) {
                      probs = probs, params = params, P=25)
 }
 
-summary(result3)
 
 # And again for the sake of comparison
-summary(result1)   
-summary(result2)
+summary(result3,tol = 0.01)
+summary(result1,tol = 0.01)   
+summary(result2,tol = 0.01)
 
 
 
@@ -118,17 +116,17 @@ summary(result2)
 set.seed(123)
 
 if (use.fbms) {
-  result_parallel <- fbms(data = df, method = "gmjmcmc.parallel", runs = 40, cores = 40, 
+  result_parallel <- fbms(data = df, method = "gmjmcmc.parallel", runs = 4, cores = 4, 
                                       transforms = transforms, probs = probs, params = params, 
-                                      P=25, N.init=500, N.final=2000)
+                                      P=25, N.init=500, N.final=500)
 } else {
-  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 40,data = df,  
+  result_parallel =  gmjmcmc.parallel(runs = 4, cores = 4,data = df,  
                                       transforms = transforms, probs = probs, params = params, 
-                                      P=25, N.init=500, N.final=2000)
+                                      P=25, N.init=500, N.final=500)
 }
 
 plot(result_parallel)
-summary(result_parallel)
+summary(result_parallel,tol = 0.01)
 
 S = summary(result_parallel)
 names.best = S$feats.strings[1:50]

@@ -1,103 +1,114 @@
 #######################################################
 #
-# Example 7 (Section 5.1):
+# Example 7 (Section 5.1): Sanger data again
 #
-# Logistic Regression
+# High dimensional analysis without nonlinearities
+#
+# Now using g prior for coefficients
 #
 # This is the valid version for the JSS Paper
 #
 #######################################################
 
+library(devtools)
+devtools::install_github("jonlachmann/GMJMCMC@FBMS", force=T, build_vignettes=F)
+
 library(FBMS)
 use.fbms = FALSE  
 
 setwd("/home/florian/FBMS/")
+load("Sangerdata.Rdata")
 
-df = read.csv2(file = "spam_data.csv",sep = ";",dec = ".")[,c(58,1:57)]
+df = as.data.frame(cbind(as.numeric(data[24266,-1]),
+                         t(as.matrix(data[-24266,-1]))
+))
 
-summary(df)
+names(df) = c("y",paste0("x",1:47292))
 
+# Candidates for the first MJMCMC round based on marginal p values
+p.vec = unlist(mclapply(2:47293, function(x)cor.test(df[,1],df[,x])$p.value))
+ids = sort(order(p.vec)[1:50])          
 
-#number of observations in the data
+transforms = c("")
+params = gen.params.gmjmcmc(df[,ids])
+params$feat$check.col <- F
+params$feat$pop.max = 60
+params$feat$prel.filter <- ids
+probs = gen.probs.gmjmcmc(transforms)
+probs$gen = c(0,0,0,1)
 
-n = dim(df)[1] 
-
-#number of covariates
-
-p = dim(df)[2] - 1   
-
-
-colnames(df) =  c("y", paste0("x",1:p))
-
-
-to3 <- function(x) x^3
-transforms <- c("sigmoid","sin_deg","exp_dbl","p0","troot","to3")
-probs <- gen.probs.gmjmcmc(transforms)
-probs$gen <- c(1,1,1,1) 
-
-params <- gen.params.gmjmcmc(df)
 
 ####################################################
 #
-# single thread analysis
+# Here begin the changes to use Zellers g-prior 
 #
 ####################################################
 
 
-set.seed(6001)
+params$loglik$g <- dim(df)[1]   # Using sample size for g in g-prior
 
-# Perform analysis with logistic.loglik
-if (use.fbms) {
-  result <- fbms(data = df, method = "gmjmcmc", family = "binomial",
-                 transforms = transforms, probs = probs, params = params)
-} else {
-  result <- gmjmcmc(df, logistic.loglik, transforms 
-                  = transforms, probs = probs, params = params)
+#this will be added to the package
+log.prior <- function(params,complex){
+  
+  pl <-  log(params$r) * (sum(complex$oc))
+  return(pl)
 }
-# Default tuning parameters for logistic regression:
-#
-# params$loglik$r = 1/n
 
-summary(result)
+gaussian.loglik.g <- function (y, x, model, complex, params) 
+{
+  
+  suppressWarnings({
+     mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())
+  })
+  
+   # Calculate R-squared
+  y_mean <- mean(y)
+  TSS <- sum((y - y_mean)^2)
+  RSS <- sum(mod$residuals^2)
+  Rsquare <- 1 - (RSS / TSS)
+  
+  # logarithm of marginal likelihood
+  mloglik <- 0.5*(log(1.0 + params$g) * (dim(x)[1] - mod$rank)  - log(1.0 + params$g * (1.0 - Rsquare)) * (dim(x)[1]  - 1))*(mod$rank!=1)
+  
+  # logarithm of model prior
+  if (length(params$r) == 0)  params$r <- 1/dim(x)[1]  # default value or parameter r
+  lp <- log.prior(params, complex)
+  
+  return(list(crit = mloglik + lp, coefs = mod$coefficients))
+}
 
 
-# IMPORTANT: specify correct link function for predict
+#result <- mjmcmc(params = params, data = df, gaussian.loglik.g, N = 5000)
 
-pred = predict(result, x =  df[,-1], link = function(x)(1/(1+exp(-x))))  
+set.seed(66)
 
-mean(round(pred$aggr$mean)==df$y)
-
-plot(pred$aggr$mean)
-points(pred$aggr$quantiles[1,], col = 2)
-points(pred$aggr$quantiles[3,], col = 2)
-
-
-head(cbind(pred$aggr$mean, pred$aggr$quantiles[1,],pred$aggr$quantiles[3,]))
-
-
-####################################################
-#
-# multiple thread analysis
-#
-####################################################
-
-set.seed(6002)
 
 if (use.fbms) {
-  result_parallel <- fbms(data = df, method = "gmjmcmc.parallel", family = "binomial",
-                          runs = 40, cores = 40, transforms = transforms, 
-                          probs = probs, params = params, P=25)
+  result1 <- fbms(data = df, family = "custom", loglik.pi = gaussian.loglik.g, method = "gmjmcmc", 
+                  transforms = transforms, probs = probs, params = params, P=25)
 } else {
-  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 40, data = df, 
-                                      loglik.pi = logistic.loglik, transforms = transforms, 
-                                      probs = probs, params = params, P=25)
+  result1 <-  gmjmcmc(data = df, loglik.pi = gaussian.loglik.g, transforms = transforms, 
+                     probs = probs, params = params, P=25)
 }
-summary(result_parallel)
+summary(result1)
 
-# IMPORTANT: specify correct link function for predict
 
-pred_parallel = predict(result_parallel, x =  df[,-1], link = function(x)(1/(1+exp(-x))))  
+plot(result1,17)
 
-mean(round(pred_parallel$aggr$mean)==df$y)
+#Correlation analysis
+
+S = summary(result1)
+names.S = S$feats.strings
+
+X.best = df[,names.S]
+
+cor(X.best)
+corrplot::corrplot(cor(X.best))
+hist(cor(X.best))
+
+
+# Correlation with results from Example 3
+
+
 
 
