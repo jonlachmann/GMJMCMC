@@ -14,7 +14,7 @@ devtools::install_github("jonlachmann/GMJMCMC@FBMS", force=T, build_vignettes=F)
 library(FBMS)
 use.fbms = FALSE  
 
-setwd("/home/florian/FBMS/")
+#setwd("/home/florian/FBMS/")
 
 df = read.csv2(file = "spam_data.csv",sep = ";",dec = ".")[,c(58,1:57)]
 

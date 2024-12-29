@@ -10,13 +10,13 @@
 #
 #######################################################
 
-library(devtools)
-devtools::install_github("jonlachmann/GMJMCMC@FBMS", force=T, build_vignettes=F)
+#library(devtools)
+#devtools::install_github("jonlachmann/GMJMCMC@FBMS", force=T, build_vignettes=F)
 
 library(FBMS)
 use.fbms = FALSE  
 
-setwd("/home/florian/FBMS/")
+#setwd("/home/florian/FBMS/")
 load("Sangerdata.Rdata")
 
 df = as.data.frame(cbind(as.numeric(data[24266,-1]),

@@ -15,16 +15,15 @@
 #
 #######################################################
 
-library(devtools)
-devtools::install_github("jonlachmann/GMJMCMC@FBMS", force=T, build_vignettes=F)
+#library(devtools)
+#devtools::install_github("jonlachmann/GMJMCMC@FBMS", force=T, build_vignettes=F)
 
 library(FBMS)
 use.fbms = FALSE  
 
-setwd("/home/florian/FBMS/")
+data("abalone")
 
-
-df = read.csv2(file = "abalone.csv",sep = ",",dec = ".")[,c(9,1:8)]
+df = abalone
 df$Sex_F_vs_I = as.numeric(df$Sex == "F")
 df$Sex_M_vs_I = as.numeric(df$Sex == "M")
 df$Sex = as.factor(df$Sex)
