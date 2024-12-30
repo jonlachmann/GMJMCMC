@@ -4,7 +4,7 @@
 \alias{diagn_plot}
 \title{Plot convergence of best/median/mean/other summary log posteriors in time}
 \usage{
-diagn_plot(res, FUN = median, conf = 0.95, burnin = 0, window = 10000)
+diagn_plot(res, FUN = median, conf = 0.95, burnin = 0, window = 5, ylim = NULL)
 }
 \arguments{
 \item{res}{Object corresponding gmjmcmc output}
@@ -16,6 +16,8 @@ diagn_plot(res, FUN = median, conf = 0.95, burnin = 0, window = 10000)
 \item{burnin}{how many first populations to skip}
 
 \item{window}{sliding window for computing the standard deviation}
+
+\item{ylim}{limits for the plotting range, if unspesified, min and max of confidence intervals will be used}
 }
 \value{
 A list of summary statistics for checking convergence with given confidence intervals
