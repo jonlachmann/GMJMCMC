@@ -8,17 +8,13 @@
 #
 ##################################################
 
-#install.packages("FBMS")
-#install.packages("devtools")
 library(devtools)
-devtools::install_github("jonlachmann/GMJMCMC@FBMS", force=T, build_vignettes=F)
+if(!("FBMS" %in% rownames(installed.packages())))
+  devtools::install_github("jonlachmann/GMJMCMC@FBMS", force=T, build_vignettes=F)
 library(FBMS)
 
-setwd("/home/florian/FBMS/")
-
-X <- read.csv("exa1.csv")
-df <- as.data.frame(cbind(MajorAxis = X[,5], X[,-5]))
-
+data(exoplanet)
+df <- as.data.frame(cbind(MajorAxis = exoplanet[,5], exoplanet[,-5]))
 
 to3 <- function(x) x^3
 transforms <- c("sigmoid","sin_deg","exp_dbl","p0","troot","to3")
@@ -37,9 +33,9 @@ use.fbms = FALSE
 set.seed(123)
 
 if (use.fbms) {
-  result.default <- fbms(formula = MajorAxis ~ 1 + . , data = df, method = "gmjmcmc", transforms = transforms)
+  result.default <- fbms(formula=MajorAxis~1+.,data=df,transforms=transforms,method="gmjmcmc")
 } else {
-  result.default <- gmjmcmc(df, transforms = transforms)
+  result.default <- gmjmcmc(df,transforms=transforms)
 }
 
 
@@ -53,11 +49,10 @@ if (use.fbms) {
 set.seed(123)
 
 if (use.fbms) {
-  result.P50 <- fbms(data = df, method = "gmjmcmc", transforms = transforms,
-                 P=50, N.init=1000, N.final=5000)
+  result.P50 <- fbms(formula=MajorAxis~1+.,data=df,transforms=transforms,method="gmjmcmc", 
+                 P=50,N.init=1000,N.final=5000)
 } else {
-  result.P50 <- gmjmcmc(df,  transforms = transforms,
-                  P=50, N.init=1000, N.final=5000)
+  result.P50 <- gmjmcmc(df,transforms=transforms,P=50,N.init=1000,N.final=5000)
 }
 
 ####################################################
@@ -72,12 +67,17 @@ set.seed(124)
 # result_mm =  gmjmcmc.parallel(runs = 4, cores = 4,df, gaussian.loglik, gaussian.loglik.alpha, transforms)
 
 if (use.fbms) {
-  result_parallel <- fbms(data = df, method = "gmjmcmc.parallel", transforms = transforms,
-                          runs = 40, cores = 10, P=25)
+  result_parallel <- fbms(formula=MajorAxis~1+.,data=df,transforms=transforms,method="gmjmcmc.parallel",
+                          P=25,N.init=1000,N.final=5000,runs=40,cores=40)
 } else {
-  result_parallel <- gmjmcmc.parallel(runs = 40, cores = 10,data = df, loglik.pi = gaussian.loglik, 
-                          transforms = transforms, P=25)
+  result_parallel <- gmjmcmc.parallel(data=df,transforms=transforms, 
+                                      P=25,N.init=1000,N.final=5000,runs=40,cores=40)
+  result_parallel <- gmjmcmc.parallel(data=df,transforms=transforms, 
+                                      merge.options=list(populations="all"),
+                                      P=25,N.init=200,N.final=200,runs=10,cores=10)
 }
+save(result_parallel,file="Ex1_parallel1.RData")
+load("Ex1_parallel1.RData")
 
 ####################################################
 #

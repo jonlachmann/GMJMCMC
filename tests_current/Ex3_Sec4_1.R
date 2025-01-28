@@ -35,11 +35,12 @@ ids = sort(order(c.vec,decreasing=TRUE)[1:50])
 params = gen.params.gmjmcmc(df)
 params$feat$check.col <- F
 params$feat$pop.max = 60
-params$feat$prel.filter <- ids
+params$prel.select <- ids
 
 transforms = c("")
 probs = gen.probs.gmjmcmc(transforms)
 probs$gen = c(0,0,0,1)
+probs$filter=0.8
 
 set.seed(123)
 
@@ -67,6 +68,13 @@ if (use.fbms) {
 }
 
 summary(result2)
+
+
+################################
+#
+# Comparing results
+#
+£
 
 
 
