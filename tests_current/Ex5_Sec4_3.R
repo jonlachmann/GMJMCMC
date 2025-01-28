@@ -2,7 +2,7 @@
 #
 # Example 5 (Section 4.3):
 #
-# Fractional Polynomials: Depths is set to 1!!!
+# Fractional Polynomials: Depths is set to 1
 #
 # This is the valid version for the JSS Paper
 #
@@ -12,7 +12,6 @@
 library(FBMS)
 use.fbms = FALSE  
 
-setwd("/home/florian/FBMS/")
 
 df = read.csv2(file = "art.csv",sep = ",",dec = ".")[,c(16,1:3,5:8,10:14)]
 

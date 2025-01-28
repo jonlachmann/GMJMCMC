@@ -10,11 +10,10 @@
 
 library(mvtnorm)
 library(FBMS)
-use.fbms = FALSE  
+use.fbms <- FALSE  
+stronger.singal <- FALSE
 
-setwd("/home/florian/FBMS/")
-
-n <- 100  # sample size
+n <- 100*ifelse(stronger.singal,10,1)  # sample size
 p <- 20   # number of covariates
 
 # Model:  
@@ -30,7 +29,7 @@ X <- as.matrix(x)
 X <- scale(X)/sqrt(n)
 
 #y <- 1.2 * X[,1] + 1.5 * X[,2]* X[,3] - X[,4] + 1.1*X[,5] - 1.3 * X[,4]*X[,5] + rnorm(n)
-y <- 1.2 * x[,1] + 1.5 * x[,2]* x[,3] - x[,4] + 1.1*x[,5] - 1.3 * x[,4]*x[,5] + rnorm(n)
+y <- (1.2 * x[,1] + 1.5 * x[,2]* x[,3] - x[,4] + 1.1*x[,5] - 1.3 * x[,4]*x[,5])+ rnorm(n)
 y<-scale(y)
 
 df <- as.data.frame(cbind(y, X))
@@ -58,7 +57,6 @@ summary(result)
 
 
 set.seed(123)
-
 if (use.fbms) {
   result2 <- fbms(data = df, method = "gmjmcmc", transforms = transforms, 
                  probs = probs, params = params, P=40)

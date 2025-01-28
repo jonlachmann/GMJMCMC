@@ -10,14 +10,13 @@
 
 # Logical to decide whether to perform analysis with fbms function
 # If FALSE then gmjmcmc or gmjmcmc.parallel function is used
-use.fbms = FALSE  
+use.fbms <-  FALSE  
+stronger.singal <- FALSE
 
 library(mvtnorm)
 library(FBMS)
 
 
-setwd("/home/florian/FBMS/")
-#setwd("C:/CC/Arbeit/Aliaksandr/FBMS")
 
 n <- 100  # sample size
 p <- 20   # number of covariates
@@ -29,7 +28,7 @@ k <- 5    #size of the data generating model
 set.seed(1002)
 
 correct.model <- sample(p.vec, k)
-beta.k <- 1 + rnorm(k)/2   # Coefficents of the correct submodel
+beta.k <- 1*ifelse(stronger.singal,10,1) + rnorm(k)/2   # Coefficents of the correct submodel
 
 beta <- c(rep(0, p))
 beta[correct.model] <- beta.k

@@ -19,10 +19,10 @@
 library(FBMS)
 use.fbms = FALSE  
 
-setwd("/home/florian/FBMS/")
 
+data("abalone")
 
-df = read.csv2(file = "abalone.csv",sep = ",",dec = ".")[,c(9,1:8)]
+df = abalone
 df$Sex_F_vs_I = as.numeric(df$Sex == "F")
 df$Sex_M_vs_I = as.numeric(df$Sex == "M")
 df$Sex = as.factor(df$Sex)
@@ -103,14 +103,14 @@ plot(pred$aggr$mean, df.test$Rings)
 #
 #############################################################################
 
-
-set.seed(5002)
+RNGkind("L'Ecuyer-CMRG") 
+set.seed(5003)
 
 if (use.fbms) {
-  result_parallel <- fbms(data = df.training, method = "gmjmcmc.parallel", runs = 40, cores = 40,
+  result_parallel <- fbms(data = df.training, method = "gmjmcmc.parallel", runs = 4, cores = 4,
                           transforms = transforms, probs = probs, params = params, P=25)
 } else {
-  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 40, data = df.training, 
+  result_parallel =  gmjmcmc.parallel(runs = 4, cores = 4, data = df.training, 
                                     loglik.pi =gaussian.loglik,loglik.alpha = gaussian.loglik.alpha, 
                                     transforms = transforms, probs = probs, params = params, P=25)
 }
@@ -126,6 +126,12 @@ plot(pred_parallel$aggr$mean, df.test$Rings)
 abline(0,1)
 
 
+RNGkind("L'Ecuyer-CMRG") 
+for(i in 1:10)
+{
+  set.seed(i)
+  print(mean(unlist(mclapply(1:10,function(j)runif(1,1,100),mc.set.seed = T))))
+}
 
 #############################################################################
 #

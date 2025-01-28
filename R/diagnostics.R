@@ -12,6 +12,7 @@
 #' @param conf which confidence intervals to plot
 #' @param burnin how many first populations to skip
 #' @param window sliding window for computing the standard deviation
+#' @param ylim limits for the plotting range, if unspesified, min and max of confidence intervals will be used
 #'
 #' @return A list of summary statistics for checking convergence with given confidence intervals
 #' 
@@ -20,7 +21,7 @@
 #' diagnstats <- diagn_plot(result)
 #' 
 #' @export
-diagn_plot <- function (res, FUN = median, conf = 0.95, burnin = 0, window = 10000) {
+diagn_plot <- function (res, FUN = median, conf = 0.95, burnin = 0, window = 5, ylim = NULL) {
   
   if(length(res$thread.best)>0)
     matrix.results <- res$best.log.posteriors
@@ -32,7 +33,10 @@ diagn_plot <- function (res, FUN = median, conf = 0.95, burnin = 0, window = 100
   ub <- sr + qnorm(p = 1-(1-conf)/2)*sds
   lb <- sr - qnorm(p = 1-(1-conf)/2)*sds
   
-  plot(y = sr,x = (burnin+1):(dim(matrix.results)[1]), type = "l",col = 1,ylim = c(min(lb), max(ub)), main = "Convergence", xlab = "Population", ylab = "Summary")
+  if(length(ylim)==0)
+    ylim <- c(min(lb), max(ub))
+  
+  plot(y = sr,x = (burnin+1):(dim(matrix.results)[1]), type = "l",col = 1,ylim = ylim, main = "Convergence", xlab = "Population", ylab = "Summary")
   lines(y = ub,x = (burnin+1):(dim(matrix.results)[1]),col = 1,lty = 2)
   lines(y = lb,x = (burnin+1):(dim(matrix.results)[1]),col = 1,lty = 2)
   
