@@ -106,12 +106,14 @@ gaussian.loglik <- function (y, x, model, complex, params) {
   if (length(params$r) == 0)
     params$r <- 1/dim(x)[1]
   if(length(params$var) == 0)
-    params$var <- 0
+    params$var <- 1
   suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())})
-  if(params$var!=0)
-    ret <- (-(mod$deviance/params$var + 2 * log(length(y)) * (mod$rank - 1) - 2 * log(params$r) * (sum(complex$oc)))) / 2
-  else
+  
+  if(params$var == "unknown")
     ret <- (-(mod$aic + 2 * (log(length(y))-1) * (mod$rank) - 2 * log(params$r) * (sum(complex$oc)))) / 2
+  else
+    ret <- (-(mod$deviance/params$var + 2 * log(length(y)) * (mod$rank - 1) - 2 * log(params$r) * (sum(complex$oc)))) / 2
+  
   return(list(crit=ret, coefs=mod$coefficients))
 }
 
