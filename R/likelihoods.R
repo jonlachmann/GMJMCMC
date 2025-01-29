@@ -102,10 +102,13 @@ logistic.loglik.alpha <- function (a, data, mu_func) {
 #' @export gaussian.loglik
 gaussian.loglik <- function (y, x, model, complex, params) {
   if (length(params) == 0)
-    params <- list(r = 1/dim(x)[1])
-  
+    params <- list(r = 1/dim(x)[1], var = 1)
+
   suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())})
-  ret <- (-(mod$deviance + 2 * log(length(y)) * (mod$rank - 1) - 2 * log(params$r) * (sum(complex$oc)))) / 2
+  if(params$var!=0)
+    ret <- (-(mod$deviance/var + 2 * log(length(y)) * (mod$rank - 1) - 2 * log(params$r) * (sum(complex$oc)))) / 2
+  else
+    ret <- (-(mod$aic + 2 * (log(length(y))-1) * (mod$rank) - 2 * log(params$r) * (sum(complex$oc)))) / 2
   return(list(crit=ret, coefs=mod$coefficients))
 }
 
