@@ -37,9 +37,9 @@ use.fbms = FALSE
 set.seed(123)
 
 if (use.fbms) {
-  result.default <- fbms(formula = MajorAxis ~ 1 + . , data = df, method = "gmjmcmc", transforms = transforms)
+ result.default <- fbms(formula = MajorAxis ~ 1 + . , data = df, method = "gmjmcmc", transforms = transforms)
 } else {
-  result.default <- gmjmcmc(df, transforms = transforms)
+ result.default <- gmjmcmc(df, transforms = transforms)
 }
 
 
@@ -53,11 +53,11 @@ if (use.fbms) {
 set.seed(123)
 
 if (use.fbms) {
-  result.P50 <- fbms(data = df, method = "gmjmcmc", transforms = transforms,
-                 P=50, N.init=1000, N.final=5000)
+ result.P50 <- fbms(data = df, method = "gmjmcmc", transforms = transforms,
+                    P=50, N.init=1000, N.final=5000)
 } else {
-  result.P50 <- gmjmcmc(df,  transforms = transforms,
-                  P=50, N.init=1000, N.final=5000)
+ result.P50 <- gmjmcmc(df,  transforms = transforms,
+                       P=50, N.init=1000, N.final=5000)
 }
 
 ####################################################
@@ -72,11 +72,11 @@ set.seed(124)
 # result_mm =  gmjmcmc.parallel(runs = 4, cores = 4,df, gaussian.loglik, gaussian.loglik.alpha, transforms)
 
 if (use.fbms) {
-  result_parallel <- fbms(data = df, method = "gmjmcmc.parallel", transforms = transforms,
-                          runs = 40, cores = 10, P=25)
+ result_parallel <- fbms(data = df, method = "gmjmcmc.parallel", transforms = transforms,
+                         runs = 40, cores = 10, P=25)
 } else {
-  result_parallel <- gmjmcmc.parallel(runs = 40, cores = 10,data = df, loglik.pi = gaussian.loglik, 
-                          transforms = transforms, P=25)
+ result_parallel <- gmjmcmc.parallel(runs = 40, cores = 10,data = df, loglik.pi = gaussian.loglik, 
+                                     transforms = transforms, P=25)
 }
 
 ####################################################

@@ -40,6 +40,7 @@ params$prel.select <- ids
 transforms = c("")
 probs = gen.probs.gmjmcmc(transforms)
 probs$gen = c(0,0,0,1)
+probs$filter=0.8
 
 set.seed(123)
 
@@ -65,6 +66,13 @@ if (use.fbms) {
 }
 
 summary(result2)
+
+
+################################
+#
+# Comparing results
+#
+£
 
 
 
