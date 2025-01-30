@@ -7,7 +7,21 @@
 gen.probs.mjmcmc()
 }
 \value{
-A list of probabilities to be used as input for the mjmcmc function.
+A named list with five elements:
+\describe{
+\item{\code{large}}{A numeric value representing the probability of making a large jump. If a large jump is not made, a local MH (Metropolis-Hastings) proposal is used instead.}
+\item{\code{large.kern}}{A numeric vector of length 4 specifying the probabilities for different types of large jump kernels. The four components correspond to:
+\enumerate{
+\item Random change with random neighborhood size
+\item Random change with fixed neighborhood size
+\item Swap with random neighborhood size
+\item Swap with fixed neighborhood size
+}
+These probabilities will be automatically normalized if they do not sum to 1.}
+\item{\code{localopt.kern}}{A numeric vector of length 2 specifying the probabilities for different local optimization methods during large jumps. The first value represents the probability of using simulated annealing, while the second corresponds to the greedy optimizer. These probabilities will be normalized if needed.}
+\item{\code{random.kern}}{A numeric vector of length 4 specifying the probabilities of different randomization kernels applied after local optimization. These correspond to the same kernel types as in \code{large.kern} but are used for local proposals with different neighborhood sizes.}
+\item{\code{mh}}{A numeric vector specifying the probabilities of different standard Metropolis-Hastings kernels, where the first four as the same as for other kernels, while fifths and sixs components are uniform addition/deletion of a covariate.}
+}
 }
 \description{
 Generate a probability list for MJMCMC (Mode Jumping MCMC)
