@@ -189,7 +189,7 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, complex, pip_estimate, prob
     ### Select kernels to use for the large jump
     q.l <- sample.int(n = 4, size = 1, prob = probs$large.kern) # Select large jump kernel
     q.o <- sample.int(n = 2, size = 1, prob = probs$localopt) # Select optimizer function
-    q.r <- sample.int(n = 4, size = 1, prob = probs$random) # Select randomization kernel
+    q.r <- sample.int(n = 2, size = 1, prob = probs$random.kern) # Set randomization kernel
 
     # Generate and do large jump
     large.jump <- gen.proposal(model.cur$model, params$large, q.l, NULL, pip_estimate) # Get the large jump
@@ -200,7 +200,7 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, complex, pip_estimate, prob
     chi.k.star <- localopt$model
 
     # Randomize around the mode
-    proposal <- gen.proposal(chi.k.star, params$random, q.r, !large.jump$swap, pip_estimate, prob=TRUE)
+    proposal <- gen.proposal(chi.k.star, list(neigh.size = length(pip_estimate), neigh.min = 1, neigh.max = length(pip_estimate)), q.r, NULL, (pip_estimate*0 + 1 - params$random$prob), prob=TRUE)
     proposal$model <- xor(chi.k.star, proposal$swap)
 
     # Do a backwards large jump and add in the kernel used in local optim to use the same for backwards local optim.
@@ -212,10 +212,10 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, complex, pip_estimate, prob
 
     ### Calculate acceptance probability
     # Set up the parameters that were used to generate the proposal
-    prop.params <- list(neigh.min = params$random$min, neigh.max = params$random$max, neigh.size = proposal$S)
+    prop.params <- list(neigh.size = length(pip_estimate), neigh.min = 1, neigh.max = length(pip_estimate))#list(neigh.min = params$random$min, neigh.max = params$random$max, neigh.size = proposal$S)
 
     # Calculate current model probability given proposal
-    model.cur$prob <- prob.proposal(proposal$model, chi.k, q.r, prop.params, pip_estimate) # Get probability of gamma given chi.k
+    model.cur$prob <- prob.proposal(proposal$model, chi.k, q.r, prop.params, (pip_estimate*0 + 1 - params$random$prob)) # Get probability of gamma given chi.k
 
     # Store models visited during local optimization
     proposal$models <- c(localopt$models, localopt2$models)

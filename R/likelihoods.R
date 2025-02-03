@@ -24,7 +24,7 @@ logistic.loglik <- function (y, x, model, complex, params = list(r = exp(-0.5)))
   if (length(params) == 0)
     params <- list(r = 1/dim(x)[1])
   suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = binomial())})
-  ret <- (-(mod$deviance -2 * log(params$r) * sum(complex$oc))) / 2
+  ret <- (-(mod$deviance + log(length(y)) * (mod$rank - 1) -2 * log(params$r) * sum(complex$oc))) / 2
   return(list(crit=ret, coefs=mod$coefficients))
 }
 
@@ -49,7 +49,7 @@ logistic.loglik.ala <- function (y, x, model, complex, params = list(r = exp(-0.
   if (length(params) == 0)
     params <- list(r = 1/dim(x)[1])
   suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = binomial(),maxit = 1)})
-  ret <- (-(mod$deviance -2 * log(params$r) * sum(complex$oc))) / 2
+  ret <- (-(mod$deviance + log(length(y)) * (mod$rank - 1) -2 * log(params$r) * sum(complex$oc))) / 2
   return(list(crit=ret, coefs=mod$coefficients))
 }
 
@@ -110,9 +110,9 @@ gaussian.loglik <- function (y, x, model, complex, params) {
   suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())})
   
   if(params$var == "unknown")
-    ret <- (-(mod$aic + 2 * (log(length(y))-1) * (mod$rank) - 2 * log(params$r) * (sum(complex$oc)))) / 2
+    ret <- (-(mod$aic + (log(length(y))-2) * (mod$rank) - 2 * log(params$r) * (sum(complex$oc)))) / 2
   else
-    ret <- (-(mod$deviance/params$var + 2 * log(length(y)) * (mod$rank - 1) - 2 * log(params$r) * (sum(complex$oc)))) / 2
+    ret <- (-(mod$deviance/params$var + log(length(y)) * (mod$rank - 1) - 2 * log(params$r) * (sum(complex$oc)))) / 2
   
   return(list(crit=ret, coefs=mod$coefficients))
 }
