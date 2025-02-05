@@ -7,6 +7,7 @@ gen.alphas <- function (strategy, feature, data, loglik, verbose) {
   if (strategy == 1) stop("Not implemented.")
   else if (strategy == 2) stop("Not implemented.")
   else if (strategy == 3) feature <- alpha_3(feature, data, loglik, verbose)
+  else if (strategy == 4) feature <- alpha_4(feature)
   return(feature)
 }
 
@@ -52,7 +53,7 @@ alpha_3 <- function (feature, data, loglik, verbose) {
     # Run simulated annealing on current range
     sares <- GenSA::GenSA(rnorm(featfun$count), loglik,
                       rep(-range / 2, featfun$count), rep(range / 2, featfun$count),
-                      control = list(max.call = 5e3), data, featfun$formula)
+                      control = list(max.call = 5e3, maxit = 20,nb.stop.improvement = 5), data, featfun$formula)
     # Check if any estimate is on the edge of the range, if so, extend the range and run again
     if (sum((sares$par == (-range / 2)) + (sares$par == (range / 2))) != 0) range <- range*2
     else done <- TRUE
@@ -63,5 +64,20 @@ alpha_3 <- function (feature, data, loglik, verbose) {
   }
   # Inject the new alphas into the feature
   feature <- update.alphas(feature, sares$par)
+  return(feature)
+}
+
+#' Alpha generator using strategy 4 as per Hubin et. al.
+#'
+#' @param feature The feature to generate alphas for
+#' 
+#' @noRd
+#' 
+alpha_4 <- function (feature) {
+  # Create the string representation of the feature with variable alphas
+  featfun <- print.feature(feature, dataset = TRUE, alphas = TRUE)
+  featfun <- set_alphas(featfun)
+  
+  feature <- update.alphas(feature, rnorm(featfun$count,0,1))
   return(feature)
 }

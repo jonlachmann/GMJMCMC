@@ -10,13 +10,12 @@
 
 #install.packages("FBMS")
 #install.packages("devtools")
-library(devtools)
-devtools::install_github("jonlachmann/GMJMCMC@FBMS", force=T, build_vignettes=F)
+#library(devtools)
+#devtools::install_github("jonlachmann/GMJMCMC@FBMS", force=T, build_vignettes=F)
 library(FBMS)
 
-setwd("/home/florian/FBMS/")
 
-X <- read.csv("exa1.csv")
+X <- FBMS::exoplanet
 df <- as.data.frame(cbind(MajorAxis = X[,5], X[,-5]))
 
 
@@ -33,6 +32,7 @@ use.fbms = FALSE
 #
 ####################################################
 
+params <- gen.params.gmjmcmc(df)
 
 set.seed(123)
 
@@ -73,10 +73,10 @@ set.seed(124)
 
 if (use.fbms) {
  result_parallel <- fbms(data = df, method = "gmjmcmc.parallel", transforms = transforms,
-                         runs = 40, cores = 10, P=25)
+                         runs = 40, cores = 10, P=25,params = params)
 } else {
  result_parallel <- gmjmcmc.parallel(runs = 40, cores = 10,data = df, loglik.pi = gaussian.loglik, 
-                                     transforms = transforms, P=25)
+                                     transforms = transforms, P=25,params = params)
 }
 
 ####################################################
@@ -89,12 +89,12 @@ if (use.fbms) {
 # summary
 
 summary(result.default)
-summary(result.default, labels = names(df))
+summary(result.default, labels = names(df)[-1])
 
 summary(result.P50)
 
 summary(result_parallel)
-summary(result_parallel, tol = 0.01)
+summary(result_parallel, tol = 0.01,labels = names(df)[-1])
 
 
 ######################

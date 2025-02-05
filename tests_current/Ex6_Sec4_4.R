@@ -83,7 +83,7 @@ if (use.fbms) {
   result <- fbms(data = df.training, method = "gmjmcmc", transforms = transforms, 
                  probs = probs, params = params)
 } else {
-  result <- gmjmcmc(df.training, transforms = transforms, probs = probs)
+  result <- gmjmcmc(df.training, transforms = transforms, probs = probs,params = params)
 }
 summary(result)
 
@@ -126,12 +126,6 @@ plot(pred_parallel$aggr$mean, df.test$Rings)
 abline(0,1)
 
 
-RNGkind("L'Ecuyer-CMRG") 
-for(i in 1:10)
-{
-  set.seed(i)
-  print(mean(unlist(mclapply(1:10,function(j)runif(1,1,100),mc.set.seed = T))))
-}
 
 #############################################################################
 #
@@ -139,7 +133,7 @@ for(i in 1:10)
 #
 #############################################################################
 
-params$feat$alpha = 3
+params$feat$alpha = 4
 
 
 set.seed(5003)

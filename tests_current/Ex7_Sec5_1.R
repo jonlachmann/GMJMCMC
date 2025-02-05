@@ -16,18 +16,15 @@
 library(FBMS)
 use.fbms = FALSE  
 
-#setwd("/home/florian/FBMS/")
-load("Sangerdata.Rdata")
 
-df = as.data.frame(cbind(as.numeric(data[24266,-1]),
-                         t(as.matrix(data[-24266,-1]))
-))
+data(SangerData2)
+df = SangerData2
+#Rename columns
+colnames(df) = c("y",paste0("x",1:(ncol(df)-1)))
 
-names(df) = c("y",paste0("x",1:47292))
-
-# Candidates for the first MJMCMC round based on marginal p values
-p.vec = unlist(mclapply(2:47293, function(x)cor.test(df[,1],df[,x])$p.value))
-ids = sort(order(p.vec)[1:50])          
+# Candidates for the first MJMCMC round based on correlation with response
+c.vec = unlist(mclapply(2:ncol(df), function(x)abs(cor(df[,1],df[,x]))))
+ids = sort(order(c.vec,decreasing=TRUE)[1:50])          
 
 transforms = c("")
 params = gen.params.gmjmcmc(df[,ids])

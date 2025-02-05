@@ -78,10 +78,10 @@ set.seed(123)
 
 if (use.fbms) {
   result_parallel <- fbms(data = df, method = "gmjmcmc.parallel", transforms = transforms,
-                 runs = 40, cores = 40,
+                 runs = 40, cores = 10,
                  probs = probs, params = params, P=25)
 } else {
-  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 40, data = df, 
+  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 10, data = df, 
                             transforms = transforms, probs = probs, params = params, P=25)
 }
 
@@ -94,10 +94,10 @@ set.seed(123)
 
 if (use.fbms) {
   result_parallel2 <- fbms(data = df, method = "gmjmcmc.parallel", transforms = transforms,
-                 runs = 40, cores = 40, N.init=1000, N.final=2000,
+                 runs = 40, cores = 10, N.init=1000, N.final=2000,
                  probs = probs, params = params, P=25)
 } else {
-  result_parallel2 =  gmjmcmc.parallel(runs = 40, cores = 40, data = df, 
+  result_parallel2 =  gmjmcmc.parallel(runs = 40, cores = 10, data = df, 
                                 transforms = transforms, probs = probs, params = params, P=25, 
                                 N.init=1000, N.final=2000)
 }

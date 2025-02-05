@@ -16,7 +16,7 @@ use.fbms = FALSE
 
 #setwd("/home/florian/FBMS/")
 
-df = read.csv2(file = "spam_data.csv",sep = ";",dec = ".")[,c(58,1:57)]
+df = read.csv2(file = "/Users/aliaksandrhome/EMJMCMC/supplementaries/BGNLM/spam/spam.data",sep = " ",dec = ".")[,c(58,1:57)]
 
 summary(df)
 
@@ -39,7 +39,7 @@ probs <- gen.probs.gmjmcmc(transforms)
 probs$gen <- c(1,1,1,1) 
 
 params <- gen.params.gmjmcmc(df)
-
+params$feat$check.col <- F
 ####################################################
 #
 # single thread analysis

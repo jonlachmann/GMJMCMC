@@ -47,7 +47,6 @@ correct.model
 beta.k
 
 
-
 to3 <- function(x) x^3
 transforms <- c("sigmoid","sin_deg","exp_dbl","p0","troot","to3")
 
