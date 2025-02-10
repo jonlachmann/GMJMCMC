@@ -4,10 +4,8 @@
 # Created on: 2021-03-16
 
 gen.alphas <- function (strategy, feature, data, loglik, verbose) {
-  if (strategy == 1) stop("Not implemented.")
-  else if (strategy == 2) stop("Not implemented.")
-  else if (strategy == 3) feature <- alpha_3(feature, data, loglik, verbose)
-  else if (strategy == 4) feature <- alpha_4(feature)
+  if (strategy == "deep") feature <- alpha_3(feature, data, loglik, verbose)
+  else if (strategy == "random") feature <- alpha_4(feature) else stop("Not implemented.")
   return(feature)
 }
 

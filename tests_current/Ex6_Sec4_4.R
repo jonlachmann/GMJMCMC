@@ -133,7 +133,7 @@ abline(0,1)
 #
 #############################################################################
 
-params$feat$alpha = 4
+params$feat$alpha = "deep"
 
 
 set.seed(5003)
@@ -165,7 +165,7 @@ plot(pred.a3$aggr$mean, df.test$Rings)
 #
 #############################################################################
 
-params$feat$alpha = 3
+params$feat$alpha = "deep"
 
 set.seed(5004)
 

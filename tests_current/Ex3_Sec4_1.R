@@ -41,7 +41,8 @@ transforms = c("")
 probs = gen.probs.gmjmcmc(transforms)
 probs$gen = c(0,0,0,1)
 probs$filter=0.8
-
+params$loglik$var = "unknown"
+#params$loglik$r = 1
 set.seed(123)
 
 if (use.fbms) {
@@ -66,13 +67,14 @@ if (use.fbms) {
 }
 
 summary(result2)
+summary(result1)
 
 
 ################################
 #
 # Comparing results
 #
-£
+
 
 
 
@@ -87,6 +89,7 @@ params = gen.params.gmjmcmc(df[,ids3])
 params$feat$check.col <- F
 params$feat$pop.max = 60
 params$prel.select <- ids3
+params$loglik$var <- "unknown"
 probs = gen.probs.gmjmcmc(transforms)
 probs$gen = c(0,0,0,1)
 
@@ -124,11 +127,11 @@ summary(result2,tol = 0.01)
 set.seed(123)
 
 if (use.fbms) {
-  result_parallel <- fbms(data = df, method = "gmjmcmc.parallel", runs = 4, cores = 4, 
+  result_parallel <- fbms(data = df, method = "gmjmcmc.parallel", runs = 10, cores = 10, 
                                       transforms = transforms, probs = probs, params = params, 
                                       P=25, N.init=500, N.final=500)
 } else {
-  result_parallel =  gmjmcmc.parallel(runs = 4, cores = 4,data = df,  
+  result_parallel =  gmjmcmc.parallel(runs = 10, cores = 10,data = df,  
                                       transforms = transforms, probs = probs, params = params, 
                                       P=25, N.init=500, N.final=500)
 }
@@ -157,11 +160,11 @@ set.seed(1234)
 if (use.fbms) {
   result_parallel2 <- fbms(data = df, method = "gmjmcmc.parallel", runs = 40, cores = 40, 
                           transforms = transforms, probs = probs, params = params, 
-                          P=25, N.init=500, N.final=2000)
+                          P=25, N.init=500, N.final=500)
 } else {
   result_parallel2 =  gmjmcmc.parallel(runs = 40, cores = 40,data = df, 
                          transforms = transforms, probs = probs, params = params, 
-                         P=25, N.init=500, N.final=2000)
+                         P=25, N.init=500, N.final=500)
 }
 save(result_parallel2,file="Ex3_parallel2.RData")
 plot(result_parallel2)

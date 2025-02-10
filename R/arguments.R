@@ -184,7 +184,7 @@ gen.params.gmjmcmc <- function (data) {
   ncov <- ncol(data) - 2
 
   feat_params <- list(D = 5, L = 15,                                # Hard limits on feature complexity
-                      alpha = 0,                                    # alpha strategy (0 = None, 1,2,3 = strategies as per Hubin et al.) TODO: Fully Bayesian
+                      alpha = "unit",                               # alpha strategy ("unit" = None, "deep" strategy 3 from Hubin et al., "random" fully Bayesian strategy) 
                       pop.max = min(100,as.integer(ncov * 1.5)),    # Max features population size
                       keep.org = FALSE,                             # Always keep original covariates in every population
                       prel.filter = 0,                           # Filtration threshold for first population (i.e. filter covariates even if keep.org=TRUE)

@@ -49,7 +49,7 @@ gen.feature <- function (features, marg.probs, data, loglik.alpha, probs, F.0.si
     # Check that the feature is not too wide or deep
     if (!(depth.feature(feat) > params$D || width.feature(feat) > params$L)) {
       # Generate alphas using the strategy chosen
-      if (params$alpha > 0) {
+      if (params$alpha != "unit") {
         feat <- gen.alphas(params$alpha, feat, data, loglik.alpha, verbose)
       }
       if (!is.null(feat)) {
