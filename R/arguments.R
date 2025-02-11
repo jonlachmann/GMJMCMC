@@ -125,7 +125,7 @@ gen.probs.gmjmcmc <- function (transforms) {
 #'
 #' @return A list of parameters to use when running the mjmcmc function.
 #'
-#' Note that the $loglik item is an empty list, which is passed to the log likelihood function of the model,
+#' Note that the `$loglik` item is an empty list, which is passed to the log likelihood function of the model,
 #' intended to store parameters that the estimator function should use.
 #'
 #' @examples
