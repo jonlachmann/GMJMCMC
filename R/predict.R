@@ -39,7 +39,7 @@ predict.gmjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.02
     rm(na.matr)
   } else x <- as.matrix(x)
   
-  merged <- merge_results(list(object),data = cbind(1,x),populations = pop,tol = tol)
+  merged <- merge_results(list(object),data = cbind(1, x), populations = pop, tol = tol)
   set.transforms(transforms.bak)
   return(predict.gmjmcmc_merged(merged, x, link, quantiles))
 }
@@ -104,9 +104,6 @@ predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.
 #'
 #' @export
 predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = NULL,tol =  0.0000001, ...) {
-  
-
-  
   if(!is.null(attr(object,which = "imputed")))
   {
     df <- data.frame(x)

@@ -109,7 +109,15 @@ precalc.features <- function (data, features) {
 
 # TODO: Compare to previous mliks here instead, also add a flag to do that in full likelihood estimation scenarios.
 # Function to call the model function
-loglik.pre <- function (loglik.pi, model, complex, data, params = NULL) {
+loglik.pre <- function (loglik.pi, model, complex, data, params = NULL, visited.models = visited.models, sub = sub) {
+  if (!is.null(visited.models) && has_key(visited.models, model)) {
+    if (!sub) {
+      return(visited.models[[model]])
+    } else {
+      params$coefs <- visited.models[[model]]$coefs
+      params$crit <- visited.models[[model]]$crit
+    }
+  }
   # Get the complexity measures for just this model
   complex <- list(width = complex$width[model], oc = complex$oc[model], depth = complex$depth[model])
   # Call the model estimator with the data and the model, note that we add the intercept to every model
@@ -118,7 +126,7 @@ loglik.pre <- function (loglik.pi, model, complex, data, params = NULL) {
   if (!is.numeric(model.res$crit) || is.nan(model.res$crit)) model.res$crit <- -.Machine$double.xmax
   # Alpha cannot be calculated if the current and proposed models have crit which are -Inf or Inf
   if (is.infinite(model.res$crit)) {
-    if (model.res$crit > 0)  model.res$crit <- .Machine$double.xmax
+    if (model.res$crit > 0) model.res$crit <- .Machine$double.xmax
     else model.res$crit <- -.Machine$double.xmax
   }
   return(model.res)

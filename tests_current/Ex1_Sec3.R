@@ -34,14 +34,26 @@ use.fbms = FALSE
 
 params <- gen.params.gmjmcmc(df)
 
-set.seed(123)
+
+
+#setting residual variance fixed to the one from the Linear model
+#lmm <- lm(formula = MajorAxis ~ .,df)
+#params$loglik$var <- var(lmm$residuals)
+#set.seed(123)
+#to set variance to unknown use below
+#params$loglik$var <- "unknown"
+#to set to 1
+#params$loglik$var <- 1
 
 if (use.fbms) {
- result.default <- fbms(formula = MajorAxis ~ 1 + . , data = df, method = "gmjmcmc", transforms = transforms)
+ result.default <- fbms(formula = MajorAxis ~ 1 + . , data = df, method = "gmjmcmc", transforms = transforms, params = params)
 } else {
- result.default <- gmjmcmc(df, transforms = transforms)
+ result.default <- gmjmcmc(df, transforms = transforms, params = params)
 }
+summary(result.default, labels = names(df)[-1])
 
+preds <- predict(result.default, df[,-1])
+sqrt(mean((preds$aggr$mean - df$MajorAxis)^2))
 
 ####################################################
 #
@@ -54,11 +66,12 @@ set.seed(123)
 
 if (use.fbms) {
  result.P50 <- fbms(data = df, method = "gmjmcmc", transforms = transforms,
-                    P=50, N.init=1000, N.final=5000)
+                    P=150, N.init=1000, N.final=1000, params = params)
 } else {
  result.P50 <- gmjmcmc(df,  transforms = transforms,
-                       P=50, N.init=1000, N.final=5000)
+                       P=150, N.init=1000, N.final=1000, params = params)
 }
+summary(result.P50, labels = names(df)[-1])
 
 ####################################################
 #
@@ -67,18 +80,14 @@ if (use.fbms) {
 ####################################################
 
 set.seed(124)
-
-# Actual parallel analysis works currently only under Linux or Mac
-# result_mm =  gmjmcmc.parallel(runs = 4, cores = 4,df, gaussian.loglik, gaussian.loglik.alpha, transforms)
-
 if (use.fbms) {
  result_parallel <- fbms(data = df, method = "gmjmcmc.parallel", transforms = transforms,
                          runs = 40, cores = 10, P=25,params = params)
 } else {
- result_parallel <- gmjmcmc.parallel(runs = 40, cores = 10,data = df, loglik.pi = gaussian.loglik, 
+ result_parallel <- gmjmcmc.parallel(runs = 40, cores = 10, data = df, loglik.pi = gaussian.loglik, 
                                      transforms = transforms, P=25,params = params)
 }
-
+summary(result_parallel, tol = 0.01,labels = names(df)[-1])
 ####################################################
 #
 # Inspection of Results (Section 3.4)
@@ -128,7 +137,7 @@ plot(result_parallel, 12)
 # Prediction
 
 #preds <-  predict(result, df[,-1], link = function(x) x)  
-preds <-  predict(result.default, df[,-1])  
+preds <-  predict(result.default, df[,-1])
 
 pdf("prediction.pdf") 
 plot(preds$aggr$mean, df$MajorAxis)
@@ -156,14 +165,12 @@ rmse.P50 <-  sqrt(mean((preds.P50$aggr$mean - df$MajorAxis)^2))
 ###############################
 
 
-preds.multi <- predict(result_parallel , df[,-1], link = function(x) x)  
+preds.multi <- predict(result_parallel , df[,-1], link = function(x) x)
 
 pdf("pred_parallel.pdf") 
 plot(preds.multi$aggr$mean, df$MajorAxis)
 dev.off()
 
 rmse.parallel <- sqrt(mean((preds.multi$aggr$mean - df$MajorAxis)^2))
-
-
 
 c(rmse.default, rmse.P50, rmse.parallel)
