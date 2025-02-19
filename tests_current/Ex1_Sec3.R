@@ -52,8 +52,7 @@ if (use.fbms) {
 }
 summary(result.default, labels = names(df)[-1])
 
-preds <- predict(result.default, df[,-1])
-sqrt(mean((preds$aggr$mean - df$MajorAxis)^2))
+
 
 ####################################################
 #
@@ -66,10 +65,10 @@ set.seed(123)
 
 if (use.fbms) {
  result.P50 <- fbms(data = df, method = "gmjmcmc", transforms = transforms,
-                    P=150, N.init=1000, N.final=1000, params = params)
+                    P=50, N.init=1000, N.final=1000, params = params)
 } else {
  result.P50 <- gmjmcmc(df,  transforms = transforms,
-                       P=150, N.init=1000, N.final=1000, params = params)
+                       P=50, N.init=1000, N.final=1000, params = params)
 }
 summary(result.P50, labels = names(df)[-1])
 
