@@ -13,7 +13,7 @@ library(FBMS)
 use.fbms = FALSE  
 
 
-df = read.csv2(file = "tests/art.csv",sep = ",",dec = ".")[,c(16,1:3,5:8,10:14)]
+df = read.csv2(file = "/Users/aliaksandrhome/GMJMCMC/tests/art.csv",sep = ",",dec = ".")[,c(16,1:3,5:8,10:14)]
 
 summary(df)
 

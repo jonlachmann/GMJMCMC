@@ -111,7 +111,7 @@ mjmcmc.loop <- function (data, complex, loglik.pi, model.cur, N, probs, params, 
     proposal <- mjmcmc.prop(data, loglik.pi, model.cur, complex, pip_estimate, probs, params, visited.models, sub = sub)
     if (proposal$crit > best.crit) {
       best.crit <- proposal$crit
-      if (verbose) cat(paste("\rNew best population crit:", best.crit, "\n"))
+      if (verbose) cat(paste("\rNew best crit in cur pop:", best.crit, "\n"))
     }
 
     # If we did a large jump and visited models to save

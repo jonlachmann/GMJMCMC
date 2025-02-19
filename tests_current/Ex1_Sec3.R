@@ -86,7 +86,7 @@ if (use.fbms) {
  result_parallel <- gmjmcmc.parallel(runs = 40, cores = 10, data = df, loglik.pi = gaussian.loglik, 
                                      transforms = transforms, P=25,params = params)
 }
-summary(result_parallel, tol = 0.01,labels = names(df)[-1])
+summary(result_parallel, tol = 0.01)
 ####################################################
 #
 # Inspection of Results (Section 3.4)
@@ -173,3 +173,5 @@ dev.off()
 rmse.parallel <- sqrt(mean((preds.multi$aggr$mean - df$MajorAxis)^2))
 
 c(rmse.default, rmse.P50, rmse.parallel)
+
+

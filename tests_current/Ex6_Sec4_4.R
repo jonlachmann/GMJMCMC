@@ -66,8 +66,8 @@ probs <- gen.probs.gmjmcmc(transforms)
 probs$gen <- c(0,0,1,1) #Only projections!
 
 params <- gen.params.gmjmcmc(df.training)
-params$loglik$r = 0.9
-params$loglik$var = "unknown"
+#params$loglik$r = 0.9
+#params$loglik$var = "unknown"
 
 
 #############################################################################
@@ -103,7 +103,7 @@ plot(pred$aggr$mean, df.test$Rings)
 #
 #############################################################################
 
-RNGkind("L'Ecuyer-CMRG") 
+#RNGkind("L'Ecuyer-CMRG") 
 set.seed(5003)
 
 if (use.fbms) {
@@ -161,7 +161,7 @@ plot(pred.a3$aggr$mean, df.test$Rings)
 
 #############################################################################
 #
-#   Parallel version  params$feat$alpha = 3
+#   Parallel version  params$feat$alpha = "random"
 #
 #############################################################################
 
@@ -179,6 +179,11 @@ if (use.fbms) {
 }
 summary(result_parallel.a3)
 
+best.chain <- which.max(sapply(result_parallel.a3$results,function(x)x$best))
+best.mod.id <- which.max(sapply(result_parallel.a3$results[[best.chain]]$models[[1]],function(x)x$crit))
+result_parallel.a3$results[[best.chain]]$models[[1]][[best.mod.id]]$model
+
+get.best.model
 
 
 pred_parallel.a3 = predict(result_parallel.a3, x =  df.test[,-1], link = function(x)(x))  
