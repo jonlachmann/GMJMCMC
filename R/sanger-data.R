@@ -11,8 +11,8 @@
 #'
 #' @docType data
 #' @keywords datasets
-#' @name sanger
-#' @usage data(sanger)
+#' @name SangerData2
+#' @usage data(SangerData2)
 #' @format A data frame  with 210 rows and 3221 variables
 #' @source Dataset downloaded from 
 #' \url{https://ftp.sanger.ac.uk/pub/genevar/}
