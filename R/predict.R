@@ -33,19 +33,13 @@
 #' }
 #'
 #' @export
-predict.bgnlm_model <- function(model, x, link = function(x) { x }) {
+predict.bgnlm_model <- function(object, x, link = function(x) { x }) {
   x.precalc <- model.matrix(
-    as.formula(paste0("~I(", paste0(names(model$coefs)[-1], collapse = ")+I("), ")")),
+    as.formula(paste0("~I(", paste0(names(object$coefs)[-1], collapse = ")+I("), ")")),
     data = x
   )
-  yhat <- link(x.precalc %*% model$coefs)
+  yhat <- link(x.precalc %*% object$coefs)
   return(yhat)
-}
-
-predict.bgnlm_model <- function(object,x,link = function(x){x})
-{
-  x.precalc <- model.matrix(as.formula(paste0("~I(",paste0(names(object$coefs)[-1],collapse = ")+I("),")")), data = x)
-  yhat<- link(x.precalc %*% object$coefs)
 }
 
 
