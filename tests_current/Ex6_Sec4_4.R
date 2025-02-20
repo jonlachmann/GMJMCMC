@@ -179,11 +179,8 @@ if (use.fbms) {
 }
 summary(result_parallel.a3)
 
-best.chain <- which.max(sapply(result_parallel.a3$results,function(x)x$best))
-best.mod.id <- which.max(sapply(result_parallel.a3$results[[best.chain]]$models[[1]],function(x)x$crit))
-result_parallel.a3$results[[best.chain]]$models[[1]][[best.mod.id]]$model
 
-get.best.model
+
 
 
 pred_parallel.a3 = predict(result_parallel.a3, x =  df.test[,-1], link = function(x)(x))  

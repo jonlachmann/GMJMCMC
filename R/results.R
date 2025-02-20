@@ -233,6 +233,84 @@ model.string <- function (model, features, link = "I", round = 2) {
   return(modelfun)
 }
 
+
+
+#' Extract the Best Model from MJMCMC or GMJMCMC Results
+#'
+#' This function retrieves the best model from the results of MJMCMC, MJMCMC parallel, GMJMCMC, or GMJMCMC merged runs 
+#' based on the maximum criterion value (\code{crit}). The returned list includes the model probability, selected features, 
+#' criterion value, intercept parameter, and named coefficients.
+#'
+#' @param result An object of class \code{"mjmcmc"}, \code{"mjmcmc_parallel"}, \code{"gmjmcmc"}, or \code{"gmjmcmc_merged"}, 
+#' containing the results from the corresponding model search algorithms.
+#' @param labels Logical; if \code{TRUE}, uses labeled feature names when naming the model coefficients. Default is \code{FALSE}.
+#'
+#' @return A list containing the details of the best model:
+#' \describe{
+#'   \item{\code{prob}}{A numeric value representing the model's probability.}
+#'   \item{\code{model}}{A logical vector indicating which features are included in the best model.}
+#'   \item{\code{crit}}{The criterion value used for model selection (e.g., marginal likelihood or posterior probability).}
+#'   \item{\code{alpha}}{The intercept parameter of the best model.}
+#'   \item{\code{coefs}}{A named numeric vector of model coefficients, including the intercept and selected features.}
+#' }
+#'
+#' @details 
+#' The function identifies the best model by selecting the one with the highest \code{crit} value. Selection logic depends on the class of the \code{result} object:
+#' \describe{
+#'   \item{\code{"mjmcmc"}}{Selects the top model from a single MJMCMC run.}
+#'   \item{\code{"mjmcmc_parallel"}}{Identifies the best chain, then selects the best model from that chain.}
+#'   \item{\code{"gmjmcmc"}}{Selects the best population and model within that population.}
+#'   \item{\code{"gmjmcmc_merged"}}{Finds the best chain and population before extracting the top model.}
+#' }
+#'
+#' @examples
+#' result <- gmjmcmc(matrix(rnorm(600), 100), P = 2, gaussian.loglik, NULL, c("p0", "exp_dbl"))
+#' get.best.model(result)
+#'
+#' @export
+get.best.model <- function(result,labels = FALSE)
+{
+  
+  if(class(result) == "mjmcmc" )
+  {
+    best.mod.id <- which.max(sapply(result$models,function(x)x$crit))
+    ret <- result$models[[best.mod.id]]
+    names(ret$coefs) <- c("Intercept",sapply(result$populations,print.feature,labels = labels)[which(ret$model)])
+    return(ret)
+  }
+  
+  if(class(result) == "mjmcmc_parallel")
+  {
+    best.chain <- which.max(sapply(result,function(x)x$best.crit))
+    best.mod.id <- which.max(sapply(result[[best.chain]]$models,function(x)x$crit))
+    ret <- result[[best.chain]]$models[[best.mod.id]]
+    names(ret$coefs) <- c("Intercept",sapply(result[[best.chain]]$populations,print.feature,labels = labels)[which(ret$model)])
+    return(ret)
+  }
+  
+  
+  if(class(result) == "gmjmcmc" )
+  {
+    best.pop.id <- which.max(sapply(result$best.margs,function(x)x))
+    best.mod.id <- which.max(sapply(result$models[[best.pop.id]],function(x)x$crit))
+    ret <- result$models[[best.pop.id]][[best.mod.id]]
+    names(ret$coefs) <- c("Intercept",sapply(result$populations[[best.pop.id]],print.feature,labels = labels)[which(ret$model)])
+    return(ret)
+  }
+  
+  if(class(result) == "gmjmcmc_merged")
+  {
+    best.chain <- which.max(sapply(result$results,function(x)x$best))
+    best.pop.id <- which.max(sapply(result$results.raw[[best.chain]]$best.margs,function(x)x))
+    best.mod.id <- which.max(sapply(result$results.raw[[best.chain]]$models[[best.pop.id]],function(x)x$crit))
+    ret <- result$results.raw[[best.chain]]$models[[best.pop.id]][[best.mod.id]]
+    names(ret$coefs) <- c("Intercept",sapply(result$results.raw[[best.chain]]$populations[[best.pop.id]],print.feature,labels = labels)[which(ret$model)])
+    return(ret)
+  }
+  
+}
+
+
 #' Function to print a quick summary of the results
 #'
 #' @param object The results to use
