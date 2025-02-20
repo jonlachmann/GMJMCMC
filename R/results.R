@@ -233,6 +233,80 @@ model.string <- function (model, features, link = "I", round = 2) {
   return(modelfun)
 }
 
+#' Retrieve the Median Probability Model (MPM)
+#'
+#' This function extracts the Median Probability Model (MPM) from a fitted model object.
+#' The MPM includes features with marginal posterior inclusion probabilities greater than 0.5.
+#' It constructs the corresponding model matrix and computes the model fit using the specified likelihood.
+#'
+#' @param result A fitted model object (e.g., from \code{mjmcmc}, \code{gmjmcmc}, or related classes) containing the summary statistics and marginal probabilities.
+#' @param y A numeric vector of response values. For \code{family = "binomial"}, it should contain binary (0/1) responses.
+#' @param x A \code{data.frame} of predictor variables. Columns must correspond to features considered during model fitting.
+#' @param labels If specified, custom labels of covariates can be used. Default is \code{FALSE}.
+#' @param family Character string specifying the model family. Supported options are:
+#'   \itemize{
+#'     \item \code{"gaussian"} (default) - for continuous outcomes.
+#'     \item \code{"binomial"} - for binary outcomes.
+#'     \item \code{"custom"} - for user-defined likelihood functions.
+#'   }
+#' If an unsupported family is provided, a warning is issued and the Gaussian likelihood is used by default.
+#' @param loglik.pi A function that computes the log-likelihood. Defaults to \code{gaussian.loglik} unless \code{family = "binomial"}, in which case \code{logistic.loglik} is used. for custom family the user must specify the same likelihood that was used in the inference.
+#'
+#' @return A \code{bgnlm_model} object containing:
+#' \describe{
+#'   \item{\code{prob}}{The log marginal likelihood of the MPM.}
+#'   \item{\code{model}}{A logical vector indicating included features.}
+#'   \item{\code{crit}}{Criterion label set to \code{"MPM"}.}
+#'   \item{\code{coefs}}{A named numeric vector of model coefficients, including the intercept.}
+#' }
+#'
+#' @examples
+#' \dontrun{
+#' # Simulate data
+#' set.seed(42)
+#' x <- data.frame(
+#'   PlanetaryMassJpt = rnorm(100),
+#'   RadiusJpt = rnorm(100),
+#'   PeriodDays = rnorm(100)
+#' )
+#' y <- 1 + 0.5 * x$PlanetaryMassJpt - 0.3 * x$RadiusJpt + rnorm(100)
+#'
+#' # Assume 'result' is a fitted object from gmjmcmc or mjmcmc
+#' result <- mjmcmc(cbind(y,x))  
+#'
+#' # Get the MPM
+#' mpm_model <- get.mpm.model(result, y, x, family = "gaussian")
+#'
+#' # Access coefficients
+#' mpm_model$coefs
+#' }
+#'
+#' @export
+get.mpm.model <- function(result,y, x, labels = F, family = "gaussian", loglik.pi = gaussian.loglik) 
+{
+  
+  if(!family %in% c("custom","binomial","gaussian"))
+    warning("Unknown family specified. The default gaussian.loglik will be used.")
+  
+  if(family=="binomial")
+    loglik.pi <- logistic.loglik
+  
+  sm <-  summary(result, labels = labels)
+
+  mpm <- sm$feats.strings[sm$marg.probs>0.5]
+  
+  x.precalc <- model.matrix(
+    as.formula(paste0("~I(", paste0(mpm, collapse = ")+I("), ")")),
+    data = x)
+  
+  model <- loglik.pi(y = y,x = x.precalc,model = rep(TRUE, length(mpm)+1),complex = list(oc = 0),params = list(r = 1))
+  
+  class(model)<-"bgnlm_model"
+  
+  model$crit <- "MPM"
+  
+  return(model)
+}
 
 
 #' Extract the Best Model from MJMCMC or GMJMCMC Results
@@ -273,38 +347,50 @@ get.best.model <- function(result,labels = FALSE)
   
   if(class(result) == "mjmcmc" )
   {
+    if(length(labels)==1 & labels[1] == FALSE  & length(result$labels) > 0 )
+      labels = result$labels
     best.mod.id <- which.max(sapply(result$models,function(x)x$crit))
     ret <- result$models[[best.mod.id]]
     names(ret$coefs) <- c("Intercept",sapply(result$populations,print.feature,labels = labels)[which(ret$model)])
+    class(ret) = "bgnlm_model"
     return(ret)
   }
   
   if(class(result) == "mjmcmc_parallel")
   {
+    if(length(labels)==1 & labels[1] == FALSE & length(result[[1]]$labels) > 0)
+      labels = result[[1]]$labels
     best.chain <- which.max(sapply(result,function(x)x$best.crit))
     best.mod.id <- which.max(sapply(result[[best.chain]]$models,function(x)x$crit))
     ret <- result[[best.chain]]$models[[best.mod.id]]
     names(ret$coefs) <- c("Intercept",sapply(result[[best.chain]]$populations,print.feature,labels = labels)[which(ret$model)])
+    class(ret) = "bgnlm_model"
     return(ret)
   }
   
   
   if(class(result) == "gmjmcmc" )
   {
+    if(length(labels)==1 & labels[1] == FALSE  & length(result$labels) > 0 )
+      labels = result$labels
     best.pop.id <- which.max(sapply(result$best.margs,function(x)x))
     best.mod.id <- which.max(sapply(result$models[[best.pop.id]],function(x)x$crit))
     ret <- result$models[[best.pop.id]][[best.mod.id]]
     names(ret$coefs) <- c("Intercept",sapply(result$populations[[best.pop.id]],print.feature,labels = labels)[which(ret$model)])
+    class(ret) = "bgnlm_model"
     return(ret)
   }
   
   if(class(result) == "gmjmcmc_merged")
   {
+    if(length(labels)==1 & labels[1] == FALSE & length(result$results.raw[[1]]$labels) > 0)
+      labels = result$results.raw[[1]]$labels
     best.chain <- which.max(sapply(result$results,function(x)x$best))
     best.pop.id <- which.max(sapply(result$results.raw[[best.chain]]$best.margs,function(x)x))
     best.mod.id <- which.max(sapply(result$results.raw[[best.chain]]$models[[best.pop.id]],function(x)x$crit))
     ret <- result$results.raw[[best.chain]]$models[[best.pop.id]][[best.mod.id]]
     names(ret$coefs) <- c("Intercept",sapply(result$results.raw[[best.chain]]$populations[[best.pop.id]],print.feature,labels = labels)[which(ret$model)])
+    class(ret) = "bgnlm_model"
     return(ret)
   }
   
