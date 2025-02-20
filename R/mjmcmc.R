@@ -33,6 +33,7 @@
 #' @export mjmcmc
 mjmcmc <- function (data, loglik.pi = gaussian.loglik, N = 100, probs = NULL, params = NULL, sub = FALSE, verbose = TRUE) {
   # Verify that data is well-formed
+  labels <- names(data)[-1]
   data <- check.data(data, verbose)
 
   # Generate default probabilities and parameters if there are none supplied.
@@ -59,6 +60,7 @@ mjmcmc <- function (data, loglik.pi = gaussian.loglik, N = 100, probs = NULL, pa
   result$populations <- S
 
   # Return formatted results
+  result$labels <- labels
   class(result) <- "mjmcmc"
   return(result)
 }

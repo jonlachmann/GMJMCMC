@@ -59,6 +59,7 @@ gmjmcmc <- function (
   verbose = TRUE
 ) {
   # Verify that the data is well-formed
+  labels <- names(data)[-1]
   data <- check.data(data, verbose)
 
   # Generate default probabilities and parameters if there are none supplied.
@@ -158,6 +159,7 @@ gmjmcmc <- function (
     best = max(unlist(best.margs)),    # Best marginal model probability throughout the run
     transforms = transforms            # Transformations used by the model
   )
+  results$labels <- labels
   attr(results, "class") <- "gmjmcmc"
   return(results)
 }

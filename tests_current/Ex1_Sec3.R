@@ -50,7 +50,7 @@ if (use.fbms) {
 } else {
  result.default <- gmjmcmc(df, transforms = transforms, params = params)
 }
-summary(result.default, labels = names(df)[-1])
+summary(result.default)
 
 #' Extract the Best Model from MJMCMC or GMJMCMC Results
 #'

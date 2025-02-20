@@ -332,6 +332,8 @@ get.best.model <- function(result,labels = FALSE)
 #' @export 
 summary.gmjmcmc <- function (object, pop = "best", tol = 0.0001, labels = FALSE, effects = NULL, data = NULL, ...) {
   transforms.bak <- set.transforms(object$transforms)
+  if(length(labels)==1 & labels[1] == FALSE  & length(object$labels) > 0 )
+    labels = object$labels
   if (pop == "all") {
     results <- list()
     results[[1]] <- object
@@ -401,6 +403,8 @@ summary.gmjmcmc <- function (object, pop = "best", tol = 0.0001, labels = FALSE,
 #' @export 
 summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, effects = NULL, pop = NULL, data = NULL, ...) {
   transforms.bak <- set.transforms(object$transforms)
+  if(length(labels)==1 & labels[1] == FALSE & length(object$results.raw[[1]]$labels) > 0)
+    labels = object$results.raw[[1]]$labels
   if (!is.null(pop)) {
     
     object <- merge_results(object$results.raw, populations = pop, complex.measure = 2, tol = 0.0000001, data = data)
@@ -439,6 +443,8 @@ summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, effect
 #'
 #' @export 
 summary.mjmcmc <- function (object, tol = 0.0001, labels = FALSE, effects = NULL, ...) {
+  if(length(labels)==1 & labels[1] == FALSE & length(object$labels) > 0)
+    labels = object$labels
   return(summary.mjmcmc_parallel(list(object), tol = tol, labels = labels, effects = effects))
 }
 
@@ -461,6 +467,8 @@ summary.mjmcmc <- function (object, tol = 0.0001, labels = FALSE, effects = NULL
 #' @export 
 summary.mjmcmc_parallel <- function (object, tol = 0.0001, labels = FALSE, effects = NULL, ...) {
   # Get features as strings for printing
+  if(length(labels)==1 & labels[1] == FALSE & length(object[[1]]$labels) > 0)
+    labels = object[[1]]$labels
   feats.strings <- sapply(object[[1]]$populations, FUN = function(x) print.feature(x = x, labels = labels, round = 2))
   # Get marginal posterior of features
   models <- unlist(lapply(object, function (x) x$models), recursive = FALSE)

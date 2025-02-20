@@ -96,6 +96,7 @@ rmclapply <- function(runs, args, fun, mc.cores = NULL) {
 mjmcmc.parallel <- function(runs = 2, cores = getOption("mc.cores", 2L), ...) {
   results <- rmclapply(seq_len(runs), args = list(...), mc.cores = cores, fun = mjmcmc)
   class(results) <- "mjmcmc_parallel"
+  gc()
   return(results)
 }
 
@@ -127,9 +128,7 @@ mjmcmc.parallel <- function(runs = 2, cores = getOption("mc.cores", 2L), ...) {
 #' @export
 gmjmcmc.parallel <- function(runs = 2, cores = getOption("mc.cores", 2L), merge.options = list(populations = "best", complex.measure = 2, tol = 0.0000001), data, loglik.pi = gaussian.loglik, loglik.alpha = gaussian.loglik.alpha, transforms, ...) {
   options("gmjmcmc-transformations" = transforms)
-
   results <- rmclapply(seq_len(runs), args = list(data = data, loglik.pi = loglik.pi, loglik.alpha = loglik.alpha, transforms = transforms, ...), mc.cores = cores, fun = gmjmcmc)
-
   class(results) <- "gmjmcmc_parallel"
   merged <- merge_results(results, merge.options$populations, merge.options$complex.measure, merge.options$tol, data = data)
   gc()
