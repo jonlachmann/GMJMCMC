@@ -33,7 +33,7 @@
 #' }
 #'
 #' @export
-predict.bgnlm_model <- function(object, x, link = function(x) { x }) {
+predict.bgnlm_model <- function(object, x, link = function(x) { x }, ... ) {
   x.precalc <- model.matrix(
     as.formula(paste0("~I(", paste0(names(object$coefs)[-1], collapse = ")+I("), ")")),
     data = x
