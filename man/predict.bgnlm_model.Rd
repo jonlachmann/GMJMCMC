@@ -9,7 +9,8 @@
   x,
   link = function(x) {
      x
- }
+ },
+  ...
 )
 }
 \arguments{
