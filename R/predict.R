@@ -9,6 +9,7 @@
 #' @param link A link function to apply to the linear predictor. 
 #'             By default, it is the identity function \code{function(x)\{x\}}, 
 #'             but it can be any function such as \code{plogis} for logistic regression models.
+#' @param ...  Additional arguments to pass to prediction function.
 #'
 #' @return A numeric vector of predicted values for the given data \code{x}. 
 #'         These predictions are calculated as \eqn{\hat{y} = \text{link}(X \beta)}, 
