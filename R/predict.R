@@ -2,7 +2,7 @@
 #'
 #' This function generates predictions from a fitted \code{bgnlm_model} object given a new dataset.
 #'
-#' @param model A fitted \code{bgnlm_model} object obtained from the BGNLM fitting procedure. 
+#' @param object A fitted \code{bgnlm_model} object obtained from the BGNLM fitting procedure. 
 #'              It should contain the estimated coefficients in \code{model$coefs}.
 #' @param x A \code{data.frame} containing the new data for which predictions are to be made. 
 #'          The variables in \code{x} must match the features used in the model.

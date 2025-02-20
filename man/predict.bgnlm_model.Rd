@@ -5,7 +5,7 @@
 \title{Predict responses from a BGNLM model}
 \usage{
 \method{predict}{bgnlm_model}(
-  model,
+  object,
   x,
   link = function(x) {
      x
@@ -13,7 +13,7 @@
 )
 }
 \arguments{
-\item{model}{A fitted \code{bgnlm_model} object obtained from the BGNLM fitting procedure.
+\item{object}{A fitted \code{bgnlm_model} object obtained from the BGNLM fitting procedure.
 It should contain the estimated coefficients in \code{model$coefs}.}
 
 \item{x}{A \code{data.frame} containing the new data for which predictions are to be made.
