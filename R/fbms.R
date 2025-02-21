@@ -92,6 +92,15 @@ fbms <- function(formula = NULL, family = "gaussian", data = NULL, impute = FALS
     }
   } else {
     df <- data
+    imputed <- NULL
+    na.opt <- getOption("na.action")
+    if(impute)
+    { 
+      options(na.action='na.pass')
+      stop("Imputation is only implemented when formula is provided.\n Please specify formula and rerun!")
+    }
+    else
+      options(na.action='na.omit')
   }
   
   if (method == "mjmcmc.parallel")
