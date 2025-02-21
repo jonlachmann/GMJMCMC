@@ -345,7 +345,7 @@ get.mpm.model <- function(result,y, x, labels = F, family = "gaussian", loglik.p
 get.best.model <- function(result,labels = FALSE)
 {
   
-  if(class(result) == "mjmcmc" )
+  if(is(result,"mjmcmc"))
   {
     if(length(labels)==1 & labels[1] == FALSE  & length(result$labels) > 0 )
       labels = result$labels
@@ -356,7 +356,7 @@ get.best.model <- function(result,labels = FALSE)
     return(ret)
   }
   
-  if(class(result) == "mjmcmc_parallel")
+  if(is(result,"mjmcmc_parallel"))
   {
     if(length(labels)==1 & labels[1] == FALSE & length(result[[1]]$labels) > 0)
       labels = result[[1]]$labels
@@ -369,7 +369,7 @@ get.best.model <- function(result,labels = FALSE)
   }
   
   
-  if(class(result) == "gmjmcmc" )
+  if(is(result,"gmjmcmc"))
   {
     if(length(labels)==1 & labels[1] == FALSE  & length(result$labels) > 0 )
       labels = result$labels
@@ -381,7 +381,7 @@ get.best.model <- function(result,labels = FALSE)
     return(ret)
   }
   
-  if(class(result) == "gmjmcmc_merged")
+  if(is(result,"gmjmcmc_merged"))
   {
     if(length(labels)==1 & labels[1] == FALSE & length(result$results.raw[[1]]$labels) > 0)
       labels = result$results.raw[[1]]$labels

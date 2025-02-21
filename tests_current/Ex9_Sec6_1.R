@@ -67,12 +67,21 @@ summary(result)
 # IMPORTANT: specify correct link function for predict
 
 pred = predict(result, x =  df[,-1], link = function(x)(1/(1+exp(-x))))  
-
 mean(round(pred$aggr$mean)==df$y)
+
+get.best.model(result = result)
+preds <-  predict(get.best.model(result), df[,-1],link = function(x)(1/(1+exp(-x))))
+mean(round(preds)==df$y)
+
+get.mpm.model(result = result,family = "binomial",y = df$y,x=df[,-1])
+preds <-  predict(get.mpm.model(result = result,family = "binomial",y = df$y,x=df[,-1]), df[,-1],link = function(x)(1/(1+exp(-x))))
+mean(round(preds)==df$y)
+
+
 
 plot(pred$aggr$mean)
 points(pred$aggr$quantiles[1,], col = 2)
-points(pred$aggr$quantiles[3,], col = 2)
+points(pred$aggr$quantiles[3,], col = 3)
 
 
 head(cbind(pred$aggr$mean, pred$aggr$quantiles[1,],pred$aggr$quantiles[3,]))
@@ -100,7 +109,12 @@ summary(result_parallel)
 # IMPORTANT: specify correct link function for predict
 
 pred_parallel = predict(result_parallel, x =  df[,-1], link = function(x)(1/(1+exp(-x))))  
-
 mean(round(pred_parallel$aggr$mean)==df$y)
 
+preds <-  predict(get.best.model(result_parallel), df[,-1],link = function(x)(1/(1+exp(-x))))
+mean(round(preds)==df$y)
+
+
+preds <-  predict(get.mpm.model(result = result_parallel,family = "binomial",y = df$y,x=df[,-1]), df[,-1],link = function(x)(1/(1+exp(-x))))
+mean(round(preds)==df$y)
 

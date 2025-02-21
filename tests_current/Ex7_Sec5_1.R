@@ -27,7 +27,7 @@ c.vec = unlist(mclapply(2:ncol(df), function(x)abs(cor(df[,1],df[,x]))))
 ids = sort(order(c.vec,decreasing=TRUE)[1:50])          
 
 transforms = c("")
-params = gen.params.gmjmcmc(df[,ids])
+params = gen.params.gmjmcmc(df)
 params$feat$check.col <- F
 params$feat$pop.max = 60
 params$feat$prel.filter <- ids
@@ -89,8 +89,6 @@ if (use.fbms) {
 }
 summary(result1)
 
-
-plot(result1,17)
 
 #Correlation analysis
 

@@ -23,9 +23,7 @@ library(irls.sgd)
 
 
 
-setwd("/home/florian/FBMS/")
-
-df = read.csv2(file = "heart_disease_health_indicators_BRFSS2015.csv",sep = ",",dec = ".")
+df = read.csv2(file = "/Users/aliaksandrhome/GMJMCMC/tests/heart_disease_health_indicators_BRFSS2015.csv",sep = ",",dec = ".")
 
 summary(df)
 dim(df)

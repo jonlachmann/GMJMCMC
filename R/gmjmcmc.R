@@ -11,7 +11,7 @@ NULL
 #' Main algorithm for GMJMCMC (Genetically Modified MJMCMC)
 #'
 #' @param data A matrix containing the data to use in the algorithm,
-#' first column should be the dependent variable, second should be the intercept
+#' first column should be the dependent variable,
 #' and the rest of the columns should be the independent variables.
 #' @param loglik.pi The (log) density to explore
 #' @param loglik.alpha The likelihood function to use for alpha calculation
