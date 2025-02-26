@@ -4,7 +4,7 @@
 # Created on: 2021-05-06
 
 #' Merge a list of multiple results from many runs
-#' This function will weight the features based on the best mlik in that population
+#' This function will weight the features based on the best marginal posterior in that population
 #' and merge the results together, simplifying by merging equivalent features (having high correlation).
 #'
 #' @param results A list containing multiple results from GMJMCMC (Genetically Modified MJMCMC).
@@ -28,6 +28,7 @@
 #' \item{best.log.posteriors}{A matrix where the first column contains the population indices and the second column contains the model with the highest log marginal posterior within that population.}
 #' \item{rep.thread}{The index of the thread which contains reported.}
 #'
+#' @examples
 #' result <- gmjmcmc.parallel(
 #'  runs = 1,
 #'  cores = 1,
@@ -251,7 +252,7 @@ model.string <- function (model, features, link = "I", round = 2) {
 #'   }
 #' If an unsupported family is provided, a warning is issued and the Gaussian likelihood is used by default.
 #' @param loglik.pi A function that computes the log-likelihood. Defaults to \code{gaussian.loglik} unless \code{family = "binomial"}, in which case \code{logistic.loglik} is used. for custom family the user must specify the same likelihood that was used in the inference.
-#' @param params Parameters of loglik.pi, if not specified NULL will be used by default
+#' @param params Parameters of `loglik.pi`, if not specified NULL will be used by default
 #'
 #' @return A \code{bgnlm_model} object containing:
 #' \describe{

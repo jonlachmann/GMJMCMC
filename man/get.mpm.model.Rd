@@ -33,7 +33,7 @@ If an unsupported family is provided, a warning is issued and the Gaussian likel
 
 \item{loglik.pi}{A function that computes the log-likelihood. Defaults to \code{gaussian.loglik} unless \code{family = "binomial"}, in which case \code{logistic.loglik} is used. for custom family the user must specify the same likelihood that was used in the inference.}
 
-\item{params}{Parameters of loglik.pi, if not specified NULL will be used by default}
+\item{params}{Parameters of \code{loglik.pi}, if not specified NULL will be used by default}
 }
 \value{
 A \code{bgnlm_model} object containing:

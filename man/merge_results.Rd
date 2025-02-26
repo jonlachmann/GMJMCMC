@@ -3,7 +3,7 @@
 \name{merge_results}
 \alias{merge_results}
 \title{Merge a list of multiple results from many runs
-This function will weight the features based on the best mlik in that population
+This function will weight the features based on the best marginal posterior in that population
 and merge the results together, simplifying by merging equivalent features (having high correlation).}
 \usage{
 merge_results(
@@ -40,16 +40,22 @@ An object of class "gmjmcmc_merged" containing the following elements:
 \item{rep.pop}{The index of the population which contains reported.}
 \item{best.log.posteriors}{A matrix where the first column contains the population indices and the second column contains the model with the highest log marginal posterior within that population.}
 \item{rep.thread}{The index of the thread which contains reported.}
-
+}
+\description{
+Merge a list of multiple results from many runs
+This function will weight the features based on the best marginal posterior in that population
+and merge the results together, simplifying by merging equivalent features (having high correlation).
+}
+\examples{
 result <- gmjmcmc.parallel(
-runs = 1,
-cores = 1,
-list(populations = "best", complex.measure = 2, tol = 0.0000001),
-matrix(rnorm(600), 100),
-P = 2,
-gaussian.loglik,
-loglik.alpha = gaussian.loglik.alpha,
-c("p0", "exp_dbl")
+ runs = 1,
+ cores = 1,
+ list(populations = "best", complex.measure = 2, tol = 0.0000001),
+ matrix(rnorm(600), 100),
+ P = 2,
+ gaussian.loglik,
+ loglik.alpha = gaussian.loglik.alpha,
+ c("p0", "exp_dbl")
 )
 
 summary(result)
@@ -57,9 +63,5 @@ summary(result)
 plot(result)
 
 merge_results(result$results)
-}
-\description{
-Merge a list of multiple results from many runs
-This function will weight the features based on the best mlik in that population
-and merge the results together, simplifying by merging equivalent features (having high correlation).
+
 }

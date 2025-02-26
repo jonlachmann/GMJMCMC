@@ -2,6 +2,7 @@
 test
 Make_data
 tests_current
+README.md
 .DS_Store
 ^.*\.Rproj$
 ^\.Rproj\.user$
