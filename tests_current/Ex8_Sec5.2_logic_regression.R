@@ -4,7 +4,7 @@
 #
 # Logic regression with a different model prior
 #
-#  DATA - simulated 
+# DATA - simulated 
 #
 #
 #
@@ -49,8 +49,6 @@ params$loglik$m <- 50
 params$loglik$n <- n #just a constant to add to mliks of all models
 params$loglik$r <- 1
 params$feat$pop.max <- 31
-params$large$neigh.max <- 21
-params$large$neigh.size <- 10
 ##############################################
 #
 #  New function for model prior
@@ -203,8 +201,6 @@ params$loglik$p.s <- 0
 params$loglik$p.k <- 1
 
 params$feat$pop.max <- 31
-params$large$neigh.max <- 21
-params$large$neigh.size <- 10
 
 library(BAS) #needed for hypergeometric functions
 estimate.logic.tcch = function(y, x, model, complex, params)

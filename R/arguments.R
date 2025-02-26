@@ -330,6 +330,15 @@ gen.params.gmjmcmc <- function (data) {
                       col.check.mock.data = FALSE,                  # Use mock data when checking for colinearity during feature generation
                       max.proj.size = 15)                           # Maximum projection size
   params$feat <- feat_params
+  
+   # Large jump parameters
+  large_params <- list(
+    neigh.size = min(as.integer(params$feat$pop.max * 0.35),as.integer(ncov * 0.35),35),
+    neigh.min = min(as.integer(params$feat$pop.max * 0.35),as.integer(ncov * 0.25),25),
+    neigh.max = min(as.integer(params$feat$pop.max * 0.35),as.integer(ncov * 0.45),45)
+  )
+  params$large <- large_params
+  
   params$rescale.large <- FALSE
   params$prel.select <- NULL                                        # Specify which covariates to keep in the first population. See Issue #15.
 
