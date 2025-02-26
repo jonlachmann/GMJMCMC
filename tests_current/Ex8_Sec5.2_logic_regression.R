@@ -42,18 +42,19 @@ df.test$Mean <- (1+7*(X2$V4*X2$V17*X2$V30*X2$V10) + 9*(X2$V7*X2$V20*X2$V12)+ 3.5
 transforms <- c("not")
 probs <- gen.probs.gmjmcmc(transforms)
 probs$gen <- c(1,1,0,1) #No projections allowed
-probs$filter <- 0.6
+
 
 params <- gen.params.gmjmcmc(df.training)
-params$loglik$m <- 50
-params$loglik$n <- n #just a constant to add to mliks of all models
-params$loglik$r <- 1
+params$loglik$p <- 50 #number of leaves
 params$feat$pop.max <- 31
+params$feat$L <- 15
 ##############################################
+#############################################################################
 #
-#  New function for model prior
+#   FBMS logic regression with a Jeffreys parameter prior
 #
-#
+#############################################################################
+
 
 estimate.logic.lm = function(y, x, model, complex, params)
 {
@@ -64,15 +65,15 @@ estimate.logic.lm = function(y, x, model, complex, params)
     mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())
   })
   
-  sj <- complex$width
+  wj <- complex$width
  
-  lp <- sum(log(factorial(sj))) - sum(sj*log(params$m) + (2*sj-2)*log(2))
+  lp <- sum(log(factorial(wj))) - sum(wj*log(params$p) + (2*wj-2)*log(2))
   
   #print(lp)
   
   mloglik <- -(mod$aic + (log(length(y))-2) * (mod$rank))/2 
   
-  logpost <- mloglik + lp + params$n #just add a constant to all models
+  logpost <- mloglik + lp 
   
   if(logpost==-Inf)
     logpost = -10000
@@ -192,14 +193,13 @@ probs$gen <- c(1,1,0,1) #No projections allowed
 probs$filter <- 0.6
 
 params <- gen.params.gmjmcmc(df.training)
-params$loglik$m <- 50
+params$loglik$p <- 50 #number of leaves
 params$loglik$n <- n #used in specifying parameter v of the tCCH prior
 params$loglik$p.a <- 1
 params$loglik$p.b <- 1
 params$loglik$p.r <- 1.5
 params$loglik$p.s <- 0
 params$loglik$p.k <- 1
-
 params$feat$pop.max <- 31
 
 library(BAS) #needed for hypergeometric functions
@@ -212,9 +212,9 @@ estimate.logic.tcch = function(y, x, model, complex, params)
     mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())
   })
   
-  sj <- complex$width
+  wj <- complex$width
   
-  lp <- sum(log(factorial(sj))) - sum(sj*log(params$m) + (2*sj-2)*log(2))
+  lp <- sum(log(factorial(wj))) - sum(wj*log(params$p) + (2*wj-2)*log(2))
   
   p.v <- (params$n+1)/(mod$rank+1)
   
@@ -248,7 +248,7 @@ if (use.fbms) {
 } else {
   #  result <- gmjmcmc(df.training, transforms = transforms, probs = probs)
   
-  result <- gmjmcmc(df.training, loglik.pi = estimate.logic.tcch,N.init = 500,N.final = 500, , P = 25,
+  result <- gmjmcmc(df.training, loglik.pi = estimate.logic.tcch,N.init = 500,N.final = 500, P = 25,
                     transforms = transforms,params = params, probs = probs)
   
 }
