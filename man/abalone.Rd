@@ -19,9 +19,8 @@ A data frame with 4177 observations on the following 9 variables.
 }
 \source{
 Dua, D. and Graff, C. (2019). UCI Machine Learning Repository
-\url{https://archive.ics.uci.edu/ml/. Irvine, CA: University of California,
-School of Information and Computer Science.} \%\% ~~ reference to a
-publication or URL from which the data were obtained ~~
+\url{https://archive.ics.uci.edu/ml/}. Irvine, CA: University of California,
+School of Information and Computer Science.
 }
 \description{
 \%\% ~~ A concise (1-5 lines) description of the dataset. ~~

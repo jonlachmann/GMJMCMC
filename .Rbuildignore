@@ -6,3 +6,4 @@ README.md
 .DS_Store
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^CRAN-SUBMISSION$

@@ -19,9 +19,9 @@
 #' \item{Weight_V}{Grams gut weight (after bleeding), continuous.}
 #' \item{Weight_W}{Grams whole abalone, continuous.} }
 #' @source Dua, D. and Graff, C. (2019). UCI Machine Learning Repository
-#' \url{https://archive.ics.uci.edu/ml/. Irvine, CA: University of California,
-#' School of Information and Computer Science.} %% ~~ reference to a
-#' publication or URL from which the data were obtained ~~
+#' \url{https://archive.ics.uci.edu/ml/}. Irvine, CA: University of California,
+#' School of Information and Computer Science.
+#'
 #' @keywords datasets
 #' @examples
 #'

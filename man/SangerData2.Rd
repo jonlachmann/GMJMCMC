@@ -17,7 +17,7 @@ References:
 Stranger, BE et al (2007): Relative impact of nucleotide and copy number variation on gene expression phenotypes
 Science, 2007•science.org
 
-Bogdan et al (2020): Handbook of Multiple Comparisons, \url{https://www.academia.edu/download/95753172/2011.12154v1.pdf}
+Bogdan et al (2020): Handbook of Multiple Comparisons, \url{https://arxiv.org/pdf/2011.12154}
 }
 \usage{
 data(SangerData2)
