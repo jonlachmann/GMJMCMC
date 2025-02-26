@@ -45,7 +45,7 @@ probs$gen = c(0,0,0,1)
 params$loglik$g <- dim(df)[1]   # Using sample size for g in g-prior
 
 #this will be added to the package
-log.prior <- function(params,complex){
+log_prior <- function(params,complex){
   
   pl <-  log(params$r) * (sum(complex$oc))
   return(pl)
@@ -69,7 +69,7 @@ gaussian.loglik.g <- function (y, x, model, complex, params)
   
   # logarithm of model prior
   if (length(params$r) == 0)  params$r <- 1/dim(x)[1]  # default value or parameter r
-  lp <- log.prior(params, complex)
+  lp <- log_prior(params, complex)
   
   return(list(crit = mloglik + lp, coefs = mod$coefficients))
 }

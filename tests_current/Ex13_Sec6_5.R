@@ -73,7 +73,7 @@ surv.pseudo.loglik = function(y, x, model, complex, params){
      
      # logarithm of model prior
      if (length(params$r) == 0)  params$r <- 1/dim(x)[1]  # default value or parameter r
-     lp <- log.prior(params, complex)
+     lp <- log_prior(params, complex)
      
      return(list(crit = mloglik + lp, coefs =  c(0,out$coefficients)))
      

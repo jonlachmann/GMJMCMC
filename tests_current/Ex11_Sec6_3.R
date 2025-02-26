@@ -85,7 +85,7 @@ poisson.loglik.inla <- function (y, x, model, complex, params)
   
   # logarithm of model prior
   if (length(params$r) == 0)  params$r <- 1/dim(x)[1]  # default value or parameter r
-  lp <- log.prior(params, complex)
+  lp <- log_prior(params, complex)
   
   if(length(mod)<3||length(mod$mlik[1])==0) {
     return(list(crit = -10000 + lp,coefs = rep(0,dim(data1)[2]-2)))
