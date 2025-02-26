@@ -46,7 +46,7 @@ probs$filter <- 0.6
 
 params <- gen.params.gmjmcmc(df.training)
 params$loglik$m <- 50
-params$loglik$n <- n
+params$loglik$n <- n #just a constant to add to mliks of all models
 params$loglik$r <- 1
 params$feat$pop.max <- 31
 params$large$neigh.max <- 21
@@ -91,10 +91,6 @@ estimate.logic.lm = function(y, x, model, complex, params)
 #############################################################################
 
 set.seed(5001)
-
-
-#result <- gmjmcmc(df.training, logistic.loglik, logistic.loglik.alpha, transforms 
-#                  = transforms, probs = probs, params = params)
 
 if (use.fbms) {
   result <- fbms(data = df.training, family = "custom", loglik.pi = estimate.logic.lm,N.init = 500,N.final = 500, P = 25,
@@ -184,3 +180,148 @@ points(pred_parallel$aggr$mean,df.test$Mean,col = 2)
 points(pred_par_best,df.test$Mean,col = 3)
 points(pred_par_mpm,df.test$Mean,col = 4)
 
+
+
+#############################################################################
+#
+#   FBMS logic regression with a tCCH parameter prior
+#
+#############################################################################
+
+transforms <- c("not")
+probs <- gen.probs.gmjmcmc(transforms)
+probs$gen <- c(1,1,0,1) #No projections allowed
+probs$filter <- 0.6
+
+params <- gen.params.gmjmcmc(df.training)
+params$loglik$m <- 50
+params$loglik$n <- n #used in specifying parameter v of the tCCH prior
+params$loglik$p.a <- 1
+params$loglik$p.b <- 1
+params$loglik$p.r <- 1.5
+params$loglik$p.s <- 0
+params$loglik$p.k <- 1
+
+params$feat$pop.max <- 31
+params$large$neigh.max <- 21
+params$large$neigh.size <- 10
+
+library(BAS) #needed for hypergeometric functions
+estimate.logic.tcch = function(y, x, model, complex, params)
+{
+  
+  if (length(params) == 0) 
+    params <- list(r = 1/dim(x)[1]) 
+  suppressWarnings({
+    mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())
+  })
+  
+  sj <- complex$width
+  
+  lp <- sum(log(factorial(sj))) - sum(sj*log(params$m) + (2*sj-2)*log(2))
+  
+  p.v <- (params$n+1)/(mod$rank+1)
+  
+  y_mean <- mean(y)
+  TSS <- sum((y - y_mean)^2)
+  RSS <- sum(mod$residuals^2)
+  R.2 <- 1 - (RSS / TSS)
+  p <- mod$rank
+  
+  mloglik = (-0.5*p*log(p.v) -0.5*(params$n-1)*log(1-(1-1/p.v)*R.2) + log(beta((params$p.a+p)/2,params$p.b/2)) - log(beta(params$p.a/2,params$p.b/2)) + log(phi1(params$p.b/2,(params$n-1)/2,(params$p.a+params$p.b+p)/2,params$p.s/2/p.v,R.2/(p.v-(p.v-1)*R.2))) - hypergeometric1F1(params$p.b/2,(params$p.a+params$p.b)/2,params$p.s/2/p.v,log = T)) 
+  if(mloglik ==-Inf||is.na(mloglik )||is.nan(mloglik ))
+    mloglik  = -10000
+  
+  logpost <- mloglik + lp + params$n
+  
+  if(logpost==-Inf)
+    logpost = -10000
+  
+  return(list(crit = logpost + lp, coefs = mod$coefficients))
+}
+
+
+
+
+set.seed(5001)
+
+if (use.fbms) {
+  result <- fbms(data = df.training, family = "custom", loglik.pi = estimate.logic.tcch,N.init = 500,N.final = 500, P = 25,
+                 method = "gmjmcmc", transforms = transforms, 
+                 probs = probs, params = params)
+} else {
+  #  result <- gmjmcmc(df.training, transforms = transforms, probs = probs)
+  
+  result <- gmjmcmc(df.training, loglik.pi = estimate.logic.tcch,N.init = 500,N.final = 500, , P = 25,
+                    transforms = transforms,params = params, probs = probs)
+  
+}
+summary(result)
+mpm <- get.mpm.model(result,y = df.training$Y2,x = df.training[,-1],family = "custom", loglik.pi = estimate.logic.lm,params = params$loglik)
+mbest <- get.best.model(result)
+
+
+pred <- predict(result, x =  df.test[,-1], link = function(x)(x))  
+pred_mpm <- predict(mpm, x =  df.test[,-1], link = function(x)(x))
+pred_best <- predict(mbest, x =  df.test[,-1], link = function(x)(x))
+
+
+#prediction errors
+sqrt(mean((pred$aggr$mean - df.test$Y2)^2))
+sqrt(mean((pred_best - df.test$Y2)^2))
+sqrt(mean((pred_mpm - df.test$Y2)^2))
+sqrt(mean((df.test$Mean - df.test$Y2)^2))
+
+#prediction errors to the true means
+sqrt(mean((pred$aggr$mean - df.test$Mean)^2))
+sqrt(mean((pred_best - df.test$Mean)^2))
+sqrt(mean((pred_mpm - df.test$Mean)^2))
+
+
+
+plot(pred$aggr$mean, df.test$Y2)
+points(pred$aggr$mean,df.test$Mean,col = 2)
+points(pred_best,df.test$Mean,col = 3)
+points(pred_mpm,df.test$Mean,col = 4)
+
+
+# Now parallel inference
+
+set.seed(5002)
+
+if (use.fbms) {
+  result_parallel <- fbms(data = df.training, family = "custom", loglik.pi = estimate.logic.tcch,N.init = 500,N.final = 500,
+                          method = "gmjmcmc.parallel", runs = 16, cores = 8,
+                          transforms = transforms, probs = probs, params = params, P=25)
+} else {
+  result_parallel =  gmjmcmc.parallel(runs = 16, cores = 8, data = df.training, 
+                                      loglik.pi = estimate.logic.tcch,N.init = 500,N.final = 500,
+                                      transforms = transforms, probs = probs, params = params, P=25)
+}
+summary(result_parallel)
+mpm <- get.mpm.model(result_parallel,y = df.training$Y2,x = df.training[,-1],family = "custom", loglik.pi = estimate.logic.lm,params = params$loglik)
+mbest <- get.best.model(result_parallel)
+
+
+pred_parallel <- predict(result_parallel, x =  df.test[,-1], link = function(x)(x))  
+pred_par_mpm <- predict(mpm, x =  df.test[,-1], link = function(x)(x))
+pred_par_best <- predict(mbest, x =  df.test[,-1], link = function(x)(x))
+
+
+#prediction errors
+sqrt(mean((pred_parallel$aggr$mean - df.test$Y2)^2))
+sqrt(mean((pred_par_best - df.test$Y2)^2))
+sqrt(mean((pred_par_mpm - df.test$Y2)^2))
+sqrt(mean((df.test$Mean - df.test$Y2)^2))
+
+#prediction errors to the true means
+sqrt(mean((pred_parallel$aggr$mean - df.test$Mean)^2))
+sqrt(mean((pred_par_best - df.test$Mean)^2))
+sqrt(mean((pred_par_mpm - df.test$Mean)^2))
+
+
+
+plot(pred_parallel$aggr$mean, df.test$Y2)
+points(pred_parallel$aggr$mean,df.test$Mean,col = 2)
+points(pred_par_best,df.test$Mean,col = 3)
+points(pred_par_mpm,df.test$Mean,col = 4)
