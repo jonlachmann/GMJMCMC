@@ -16,6 +16,7 @@ Depends:
     fastglm,
     GenSA,
     parallel,
+    methods,
     stats,
     graphics,
     r2r

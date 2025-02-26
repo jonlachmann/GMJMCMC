@@ -53,16 +53,16 @@ if (use.fbms) {
 summary(result.default,labels = F)
 
 
-preds <-  predict(result.default, df[,-1], link = function(x) x)  
+preds <- predict(result.default, df[,-1], link = function(x) x)
 sqrt(mean((preds$aggr$mean - df$MajorAxis)^2))
 
 #new additional ways to predict using MPM and best model
 get.best.model(result = result.default)
-preds <-  predict(get.best.model(result.default), df[,-1])
+preds <- predict(get.best.model(result.default), df[,-1])
 sqrt(mean((preds - df$MajorAxis)^2))
 
 get.mpm.model(result = result.default,y = df$MajorAxis,x=df[,-1])
-preds <-  predict(get.mpm.model(result.default,y = df$MajorAxis,x=df[,-1]), df[,-1])
+preds <- predict(get.mpm.model(result.default,y = df$MajorAxis,x=df[,-1]), df[,-1])
 sqrt(mean((preds - df$MajorAxis)^2))
 
 ####################################################

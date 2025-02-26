@@ -1,5 +1,7 @@
 .idea
 test
+Make_data
+tests_current
 .DS_Store
 ^.*\.Rproj$
 ^\.Rproj\.user$
