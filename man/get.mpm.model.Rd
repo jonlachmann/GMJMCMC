@@ -10,7 +10,8 @@ get.mpm.model(
   x,
   labels = F,
   family = "gaussian",
-  loglik.pi = gaussian.loglik
+  loglik.pi = gaussian.loglik,
+  params = NULL
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ get.mpm.model(
 If an unsupported family is provided, a warning is issued and the Gaussian likelihood is used by default.}
 
 \item{loglik.pi}{A function that computes the log-likelihood. Defaults to \code{gaussian.loglik} unless \code{family = "binomial"}, in which case \code{logistic.loglik} is used. for custom family the user must specify the same likelihood that was used in the inference.}
+
+\item{params}{Parameters of loglik.pi, if not specified NULL will be used by default}
 }
 \value{
 A \code{bgnlm_model} object containing:

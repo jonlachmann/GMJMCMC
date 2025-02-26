@@ -251,6 +251,7 @@ model.string <- function (model, features, link = "I", round = 2) {
 #'   }
 #' If an unsupported family is provided, a warning is issued and the Gaussian likelihood is used by default.
 #' @param loglik.pi A function that computes the log-likelihood. Defaults to \code{gaussian.loglik} unless \code{family = "binomial"}, in which case \code{logistic.loglik} is used. for custom family the user must specify the same likelihood that was used in the inference.
+#' @param params Parameters of loglik.pi, if not specified NULL will be used by default
 #'
 #' @return A \code{bgnlm_model} object containing:
 #' \describe{
@@ -282,7 +283,7 @@ model.string <- function (model, features, link = "I", round = 2) {
 #' }
 #'
 #' @export
-get.mpm.model <- function(result,y, x, labels = F, family = "gaussian", loglik.pi = gaussian.loglik) 
+get.mpm.model <- function(result,y, x, labels = F, family = "gaussian", loglik.pi = gaussian.loglik, params = NULL) 
 {
   
   if(!family %in% c("custom","binomial","gaussian"))
@@ -299,7 +300,7 @@ get.mpm.model <- function(result,y, x, labels = F, family = "gaussian", loglik.p
     as.formula(paste0("~I(", paste0(mpm, collapse = ")+I("), ")")),
     data = x)
   
-  model <- loglik.pi(y = y,x = x.precalc,model = rep(TRUE, length(mpm)+1),complex = list(oc = 0),params = list(r = 1))
+  model <- loglik.pi(y = y,x = x.precalc,model = rep(TRUE, length(mpm)+1),complex = list(oc = 0),params = params)
   
   class(model)<-"bgnlm_model"
   
