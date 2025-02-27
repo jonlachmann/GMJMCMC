@@ -45,6 +45,7 @@ params$loglik$var = "unknown"
 #params$loglik$r = 1
 set.seed(123)
 
+start.time=Sys.time()
 if (use.fbms) {
   result1 <- fbms(data = df, method = "gmjmcmc", transforms = transforms,
                   probs = probs, params = params, P=25)
@@ -52,6 +53,7 @@ if (use.fbms) {
   result1 =  gmjmcmc(data = df, transforms = transforms,
                      probs = probs, params = params, P=25)
 }
+show(Sys.time()-start.time)
 summary(result1)
 
 
