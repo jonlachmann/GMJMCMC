@@ -93,14 +93,51 @@ if (use.fbms) {
 }
 summary(result_parallel, tol = 0.01)
 
-#fixed and known variance 
+
+####### fixed variance
 params$loglik$var <- 1
+set.seed(124)
+if (use.fbms) {
+  result_parallel_unitphi <- fbms(data = df.train, method = "gmjmcmc.parallel", transforms = transforms,
+                                  runs = 40, cores = 10, P=25,params = params)
+} else {
+  result_parallel_unitphi <- gmjmcmc.parallel(runs = 40, cores = 10, data = df.train, loglik.pi = gaussian.loglik, 
+                                              transforms = transforms, P=25,params = params)
+}
+summary(result_parallel_unitphi, tol = 0.01)
+
+
+#g prior with g = n is perfect 
+gaussian.loglik.g <- function (y, x, model, complex, params)
+{
+  
+  suppressWarnings({
+    mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())
+  })
+  
+  # Calculate R-squared
+  y_mean <- mean(y)
+  TSS <- sum((y - y_mean)^2)
+  RSS <- sum(mod$residuals^2)
+  Rsquare <- 1 - (RSS / TSS)
+  
+  # logarithm of marginal likelihood
+  mloglik <- 0.5*(log(1.0 + params$g) * (dim(x)[1] - mod$rank)  - log(1.0 + params$g * (1.0 - Rsquare)) * (dim(x)[1]  - 1))*(mod$rank!=1)
+  
+  # logarithm of model prior
+  if (length(params$r) == 0)  params$r <- 1/dim(x)[1]  # default value or parameter r
+  lp <- log_prior(params, complex)
+  
+  return(list(crit = mloglik + lp, coefs = mod$coefficients))
+}
+
+params$loglik$g <- dim(df.train)[1]
 set.seed(124)
 if (use.fbms) {
   result_parallel_unitphi <- fbms(data = df.train, method = "gmjmcmc.parallel", transforms = transforms,
                           runs = 40, cores = 10, P=25,params = params)
 } else {
-  result_parallel_unitphi <- gmjmcmc.parallel(runs = 40, cores = 10, data = df.train, loglik.pi = gaussian.loglik, 
+  result_parallel_unitphi <- gmjmcmc.parallel(runs = 40, cores = 10, data = df.train, loglik.pi = gaussian.loglik.g, 
                                       transforms = transforms, P=25,params = params)
 }
 summary(result_parallel_unitphi, tol = 0.01)
