@@ -2,7 +2,7 @@
 #
 # Example 1:
 #
-# Kepler Example from the JAIR paper
+# Kepler Example with the most recent database update
 #
 # This is the valid version for the JSS paper
 #
@@ -86,12 +86,24 @@ summary(result.P50, labels = names(df.train)[-1])
 set.seed(123)
 if (use.fbms) {
  result_parallel <- fbms(data = df.train, method = "gmjmcmc.parallel", transforms = transforms,
-                         runs = 40, cores = 10, P=30,params = params)
+                         runs = 40, cores = 10, P=25,params = params)
 } else {
  result_parallel <- gmjmcmc.parallel(runs = 40, cores = 10, data = df.train, loglik.pi = gaussian.loglik, 
-                                     transforms = transforms, P=30,params = params)
+                                     transforms = transforms, P=25,params = params)
 }
 summary(result_parallel, tol = 0.01)
+
+#fixed and known variance 
+params$loglik$var <- 1
+set.seed(124)
+if (use.fbms) {
+  result_parallel_unitphi <- fbms(data = df.train, method = "gmjmcmc.parallel", transforms = transforms,
+                          runs = 40, cores = 10, P=25,params = params)
+} else {
+  result_parallel_unitphi <- gmjmcmc.parallel(runs = 40, cores = 10, data = df.train, loglik.pi = gaussian.loglik, 
+                                      transforms = transforms, P=25,params = params)
+}
+summary(result_parallel_unitphi, tol = 0.01)
 ####################################################
 #
 # Inspection of Results (Section 3.4)
@@ -136,6 +148,13 @@ dev.off()
 plot(result_parallel)
 plot(result_parallel, 12)
 
+pdf.train("result_parallel_unitphi.pdf.train") 
+plot(result_parallel_unitphi)
+dev.off()
+
+plot(result_parallel_unitphi)
+plot(result_parallel_unitphi, 12)
+
 
 ######################
 # Prediction
@@ -177,6 +196,18 @@ dev.off()
 
 rmse.parallel <- sqrt(mean((preds.multi$aggr$mean - df.test$semimajoraxis)^2))
 
-c(rmse.default, rmse.P50, rmse.parallel)
+
+###############################
+
+
+preds_unitphi <- predict(result_parallel_unitphi , df.test[,-1], link = function(x) x)
+
+pdf.train("pred_parallel.pdf.train") 
+plot(preds_unitphi$aggr$mean, df.test$semimajoraxis)
+dev.off()
+
+rmse_unitphi <- sqrt(mean((preds_unitphi$aggr$mean - df.test$semimajoraxis)^2))
+
+c(rmse.default, rmse.P50, rmse.parallel,rmse_unitphi)
 
 
