@@ -134,13 +134,13 @@ gaussian.loglik.g <- function (y, x, model, complex, params)
 params$loglik$g <- dim(df.train)[1]
 set.seed(124)
 if (use.fbms) {
-  result_parallel_unitphi <- fbms(data = df.train, method = "gmjmcmc.parallel", transforms = transforms,
+  result_parallel_g <- fbms(data = df.train, method = "gmjmcmc.parallel", transforms = transforms,
                           runs = 40, cores = 10, P=25,params = params)
 } else {
-  result_parallel_unitphi <- gmjmcmc.parallel(runs = 40, cores = 10, data = df.train, loglik.pi = gaussian.loglik.g, 
+  result_parallel_g <- gmjmcmc.parallel(runs = 40, cores = 10, data = df.train, loglik.pi = gaussian.loglik.g, 
                                       transforms = transforms, P=25,params = params)
 }
-summary(result_parallel_unitphi, tol = 0.01)
+summary(result_parallel_g, tol = 0.01)
 ####################################################
 #
 # Inspection of Results (Section 3.4)
@@ -245,6 +245,18 @@ dev.off()
 
 rmse_unitphi <- sqrt(mean((preds_unitphi$aggr$mean - df.test$semimajoraxis)^2))
 
-c(rmse.default, rmse.P50, rmse.parallel,rmse_unitphi)
+
+###############################
+
+
+preds_g <- predict(result_parallel_g , df.test[,-1], link = function(x) x)
+
+pdf.train("pred_parallel.pdf.train") 
+plot(preds_g$aggr$mean, df.test$semimajoraxis)
+dev.off()
+
+rmse_g <- sqrt(mean((preds_g$aggr$mean - df.test$semimajoraxis)^2))
+
+c(rmse.default, rmse.P50, rmse.parallel,rmse_unitphi,rmse_g)
 
 
