@@ -14,6 +14,7 @@
 #devtools::install_github("jonlachmann/GMJMCMC@FBMS", force=T, build_vignettes=F)
 
 library(FBMS)
+library(xtable)
 use.fbms = FALSE
 
 
@@ -22,28 +23,28 @@ df = SangerData2
 #Rename columns
 colnames(df) = c("y",paste0("x",1:(ncol(df)-1)))
 
-# Candidates for the first MJMCMC round based on correlation with response
-c.vec = unlist(mclapply(2:ncol(df), function(x)abs(cor(df[,1],df[,x]))))
-ids = sort(order(c.vec,decreasing=TRUE)[1:50])
-
+#Only linear terms/mutations
 transforms = c("")
-params = gen.params.gmjmcmc(df)
-params$feat$check.col <- T
-params$feat$pop.max = 60
-params$feat$prel.filter <- ids
 probs = gen.probs.gmjmcmc(transforms)
 probs$gen = c(0,0,0,1)
 
-probs$filter=0.8
+
+# Candidates for the first MJMCMC round based on correlation with response
+c.vec = unlist(mclapply(2:ncol(df), function(x)abs(cor(df[,1],df[,x]))))
+ids = sort(order(c.vec,decreasing=TRUE)[1:50])
+params = gen.params.gmjmcmc(df)
+params$feat$prel.filter <- ids
+
+params$feat$check.col <- T
+params$feat$pop.max <- 50
 
 ####################################################
 #
 # Here begin the changes to use Zellers g-prior
 #
 ####################################################
-
-
-params$loglik$g <- dim(df)[1]   # Using sample size for g in g-prior
+n = dim(df)[1]; p=dim(df)[2]
+params$loglik$g <- max(n,p^2)   # Using recommendation from Fernandez et al (2001)
 
 #this will be added to the package
 log_prior <- function(params,complex){
@@ -56,10 +57,10 @@ gaussian.loglik.g <- function (y, x, model, complex, params)
 {
 
   suppressWarnings({
-     mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())
+    mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())
   })
 
-   # Calculate R-squared
+  # Calculate R-squared
   y_mean <- mean(y)
   TSS <- sum((y - y_mean)^2)
   RSS <- sum(mod$residuals^2)
@@ -78,90 +79,147 @@ gaussian.loglik.g <- function (y, x, model, complex, params)
 
 #result <- mjmcmc(params = params, data = df, gaussian.loglik.g, N = 5000)
 
-set.seed(123)
+run.parallel = TRUE
+
+if(!run.parallel)
+{
+  set.seed(123)
+  if (use.fbms) {
+    result1 <- fbms(data=df,family="custom",loglik.pi=gaussian.loglik.g,method="gmjmcmc",
+                    transforms=transforms,probs=probs,params=params,P=50)
+  } else {
+    result1=gmjmcmc(data=df,loglik.pi=gaussian.loglik.g,transforms=transforms,
+                    probs=probs,params=params,P=50)
+  }
+  save(result1,file="Ex3_res1.RData")
+  summary(result1)
 
 
-if (use.fbms) {
-  result1 <- fbms(data = df, family = "custom", loglik.pi = gaussian.loglik.g, method = "gmjmcmc",
-                  transforms = transforms, probs = probs, params = params, P=25)
-} else {
-  result1 <-  gmjmcmc(data = df, loglik.pi = gaussian.loglik.g, transforms = transforms,
-                     probs = probs, params = params, P=25)
+  #Correlation analysis
+
+  S = summary(result1)
+  names.S = S$feats.strings
+
+  X.best = df[,names.S]
+
+  cor(X.best)
+  corrplot::corrplot(cor(X.best))
+  hist(cor(X.best))
+
+  set.seed(124)
+  if (use.fbms) {
+    result2 <- fbms(data = df, family = "custom", loglik.pi = gaussian.loglik.g, method = "gmjmcmc",
+                    transforms = transforms, probs = probs, params = params, P=50)
+  } else {
+    result2 <-  gmjmcmc(data = df, loglik.pi = gaussian.loglik.g, transforms = transforms,
+                        probs = probs, params = params, P=50)
+  }
+  save(result2,file="Ex3_res2.RData")
+  summary(result2)
+
+  ## Combine results from two runs
+  res1 = summary(result1,tol=0.05)
+  res1$marg.probs = round(res1$marg.probs,3)
+  res2 = summary(result2,tol=0.05)
+  res2$marg.probs = round(res2$marg.probs,3)
+  names.best = unique(c(res1$feats.strings,res2$feats.strings))
+  m = max(nrow(res1),nrow(res2))
+  while(nrow(res1)<m)
+    res1 = rbind(res1,c("",""))
+  while(nrow(res2)<m)
+    res2 = rbind(res2,c("",""))
+  show(cbind(res1[1:m,],res2[1:m,]))
+  foo = cbind(res1[1:m,],res2[1:m,])
+  show(print(xtable(foo),include.rownames=FALSE))
 }
-summary(result1)
-
-
-#Correlation analysis
-
-S = summary(result1)
-names.S = S$feats.strings
-
-X.best = df[,names.S]
-
-cor(X.best)
-corrplot::corrplot(cor(X.best))
-hist(cor(X.best))
-
-
-# Correlation with results from Example 3
-
-
-set.seed(124)
-
-
-if (use.fbms) {
-  result2 <- fbms(data = df, family = "custom", loglik.pi = gaussian.loglik.g, method = "gmjmcmc",
-                  transforms = transforms, probs = probs, params = params, P=25)
-} else {
-  result2 <-  gmjmcmc(data = df, loglik.pi = gaussian.loglik.g, transforms = transforms,
-                      probs = probs, params = params, P=25)
-}
-summary(result2)
 
 ##Parallel runs
-set.seed(123)
+if(run.parallel)
+{
+  set.seed(123)
+  if (use.fbms) {
+    result_parallel1=fbms(data=df,loglik.pi=gaussian.loglik.g,transforms=transforms,
+                          probs=probs,params=params,
+                          method="gmjmcmc.parallel",
+                          P=50,N.init=1000,N.final=1000,runs=10,cores=10)
+  }else {
+    start = Sys.time()
+    result_parallel1=gmjmcmc.parallel(data=df,loglik.pi=gaussian.loglik.g,transforms=transforms,
+                                      probs=probs,params=params,
+                                      P=50,N.init=1000,N.final=1000,runs=10,cores=10)
+    end = Sys.time()
+    print(end-start)
+  }
+  save(result_parallel1,file="Ex3_parallel1.RData")
+  #load("Ex3_parallel1.RData")
 
-if (use.fbms) {
-  result_parallel <- fbms(data = df, loglik.pi = gaussian.loglik.g,method = "gmjmcmc.parallel",
-                          runs = 40, cores = 40,
-                          transforms = transforms, probs = probs, params = params,
-                          P=25, N.init=500, N.final=500)
-} else {
-  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 40,data = df,loglik.pi = gaussian.loglik.g,
-                                      transforms = transforms, probs = probs, params = params,
-                                      P=25, N.init=500, N.final=500)
+  set.seed(1234)
+  if (use.fbms) {
+    result_parallel2=fbms(data=df,loglik.pi=gaussian.loglik.g,transforms=transforms,
+                          probs=probs,params=params,
+                          method="gmjmcmc.parallel",
+                          P=50,N.init=1000,N.final=1000,runs=10,cores=10)
+  } else {
+    result_parallel=gmjmcmc.parallel(data=df,loglik.pi=gaussian.loglik.g,transforms=transforms,
+                                     probs=probs,params=params,
+                                     P=50,N.init=1000,N.final=1000,runs=10,cores=10)
+  }
+  save(result_parallel2,file="Ex3_parallel2.RData")
+  #load("Ex3_parallel2.RData")
+
+  set.seed(123456)
+  if (use.fbms) {
+    result_parallel3=fbms(data=df,loglik.pi=gaussian.loglik.g,transforms=transforms,
+                          probs=probs,params=params,
+                          method="gmjmcmc.parallel",
+                          P=50,N.init=1000,N.final=1000,runs=10,cores=10)
+  } else {
+    result_parallel=gmjmcmc.parallel(data=df,loglik.pi=gaussian.loglik.g,transforms=transforms,
+                                     probs=probs,params=params,
+                                     P=50,N.init=1000,N.final=1000,runs=10,cores=10)
+  }
+  save(result_parallel3,file="Ex3_parallel3.RData")
+  #load("Ex3_parallel2.RData")
+
+
+  ## Combine results from three runs
+  res1 = summary(result_parallel1,tol=0.01)
+  res1$marg.probs = round(res1$marg.probs,3)
+  res2 = summary(result_parallel2,tol=0.01)
+  res2$marg.probs = round(res2$marg.probs,3)
+  res3 = summary(result_parallel3,tol=0.01)
+  res3$marg.probs = round(res3$marg.probs,3)
+  names.best = unique(c(res1$feats.strings,res2$feats.strings,res3$feats.strings))
+  m = max(nrow(res1),nrow(res2),nrow(res3))
+  while(nrow(res1)<m)
+    res1 = rbind(res1,c("",""))
+  while(nrow(res2)<m)
+    res2 = rbind(res2,c("",""))
+  while(nrow(res3)<m)
+    res3 = rbind(res3,c("",""))
+  names(res1) = c("feats","prob")
+  names(res2) = c("feats","prob")
+  names(res3) = c("feats","prob")
+  foo = cbind(res1[1:m,],res2[1:m,],res3[1:m,])
+  show(print(xtable(foo),include.rownames=FALSE))
+
+  ind = order(as.numeric(substring(names.best,first=2)))
+  names.best = names.best[ind]
+  X.best = df[,names.best]
+  pdf("crossplot_Sanger_best.pdf")
+  corrplot::corrplot(cor(X.best))
+  dev.off()
+
+
+  ##Combine results
+  S = summary(result_parallel1,tol=0.05)
+  names.best2 = S2$feats.strings
+  S2 = summary(result_parallel2,tol=0.05)
+  names.best2 = S2$feats.strings
+
+  feats = unique(c(S[,1],S2[,1]))
+  n = length(feats)
+  Scomb = data.frame(feats.strings=feats,marg.probs1=rep(0,n),marg.probs2=rep(0,n))
+  Scomb$marg.probs1[which(S$feats.strings %in%Scomb$feats.strings)] = S$marg.probs
+  Scomb$marg.probs2[which(S2$feats.strings %in% Scomb$feats.strings)] = S2$marg.probs
 }
-save(result_parallel,file="Ex7_parallel.RData")
-load("Ex7_parallel.RData")
-
-
-set.seed(1234)
-
-if (use.fbms) {
-  result_parallel2 <- fbms(data = df, loglik.pi = gaussian.loglik.g,
-                           method = "gmjmcmc.parallel", runs = 40, cores = 40,
-                           transforms = transforms, probs = probs, params = params,
-                           P=25, N.init=500, N.final=500)
-} else {
-  result_parallel2 =  gmjmcmc.parallel(runs = 40, cores = 40,data = df,loglik.pi = gaussian.loglik.g,
-                                       transforms = transforms, probs = probs, params = params,
-                                       P=25, N.init=500, N.final=500)
-}
-save(result_parallel2,file="Ex7_parallel2.RData")
-load("Ex7_parallel2.RData")
-
-
-##Combine results
-S = summary(result_parallel,tol=0.05)
-names.best2 = S2$feats.strings
-S2 = summary(result_parallel2,tol=0.05)
-names.best2 = S2$feats.strings
-
-feats = unique(c(S[,1],S2[,1]))
-n = length(feats)
-Scomb = data.frame(feats.strings=feats,marg.probs1=rep(0,n),marg.probs2=rep(0,n))
-Scomb$marg.probs1[which(S$feats.strings %in%Scomb$feats.strings)] = S$marg.probs
-Scomb$marg.probs2[which(S2$feats.strings %in% Scomb$feats.strings)] = S2$marg.probs
-
-
-
