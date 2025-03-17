@@ -70,25 +70,9 @@ predict.bgnlm_model <- function(object, x, link = function(x) { x }, ... ) {
 #' @export
 predict.gmjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975),  pop = NULL,tol =  0.0000001, ...) {
   transforms.bak <- set.transforms(object$transforms)
+  x <- impute_x(object, x)
   
-  
-  
-  if(!is.null(attr(object,which = "imputed")))
-  {
-    df <- data.frame(x)
-    na.matr <- data.frame(1*(is.na(df)))
-    cm <- colMeans(na.matr)
-    na.matr <- na.matr[,attr(object,which = "imputed")]
-    names(na.matr) <- paste0("mis_",names(na.matr))
-    for (i in which(cm!=0)){
-      df[[i]][is.na(df[[i]])] <- median(df[[i]], na.rm = TRUE)
-    }
-    x <- as.matrix(data.frame(df,na.matr))
-    rm(df)
-    rm(na.matr)
-  } else x <- as.matrix(x)
-  
-  merged <- merge_results(list(object),data = cbind(1, x), populations = pop, tol = tol)
+  merged <- merge_results(list(object), data = list(x = x), populations = pop, tol = tol)
   set.transforms(transforms.bak)
   return(predict.gmjmcmc_merged(merged, x, link, quantiles))
 }
@@ -100,21 +84,7 @@ predict.gmjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.02
 #' @noRd
 predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = 1, ...) {
   transforms.bak <- set.transforms(object$transforms)
-  
-  if(!is.null(attr(object,which = "imputed")))
-  {
-    df <- data.frame(x)
-    na.matr <- data.frame(1*(is.na(df)))
-    cm <- colMeans(na.matr)
-    na.matr <- na.matr[,attr(object,which = "imputed")]
-    names(na.matr) <- paste0("mis_",names(na.matr))
-    for (i in which(cm!=0)){
-      df[[i]][is.na(df[[i]])] <- median(df[[i]], na.rm = TRUE)
-    }
-    x <- as.matrix(data.frame(df,na.matr))
-    rm(df)
-    rm(na.matr)
-  } else x <- as.matrix(x)
+  x <- impute_x(object, x)
   
   mmodel <- lapply(object[1:8], function (x) x[[pop]])
 
@@ -153,23 +123,10 @@ predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.
 #'
 #' @export
 predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = NULL,tol =  0.0000001, ...) {
-  if(!is.null(attr(object,which = "imputed")))
-  {
-    df <- data.frame(x)
-    na.matr <- data.frame(1*(is.na(df)))
-    cm <- colMeans(na.matr)
-    na.matr <- na.matr[,attr(object,which = "imputed")]
-    names(na.matr) <- paste0("mis_",names(na.matr))
-    for (i in which(cm!=0)){
-      df[[i]][is.na(df[[i]])] <- median(df[[i]], na.rm = TRUE)
-    }
-    x <- as.matrix(data.frame(df,na.matr))
-    rm(df)
-    rm(na.matr)
-  } else x <- as.matrix(x)
+  x <- impute_x(object, x)
   
   transforms.bak <- set.transforms(object$transforms)
-  if(!is.null(pop))
+  if (!is.null(pop))
     object <- merge_results(object$results.raw, pop, 2, tol, data = x)
   
   preds <- list()
@@ -181,14 +138,14 @@ predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles =
       features <- object$results[[i]]$populations[[j]]
       model.probs <- object$results[[i]]$model.probs[[j]]
 
-      # Precalculate the features for the new data (c(0,1...) is because precalc features thinks there is an intercept and y col).
-      x.precalc <- precalc.features(cbind(0, 1, x), features)[, -1]
+      # Precalculate the features for the new data
+      x.precalc <- precalc.features(list(x = x, fixed = object$fixed), features)$x
 
       yhat <- matrix(0, nrow=nrow(x), ncol=length(models))
       for (k in seq_along(models)) {
         # Models which have 0 weight are skipped since they may also be invalid, and would not influence the predictions.
         if (models[[k]]$crit == -.Machine$double.xmax) next
-        yhat[, k] <- link(x.precalc[, c(TRUE, models[[k]]$model), drop=FALSE] %*% models[[k]]$coefs)
+        yhat[, k] <- link(x.precalc[, c(rep(TRUE, object$fixed), models[[k]]$model), drop=FALSE] %*% models[[k]]$coefs)
       }
 
       mean.pred <- rowSums(yhat %*% diag(as.numeric(model.probs)))
@@ -225,24 +182,7 @@ predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles =
 #' @export
 predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
   # Select the models and features to predict from at this iteration
-  
-  if(!is.null(attr(object,which = "imputed")))
-  {
-    df <- data.frame(x)
-    na.matr <- data.frame(1*(is.na(df)))
-    cm <- colMeans(na.matr)
-    na.matr <- na.matr[,attr(object,which = "imputed")]
-    names(na.matr) <- paste0("mis_",names(na.matr))
-    for (i in which(cm!=0)){
-      df[[i]][is.na(df[[i]])] <- median(df[[i]], na.rm = TRUE)
-    }
-    x <- as.matrix(data.frame(df,na.matr))
-    rm(df)
-    rm(na.matr)
-  } else x <- as.matrix(x)
-  
-  x <- as.matrix(cbind(rep(1, dim(x)[1]), x))
-  
+  x <- impute_x(object, x)
   
   models <- c(object$models, object$lo.models)[object$model.probs.idx]
 
@@ -250,7 +190,7 @@ predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025
   for (k in seq_along(models)) {
     # Models which have 0 weight are skipped since they may also be invalid, and would not influence the predictions.
     if (models[[k]]$crit == -.Machine$double.xmax) next
-    yhat[, k] <- link(x[, c(TRUE, models[[k]]$model), drop=FALSE] %*% models[[k]]$coefs)
+    yhat[, k] <- link(x[, c(rep(TRUE, object$fixed), models[[k]]$model), drop=FALSE] %*% models[[k]]$coefs)
   }
 
   mean.pred <- rowSums(yhat %*% diag(as.numeric(object$model.probs)))
@@ -273,21 +213,7 @@ predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025
 #' @export
 predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
   max.crits <- numeric()
-  
-  if(!is.null(attr(object,which = "imputed")))
-  {
-    df <- data.frame(x)
-    na.matr <- data.frame(1*(is.na(df)))
-    cm <- colMeans(na.matr)
-    na.matr <- na.matr[,attr(object,which = "imputed")]
-    names(na.matr) <- paste0("mis_",names(na.matr))
-    for (i in which(cm!=0)){
-      df[[i]][is.na(df[[i]])] <- median(df[[i]], na.rm = TRUE)
-    }
-    x <- as.matrix(data.frame(df,na.matr))
-    rm(df)
-    rm(na.matr)
-  } else x <- as.matrix(x)
+  x <- impute_x(object, x)
   
   for (i in seq_along(object)) {
     max.crits <- c(max.crits, object[[i]]$best.crit)
@@ -335,22 +261,7 @@ predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles 
 #' @export
 predict.gmjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
   transforms.bak <- set.transforms(object$transforms)
-  
-  if(!is.null(attr(object,which = "imputed")))
-  {
-    df <- data.frame(x)
-    na.matr <- data.frame(1*(is.na(df)))
-    cm <- colMeans(na.matr)
-    na.matr <- na.matr[,attr(object,which = "imputed")]
-    names(na.matr) <- paste0("mis_",names(na.matr))
-    for (i in which(cm!=0)){
-      df[[i]][is.na(df[[i]])] <- median(df[[i]], na.rm = TRUE)
-    }
-    x <- as.matrix(data.frame(df,na.matr))
-    rm(df)
-    rm(na.matr)
-  } else x <- as.matrix(x)
-  
+  x <- impute_x(object, x)
   merged <- merge_results(object,data = cbind(1, x), ...)
   results <- predict.gmjmcmc_merged(merged, x, link, quantiles)
   set.transforms(transforms.bak)
@@ -374,4 +285,19 @@ weighted.quantiles <- function (values, weights, prob = c(0.025, 0.975)) {
     iv[i] <- which.max(P >= prob[i])
   }
   {values[ordered]}[iv]
+}
+
+impute_x <- function (object, x) {
+  if (!is.null(attr(object, which = "imputed"))) {
+    df <- data.frame(x)
+    na.matr <- data.frame(1 * (is.na(df)))
+    cm <- colMeans(na.matr)
+    na.matr <- na.matr[, attr(object, which = "imputed")]
+    names(na.matr) <- paste0("mis_", names(na.matr))
+    for (i in which(cm != 0)){
+      df[[i]][is.na(df[[i]])] <- median(df[[i]], na.rm = TRUE)
+    }
+    return(as.matrix(data.frame(df,na.matr)))
+  }
+  return(x)
 }

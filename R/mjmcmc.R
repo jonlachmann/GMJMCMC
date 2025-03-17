@@ -31,10 +31,10 @@
 #' plot(result)
 #'
 #' @export mjmcmc
-mjmcmc <- function (data, loglik.pi = gaussian.loglik, N = 100, probs = NULL, params = NULL, sub = FALSE, verbose = TRUE) {
+mjmcmc <- function (x, y, loglik.pi = gaussian.loglik, fixed = 0, N = 100, probs = NULL, params = NULL, sub = FALSE, verbose = TRUE) {
   # Verify that data is well-formed
-  labels <- names(data)[-1]
-  data <- check.data(data, verbose)
+  labels <- names(x)
+  data <- check.data(x, y, fixed, verbose)
 
   # Generate default probabilities and parameters if there are none supplied.
   if (is.null(probs)) probs <- gen.probs.mjmcmc()
@@ -44,13 +44,13 @@ mjmcmc <- function (data, loglik.pi = gaussian.loglik, N = 100, probs = NULL, pa
   accept <- 0
 
   # Create a population of just the covariates
-  S <- gen.covariates(ncol(data)-2)
+  S <- gen.covariates(data)
   complex <- complex.features(S)
 
   # Initialize first model
   model.cur <- as.logical(rbinom(n = length(S), size = 1, prob = 0.5))
-  model.cur.res <- loglik.pre(loglik.pi, model.cur, complex, data, params$loglik, visited.models=NULL, sub = sub)
-  model.cur <- list(prob=0, model=model.cur, coefs=model.cur.res$coefs, crit=model.cur.res$crit, alpha=0)
+  model.cur.res <- loglik.pre(loglik.pi, model.cur, complex, data, params$loglik, visited.models = NULL, sub = sub)
+  model.cur <- list(prob = 0, model = model.cur, coefs = model.cur.res$coefs, crit = model.cur.res$crit, alpha = 0)
 
   if (verbose) cat("\nMJMCMC begin.\n")
   result <- mjmcmc.loop(data, complex, loglik.pi, model.cur, N, probs, params, sub, verbose)
@@ -60,6 +60,7 @@ mjmcmc <- function (data, loglik.pi = gaussian.loglik, N = 100, probs = NULL, pa
   result$populations <- S
 
   # Return formatted results
+  result$fixed <- data$fixed
   result$labels <- labels
   class(result) <- "mjmcmc"
   return(result)
@@ -92,7 +93,7 @@ mjmcmc.loop <- function (data, complex, loglik.pi, model.cur, N, probs, params, 
   # Acceptance count
   accept <- 0
   # Number of covariates or features
-  covar_count <- ncol(data) - 2
+  covar_count <- ncol(data$x)
   # A list of models that have been visited
   models <- vector("list", N)
   # Initialize a vector to contain local opt visited models

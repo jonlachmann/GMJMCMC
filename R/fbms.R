@@ -62,62 +62,62 @@ fbms <- function(formula = NULL, family = "gaussian", data = NULL, impute = FALS
     
     Y <- model.response(mf, "any")
     X <- model.matrix(formula, data = data)[, -1]
+    intercept <- attr(terms(formula, data = data), "intercept")
+    if (intercept) X <- cbind(1, X)
     mis.Y <- which(is.na(Y))
-    if(length(mis.Y)>0)
-    {
+    if (length(mis.Y) > 0) {
       warning("Missing values in the response. Dropped.")
-      df <- data.frame(Y[-c(mis.Y)], X[-c(mis.Y),])
-    } else df <- data.frame(Y, X)
+      Y <- Y[-c(mis.Y)]
+      X <- X[-c(mis.Y), ]
+    }
     
-    mis.All <- sum(is.na(df))
+    mis.X <- sum(is.na(X))
     imputed <- NULL
-    if(impute & mis.All>0)
-    {
+    if (impute && mis.X > 0) {
       print("Imputing missing values!")
-      na.matr <- data.frame(1*(is.na(df)))
-      names(na.matr) <- paste0("mis_",names(na.matr))
+      na.matr <- data.frame(1 * (is.na(X)))
+      names(na.matr) <- paste0("mis_", names(na.matr))
       cm <- colMeans(na.matr)
-      na.matr <- na.matr[,cm!=0]
-      for (i in seq_along(df)){
-        df[[i]][is.na(df[[i]])] <- median(df[[i]], na.rm = TRUE)
+      na.matr <- na.matr[, cm != 0]
+      for (i in seq_along(X)) {
+        X[[i]][is.na(X[[i]])] <- median(X[[i]], na.rm = TRUE)
       }
-      imputed <- names(df)[cm!=0]
-      df <- data.frame(df,na.matr)
+      imputed <- names(X)[cm != 0]
+      X <- data.frame(X, na.matr)
       
       rm(na.matr)
       rm(cm)
       print("Continue to sampling!")
-    } else if(mis.All>0){
+    } else if (mis.X > 0) {
       print("Dropping missing values!")
     }
   } else {
-    df <- data
+    Y <- data[, 1]
+    X <- cbind(1, data[, -1])
+    intercept <- TRUE
     imputed <- NULL
     na.opt <- getOption("na.action")
-    if(impute)
-    { 
-      options(na.action='na.pass')
+    if (impute) {
+      options(na.action = 'na.pass')
       stop("Imputation is only implemented when formula is provided.\n Please specify formula and rerun!")
+    } else {
+      options(na.action = 'na.omit')
     }
-    else
-      options(na.action='na.omit')
   }
   
   if (method == "mjmcmc.parallel")
-    res <- mjmcmc.parallel(df, loglik.pi, verbose = verbose, ...)
+    res <- mjmcmc.parallel(X, Y, loglik.pi, fixed = intercept, verbose = verbose, ...)
   else if (method == "mjmcmc")
-    res <- mjmcmc(df, loglik.pi, verbose = verbose, ...)
-  else if (method == "gmjmcmc.parallel") {
-    res <- gmjmcmc.parallel(data = df, loglik.pi = loglik.pi, verbose = verbose,...)
-  }
-  
+    res <- mjmcmc(X, Y, loglik.pi, fixed = intercept, verbose = verbose, ...)
+  else if (method == "gmjmcmc.parallel")
+    res <- gmjmcmc.parallel(x = X, y = Y, loglik.pi = loglik.pi, fixed = intercept, verbose = verbose,...)
   else if (method == "gmjmcmc")
-    res <- gmjmcmc(df, loglik.pi, verbose = verbose, ...)
+    res <- gmjmcmc(X, Y, loglik.pi, fixed = intercept, verbose = verbose, ...)
   else
-    stop("Error: Method must be one of gmjmcmc, gmjmcmc.parallel,mjmcmc or mjmcmc.parallel!")
+    stop("Error: Method must be one of gmjmcmc, gmjmcmc.parallel, mjmcmc or mjmcmc.parallel!")
   
   attr(res, "imputed") <- imputed
-  attr(res, "all_names") <- names(df)[1:(dim(df)[2]-1)]
-  options(na.action=na.opt)
+  attr(res, "all_names") <- names(X)[1:(dim(X)[2] - 1)]
+  options(na.action = na.opt)
   return(res)
 }

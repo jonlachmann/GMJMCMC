@@ -46,10 +46,12 @@ NULL
 #'
 #' @export gmjmcmc
 gmjmcmc <- function (
-  data,
+  x,
+  y,
   loglik.pi = gaussian.loglik,
   loglik.alpha = gaussian.loglik.alpha,
   transforms,
+  fixed = 0,
   P = 10,
   N.init = 100,
   N.final = 100,
@@ -59,8 +61,7 @@ gmjmcmc <- function (
   verbose = TRUE
 ) {
   # Verify that the data is well-formed
-  labels <- names(data)[-1]
-  data <- check.data(data, verbose)
+  data <- check.data(x, y, fixed, verbose)
 
   # Generate default probabilities and parameters if there are none supplied.
   if (is.null(probs)) probs <- gen.probs.gmjmcmc(transforms)
@@ -88,7 +89,7 @@ gmjmcmc <- function (
   best.margs <- vector("list", P)
 
   # Create first population
-  F.0 <- gen.covariates(ncol(data) - 2)
+  F.0 <- gen.covariates(data)
   if (is.null(params$prel.select))
     S[[1]] <- F.0
   else
@@ -160,6 +161,7 @@ gmjmcmc <- function (
     transforms = transforms            # Transformations used by the model
   )
   results$labels <- labels
+  results$fixed <- fixed
   attr(results, "class") <- "gmjmcmc"
   return(results)
 }

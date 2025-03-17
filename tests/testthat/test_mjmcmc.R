@@ -17,22 +17,22 @@ test_that("Testing MJMCMC algorithm", {
   }
 
   data <- matrix(rnorm(600), 100)
-  resm <- mjmcmc(data, loglik.tester)
+  resm <- mjmcmc(data[,-1], data[,1], loglik.tester, 1)
   summary(resm, labels = c("a", "b", "c", "d", "e"))
   plot(resm)
   predm <- predict(resm, data[, -1, drop = FALSE])
 
-  resg <- gmjmcmc(data, loglik.tester, NULL, c("p0", "exp_dbl"))
+  resg <- gmjmcmc(data[,-1], data[,1], loglik.tester, NULL, c("p0", "exp_dbl"), 1)
   summary(resg)
   plot(resg)
   prediction <- predict(resg, data[, -1, drop = FALSE])
 
-  respm <- mjmcmc.parallel(2, 2, data, loglik.tester)
+  respm <- mjmcmc.parallel(2, 2, data[,-1], data[,1], loglik.tester)
   summary(respm)
   plot(respm)
   pred_pm <- predict(respm, data[, -1, drop = FALSE])
 
-  respg <- gmjmcmc.parallel(2, 2, NULL, data, loglik.tester, NULL, c("p0", "exp_dbl"))
+  respg <- gmjmcmc.parallel(2, 2, NULL, data[,-1], data[,1], loglik.tester, NULL, c("p0", "exp_dbl"))
   summary(respg)
   plot(respg)
   pred_pg <- predict(respg, data[, -1, drop = FALSE])

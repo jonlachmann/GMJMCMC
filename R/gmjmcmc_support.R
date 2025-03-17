@@ -96,20 +96,20 @@ marginal.probs.renorm <- function (models, type = "features") {
 
 # Function for precalculating features for a new feature population
 precalc.features <- function (data, features) {
-  precalc <- matrix(NA, nrow(data), length(features) + 2)
-  precalc[, 1:2] <- data[, 1:2]
+  precalc <- matrix(NA, nrow(data$x), length(features))
   for (f in seq_along(features)) {
     feature_string <- print.feature(features[[f]], dataset = TRUE)
-    precalc[, (f + 2)] <- eval(parse(text = feature_string))
+    precalc[, f] <- eval(parse(text = feature_string))
   }
   # Replace any -Inf and Inf values caused by under- or overflow
   precalc <- replace.infinite.data.frame(precalc)
-  return(precalc)
+  data$x <- cbind(data$x[, seq_len(data$fixed)], precalc)
+  return(data)
 }
 
 # TODO: Compare to previous mliks here instead, also add a flag to do that in full likelihood estimation scenarios.
 # Function to call the model function
-loglik.pre <- function (loglik.pi, model, complex, data, params = NULL, visited.models = visited.models, sub = sub) {
+loglik.pre <- function (loglik.pi, model, complex, data, params = NULL, visited.models, sub) {
   if (!is.null(visited.models) && has_key(visited.models, model)) {
     if (!sub) {
       return(visited.models[[model]])
@@ -121,7 +121,7 @@ loglik.pre <- function (loglik.pi, model, complex, data, params = NULL, visited.
   # Get the complexity measures for just this model
   complex <- list(width = complex$width[model], oc = complex$oc[model], depth = complex$depth[model])
   # Call the model estimator with the data and the model, note that we add the intercept to every model
-  model.res <- loglik.pi(data[, 1], data[, -1], c(T, model), complex, params)
+  model.res <- loglik.pi(data$y, data$x, c(rep(TRUE, data$fixed), model), complex, params)
   # Check that the critical value is acceptable
   if (!is.numeric(model.res$crit) || is.nan(model.res$crit)) model.res$crit <- -.Machine$double.xmax
   # Alpha cannot be calculated if the current and proposed models have crit which are -Inf or Inf
@@ -135,34 +135,28 @@ loglik.pre <- function (loglik.pi, model, complex, data, params = NULL, visited.
 # Function to check the data
 # Checks that there is an intercept in the data, adds it if missing
 # Coerces the data to be of type matrix
-check.data <- function (data, verbose) {
-  if (!is.matrix(data)) {
-    data <- as.matrix(data)
-    if (verbose) cat("Data coerced to matrix type.\n")
+check.data <- function (x, y, fixed, verbose) {
+  if (!is.matrix(x)) {
+    x <- as.matrix(x)
+    if (verbose) cat("Data (x) coerced to matrix type.\n")
   }
-  if (sum(data[, 2] == 1) != nrow(data)) {
-    data <- cbind(data[, 1], 1, data[, -1])
-    if (verbose) cat("Intercept added to data.\n")
+  if (!is.matrix(y)) {
+    y <- as.matrix(y)
+    if (verbose) cat("Data (y) coerced to matrix type.\n")
   }
-  return(data)
-}
-
-# Function to get the dimensions of a dataset, adding an intercept if necessary
-data.dims <- function (data) {
-  dims <- dim(data)
-  if (sum(data[,2] == 1) != nrow(data)) {
-    dims[2] <- dims[2] + 1
+  if (nrow(x) != nrow(y)) {
+    stop("x and y must have the same number of rows")
   }
-  return(dims)
+  return(list(x = x, y = y, fixed = fixed))
 }
 
 # Function to extract column names if they are well formed
 get.labels <- function (data, verbose) {
-  labels <- colnames(data)[-(1:2)]
-  if (is.null(labels)) return(F)
+  labels <- colnames(data$x)[seq.int(from = data$fixed + 1, ncol(data$x))]
+  if (is.null(labels)) return(FALSE)
   if (sum(is.na(labels)) != 0) {
     if (verbose) cat("NA labels present, using x#\n")
-    return(F)
+    return(FALSE)
   }
   return(labels)
 }

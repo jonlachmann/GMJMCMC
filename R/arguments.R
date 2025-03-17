@@ -191,8 +191,7 @@ gen.params.mjmcmc <- function (data) {
   ### Create a list of parameters for the algorithm
 
   ## Get the dimensions of the data to set parameters based on it
-  data.dim <- data.dims(data)
-  ncov <- data.dim[2] - 2
+  ncov <- ncol(data$x) - data$fixed
 
   ## Local optimization parameters
   sa_kern <- list(probs=c(0.1, 0.05, 0.2, 0.3, 0.2, 0.15),
@@ -317,7 +316,7 @@ gen.params.gmjmcmc <- function (data) {
   # Get mjmcmc params
   params <- gen.params.mjmcmc(data)
 
-  ncov <- ncol(data) - 2
+  ncov <- ncol(data$x) - data$fixed
 
   feat_params <- list(D = 5, L = 15,                                # Hard limits on feature complexity
                       alpha = "unit",                               # alpha strategy ("unit" = None, "deep" strategy 3 from Hubin et al., "random" fully Bayesian strategy) 

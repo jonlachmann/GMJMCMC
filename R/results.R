@@ -107,7 +107,7 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
     accept.tot <- results[[i]]$accept.tot
     best <- results[[i]]$best
     for (item in names(results[[i]])) {
-      if (!(item %in% (c("accept.tot", "best", "transforms")))) results[[i]][[item]] <- results[[i]][[item]][pops.use[[i]]]
+      if (!(item %in% (c("accept.tot", "best", "transforms", "fixed")))) results[[i]][[item]] <- results[[i]][[item]][pops.use[[i]]]
     }
     results[[i]]$accept.tot <- accept.tot
     results[[i]]$best <- best
@@ -126,10 +126,11 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
 
   ## Detect equivalent features
   # Generate mock data to compare features with
-  if (is.null(data)) mock.data <- matrix(runif((feat.count + 2)^2, -100, 100), ncol = feat.count + 2)
-  else mock.data <- check.data(data, FALSE)
+  if (is.null(data)) mock.data <- list(x = matrix(runif((feat.count)^2, -100, 100), ncol = feat.count))
+  else mock.data <- data
+  mock.data$fixed = results[[1]]$fixed
   
-  mock.data.precalc <- precalc.features(mock.data, features)[,-(1:2)]
+  mock.data.precalc <- precalc.features(mock.data, features)$x[ , seq_len(feat.count) + results[[1]]$fixed, drop = FALSE]
 
   # Calculate the correlation to find equivalent features
   cors <- cor(mock.data.precalc)
@@ -141,10 +142,10 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
   for (i in seq_len(nrow(cors))) {
     equiv.feats <- which(cors[i, ] >= (1 - tol))
     # Compare equivalent features complexity to find most simple
-    equiv.complex <- list(width=complex$width[equiv.feats], oc=complex$oc[equiv.feats], depth=complex$depth[equiv.feats])
+    equiv.complex <- list(width = complex$width[equiv.feats], oc = complex$oc[equiv.feats], depth = complex$depth[equiv.feats])
     equiv.simplest <- lapply(equiv.complex, which.min)
-    feats.map[1:3,equiv.feats] <- c(equiv.feats[equiv.simplest$width], equiv.feats[equiv.simplest$oc], equiv.feats[equiv.simplest$depth])
-    feats.map[4,equiv.feats] <- sum(renorms[equiv.feats])
+    feats.map[1:3, equiv.feats] <- c(equiv.feats[equiv.simplest$width], equiv.feats[equiv.simplest$oc], equiv.feats[equiv.simplest$depth])
+    feats.map[4, equiv.feats] <- sum(renorms[equiv.feats])
   }
   # Select the simplest features based on the specified complexity measure and sort them
   feats.simplest.ids <- unique(feats.map[complex.measure, ])
@@ -165,7 +166,8 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
     rep.pop = pw$pop.best,
     best.log.posteriors = bests,
     rep.thread = pw$thread.best,
-    transforms = results[[1]]$transforms
+    transforms = results[[1]]$transforms,
+    fixed = results[[1]]$fixed
   )
   attr(merged, "class") <- "gmjmcmc_merged"
   return(merged)
