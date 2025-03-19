@@ -131,10 +131,12 @@ gaussian.loglik.g <- function (y, x, model, complex, params)
   return(list(crit = mloglik + lp, coefs = mod$coefficients))
 }
 
+
+#default for N.final = N.init
 params$loglik$g <- dim(df.train)[1]
 set.seed(124)
 if (use.fbms) {
-  result_parallel_g <- fbms(data = df.train, method = "gmjmcmc.parallel", transforms = transforms,
+  result_parallel_g <- fbms(data = df.train,family = "custom", method = "gmjmcmc.parallel",loglik.pi = gaussian.loglik.g, transforms = transforms,
                           runs = 40, cores = 10, P=25,params = params)
 } else {
   result_parallel_g <- gmjmcmc.parallel(runs = 40, cores = 10, data = df.train, loglik.pi = gaussian.loglik.g, 

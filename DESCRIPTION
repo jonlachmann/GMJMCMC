@@ -19,7 +19,8 @@ Depends:
     methods,
     stats,
     graphics,
-    r2r
+    r2r,
+    BAS
 Imports:
     Rcpp
 LinkingTo:

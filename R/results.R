@@ -290,7 +290,7 @@ get.mpm.model <- function(result, y, x, labels = F, family = "gaussian", loglik.
   
   if (family == "binomial")
     loglik.pi <- logistic.loglik
-  
+
   sm <- summary(result, labels = labels, verbose = FALSE)
   mpm <- sm$feats.strings[sm$marg.probs > 0.5]
   

@@ -3,6 +3,138 @@
 # Created by: jonlachmann
 # Created on: 2021-02-24
 
+#' Log likelihood function for glm regression with parameter priors from BAS package
+#' This function is created as an example of how to create an estimator that is used
+#' to calculate the marginal likelihood of a model.
+#'
+#' @param y A vector containing the dependent variable
+#' @param x The matrix containing the precalculated features
+#' @param model The model to estimate as a logical vector
+#' @param complex A list of complexity measures for the features
+#' @param params A list of parameters for the log likelihood, supplied by the user, important to specify the tuning parameters of beta priors and family that BAS uses in glm models
+#'
+#' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
+#'
+#' @examples
+#' glm.logpost.bas(y = as.integer(rnorm(100) > 0), x  = cbind(1,matrix(rnorm(100))), model = c(TRUE,TRUE),complex = list(oc = 1))
+#' 
+#'
+#' @export glm.logpost.bas
+glm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), family = "binomial", betaprior = Jeffreys(), laplace = FALSE)) {
+  if (length(params) == 0)
+    params <- list(r =  1/dim(x)[1], family = "binomial", betaprior = Jeffreys(), laplace = FALSE)
+  p <- sum(model) - 1 
+  if(p==0)
+  { 
+    probinit <- as.numeric(c(1,0.99))
+  }else{
+    probinit <- as.numeric(c(1,rep(0.99,p)))
+  }
+  
+  mod<-NULL
+  
+  tryCatch({
+  if(params$family == "binomial")
+    suppressWarnings({
+      mod <- .Call(BAS:::C_glm_deterministic,
+                   y = y, X = x[,model],
+                                  Roffset = as.numeric(rep(0, length(y))),
+                                  Rweights = as.numeric(rep(1, length(y))),
+                                  Rprobinit = probinit,
+                                  Rmodeldim = as.integer(rep(0,ifelse(p==0,2,1))),
+                                                         modelprior = uniform(),
+                                                         betaprior = params$betaprior,
+                                                         family = binomial(), 
+                                                         Rcontrol = glm.control(),
+                                                         Rlaplace =  as.integer(params$laplace))
+    })
+  else if(params$family == "poisson")
+    suppressWarnings({
+      mod <- .Call(BAS:::C_glm_deterministic,
+                   y = y, X = x[,model],
+                                  Roffset = as.numeric(rep(0, length(y))),
+                                  Rweights = as.numeric(rep(1, length(y))),
+                                  Rprobinit = probinit,
+                                  Rmodeldim = as.integer(rep(0,ifelse(p==0,2,1))),
+                                                         modelprior = uniform(),
+                                                         betaprior = params$betaprior,
+                                                         family = poisson(), 
+                                                         Rcontrol = glm.control(),
+                                                         Rlaplace =  as.integer(params$laplace))
+    })
+  else
+    suppressWarnings({
+      mod <- .Call(BAS:::C_glm_deterministic,
+                   y = y, X = x[,model],
+                                  Roffset = as.numeric(rep(0, length(y))),
+                                  Rweights = as.numeric(rep(1, length(y))),
+                                  Rprobinit = probinit,
+                                  Rmodeldim = as.integer(rep(0,ifelse(p==0,2,1))),
+                                                         modelprior = uniform(),
+                                                         betaprior = params$betaprior,
+                                                         family = Gamma(), 
+                                                         Rcontrol = glm.control(),
+                                                         Rlaplace =  as.integer(params$laplace))
+    })
+  }, error = function(e) {
+    # Handle the error by setting result to NULL
+    mod <- NULL
+    # You can also print a message or log the error if needed
+    cat("An error occurred:", conditionMessage(e), "\n")
+  })
+  
+  if(length(mod)==0) {
+    return(list(crit = -.Machine$double.xmax + log(params$r * sum(complex$oc)),coefs = rep(0,p+1)))
+  }
+  
+  if(p == 0)
+  {  
+    ret <- mod$logmarg[2] + log(params$r * sum(complex$oc)) 
+    return(list(crit=ret, coefs=mod$mle[[2]]))
+  }
+  ret <- mod$logmarg + log(params$r * sum(complex$oc)) 
+  return(list(crit=ret, coefs=mod$mle[[1]]))
+}
+
+
+#' Log likelihood function for Gaussian regression with parameter priors from BAS package
+#' This function is created as an example of how to create an estimator that is used
+#' to calculate the marginal likelihood of a model.
+#'
+#' @param y A vector containing the dependent variable
+#' @param x The matrix containing the precalculated features
+#' @param model The model to estimate as a logical vector
+#' @param complex A list of complexity measures for the features
+#' @param params A list of parameters for the log likelihood, supplied by the user, important to specify the tuning parameters of beta priors and in Gaussian models
+#'
+#' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
+#'
+#' @examples
+#' lm.logpost.bas(rnorm(100), cbind(1,matrix(rnorm(100))), c(TRUE,TRUE), list(oc = 1))
+#' 
+#'
+#' @export lm.logpost.bas
+lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5),betaprior = "g-prior",alpha = 4)) {
+  if (length(params) == 0)
+    params <- list(r =  1/dim(x)[1], betaprior = "g-prior", laplace = FALSE)
+  
+  if(sum(model)>1)
+  { 
+    model[1] <- FALSE
+    Xy <- data.frame(x = x[,model], y = y)
+  
+    suppressWarnings({mod <- bas.lm(y ~., data = Xy, prior = params$betaprior, method = "deterministic", alpha = params$alpha ,modelprior = uniform(), n.models = 1, initprobs = 'eplogp')})
+  }else
+  {
+    return(list(crit=-10000, coefs=c(0)))
+  } 
+  ret <- mod$logmarg + log(params$r) * sum(complex$oc)
+  
+  return(list(crit=ret, coefs=mod$mle[[1]]))
+}
+
+
+
 #' Log likelihood function for logistic regression with a prior p(m)=sum(total_width)
 #' This function is created as an example of how to create an estimator that is used
 #' to calculate the marginal likelihood of a model.

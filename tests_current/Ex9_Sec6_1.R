@@ -49,6 +49,15 @@ params$feat$check.col <- F
 
 set.seed(6001)
 
+df$y <- df$x1 + df$x10*df$x11 + df$x5 + 1
+
+df$y <- as.numeric(df$y > mean(df$y))
+
+params$loglik = list(r = 1/dim(df)[1], family = "binomial", betaprior = g.prior(100), laplace = F)
+
+result2 <- fbms(data = df, method = "gmjmcmc", family = "custom",
+               transforms = transforms, probs = probs, loglik.pi = glm.logpost.bas, params = params,P=3)
+
 # Perform analysis with logistic.loglik
 if (use.fbms) {
   result <- fbms(data = df, method = "gmjmcmc", family = "binomial",
@@ -66,15 +75,15 @@ summary(result)
 
 # IMPORTANT: specify correct link function for predict
 
-pred = predict(result, x =  df[,-1], link = function(x)(1/(1+exp(-x))))  
+pred <- predict(result, x =  df[,-1], link = function(x)(1/(1+exp(-x))))  
 mean(round(pred$aggr$mean)==df$y)
 
-get.best.model(result = result)
-preds <-  predict(get.best.model(result), df[,-1],link = function(x)(1/(1+exp(-x))))
+bm <- get.best.model(result = result)
+preds <-  predict(object = bm, df[,-1],link = function(x)(1/(1+exp(-x))))
 mean(round(preds)==df$y)
 
-get.mpm.model(result = result,family = "binomial",y = df$y,x=df[,-1])
-preds <-  predict(get.mpm.model(result = result,family = "binomial",y = df$y,x=df[,-1]), df[,-1],link = function(x)(1/(1+exp(-x))))
+mpm <- get.mpm.model(result = result,family = "binomial",y = df$y,x=df[,-1])
+preds <-  predict(mpm, df[,-1],link = function(x)(1/(1+exp(-x))))
 mean(round(preds)==df$y)
 
 
