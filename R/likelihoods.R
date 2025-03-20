@@ -28,6 +28,7 @@ glm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), 
   if(p==0)
   { 
     probinit <- as.numeric(c(1,0.99))
+    model[2] <- T
   }else{
     probinit <- as.numeric(c(1,rep(0.99,p)))
   }
@@ -90,10 +91,10 @@ glm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), 
   
   if(p == 0)
   {  
-    ret <- mod$logmarg[2] + log(params$r * sum(complex$oc)) 
+    ret <- mod$logmarg[2] + log(params$r) * sum(complex$oc) 
     return(list(crit=ret, coefs=mod$mle[[2]]))
   }
-  ret <- mod$logmarg + log(params$r * sum(complex$oc)) 
+  ret <- mod$logmarg + log(params$r) * sum(complex$oc)
   return(list(crit=ret, coefs=mod$mle[[1]]))
 }
 
@@ -138,20 +139,21 @@ lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5),be
   if(p==0)
   { 
     probinit <- as.numeric(c(1,0.99))
+    model[2] <- T
   }else{
     probinit <- as.numeric(c(1,rep(0.99,p)))
   }
   
   mod<-NULL
-  
+  #browser()
   tryCatch({
       suppressWarnings({
         mod <- .Call(BAS:::C_deterministic,
-                     y = y, X = x[,model],
+                     y = y, X = as.matrix(x[,model]),
                      as.numeric(rep(1, length(y))),
                      probinit,
                      as.integer(rep(0,ifelse(p==0,2,1))),
-                     incint = as.integer(TRUE),
+                     incint = as.integer(F),
                      alpha = as.numeric(params$alpha),
                      method = as.integer(method.num),
                      modelprior = uniform(),
@@ -171,10 +173,10 @@ lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5),be
   
   if(p == 0)
   {  
-    ret <- mod$logmarg[2] + log(params$r * sum(complex$oc)) 
+    ret <- mod$logmarg[2] + log(params$r) * sum(complex$oc)  
     return(list(crit=ret, coefs=mod$mle[[2]]))
   }
-  ret <- mod$logmarg + log(params$r * sum(complex$oc)) 
+  ret <- mod$logmarg + log(params$r) * sum(complex$oc) 
   return(list(crit=ret, coefs=mod$mle[[1]]))
 }
 

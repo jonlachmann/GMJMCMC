@@ -46,6 +46,108 @@ if (use.fbms) {
 }
 summary(result.default,labels = F)
 
+params <- gen.params.gmjmcmc(df.train)
+
+
+
+library(tictoc)
+#just testing all priors I now added, time, etc.
+for(prior in c("g-prior",
+                 "hyper-g",
+                 "hyper-g-laplace",
+                 "hyper-g-n",
+                 "AIC",
+                 "BIC",
+                 "ZS-null",
+                 "ZS-full",
+                 "EB-local",
+                 "EB-global",
+                 "JZS"))
+{
+print(paste0("testing ",prior))
+params$loglik <- list(r =  1/dim(df.train)[1], betaprior = prior,alpha = min(dim(df.train)[1],(dim(df.train)[2])^2))
+
+
+#ours are stil a bit faster than the BAS ones, but BAS are relatively fine too
+
+tic()
+result.default <- fbms(formula = semimajoraxis ~ 1 + . , data = df.train, method = "gmjmcmc.parallel",cores = 10, runs = 10, transforms = transforms, loglik.pi = lm.logpost.bas, params = params, P = 50)
+time.res = toc()
+preds <- predict(result.default, df.test[,-1], link = function(x) x)
+print(summary(result.default))
+print(sqrt(mean((preds$aggr$mean - df.test$semimajoraxis)^2)))
+print(time.res)
+}
+
+
+#g prior with g = n is perfect 
+gaussian.loglik.g <- function (y, x, model, complex, params)
+{
+  
+  suppressWarnings({
+    mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())
+  })
+  
+  # Calculate R-squared
+  y_mean <- mean(y)
+  TSS <- sum((y - y_mean)^2)
+  RSS <- sum(mod$residuals^2)
+  Rsquare <- 1 - (RSS / TSS)
+  
+  # logarithm of marginal likelihood
+  mloglik <- 0.5*(log(1.0 + params$g) * (dim(x)[1] - mod$rank)  - log(1.0 + params$g * (1.0 - Rsquare)) * (dim(x)[1]  - 1))*(mod$rank!=1)
+  
+  # logarithm of model prior
+  if (length(params$r) == 0)  params$r <- 1/dim(x)[1]  # default value or parameter r
+  lp <- log_prior(params, complex)
+  
+  return(list(crit = mloglik + lp, coefs = mod$coefficients))
+}
+
+#testing a bit BAS based stuff vs our implementation, g prior
+lm.logpost.bas(y = df.train$semimajoraxis,x = cbind(1,df.train[,-1]),model = c(T,T,T,T,T,T,T,T,T,T),complex = list(oc = 10),params = list(r =  1/dim(df.train)[1], betaprior = "g-prior",alpha = min(dim(df.train)[1],(dim(df.train)[2])^2)))
+gaussian.loglik.g(y = df.train$semimajoraxis,x = cbind(1,df.train[,-1]),model = c(T,T,T,T,T,T,T,T,T,T),complex = list(oc = 10),params = list(r =  1/dim(df.train)[1],g = min(dim(df.train)[1],(dim(df.train)[2])^2)))
+#perfect agreement 
+
+library(tictoc)
+tic()
+mean(sapply(1:200000,function(i)lm.logpost.bas(y = df.train$semimajoraxis,x = cbind(1,df.train[,-1]),model = c(T,T,T,T,T,T,T,T,T,T),complex = list(oc = 1),params = list(r =  1/dim(df.train)[1], betaprior = "g-prior",alpha = min(dim(df.train)[1],(dim(df.train)[2])^2)))$crit))
+toc()
+
+tic()
+mean(sapply(1:200000,function(i)gaussian.loglik.g(y = df.train$semimajoraxis,x = cbind(1,df.train[,-1]),model = c(T,T,T,T,T,T,T,T,T,T),complex = list(oc = 1),params = list(r =  1/dim(df.train)[1],g = min(dim(df.train)[1],(dim(df.train)[2])^2)))$crit))
+toc()
+#BAS version is in fact quicker! 
+
+#testing a bit BAS based stuff vs our implementation, Jeffreys prior aka BIC() in BAS
+lm.logpost.bas(y = df.train$semimajoraxis,x = cbind(1,df.train[,-1]),model = c(T,T,T,T,T,T,T,T,T),complex = list(oc = 1),params = list(r =  1/dim(df.train)[1], betaprior = "g-prior",alpha = min(dim(df.train)[1],(dim(df.train)[2])^2)))
+gaussian.loglik.g(y = df.train$semimajoraxis,x = cbind(1,df.train[,-1]),model = c(T,T,T,T,T,T,T,T,T),complex = list(oc = 1),params = list(r =  1/dim(df.train)[1],g = min(dim(df.train)[1],(dim(df.train)[2])^2)))
+
+
+
+#default for N.final = N.init
+params <- gen.params.gmjmcmc(df.train)
+params$loglik$g <- dim(df.train)[1]
+tic()
+result.default <- fbms(formula = semimajoraxis ~ 1 + . , data = df.train, method = "gmjmcmc.parallel",cores = 10, runs = 10, transforms = transforms, loglik.pi = gaussian.loglik.g, params = params, P = 50)
+time.res = toc()
+preds <- predict(result.default, df.test[,-1], link = function(x) x)
+print(summary(result.default))
+print(sqrt(mean((preds$aggr$mean - df.test$semimajoraxis)^2)))
+print(time.res)
+
+
+
+params <- gen.params.gmjmcmc(df.train)
+tic()
+result.default <- fbms(formula = semimajoraxis ~ 1 + . , data = df.train, method = "gmjmcmc.parallel",cores = 10, runs = 10, transforms = transforms, params = params, P = 50)
+time.res = toc()
+preds <- predict(result.default, df.test[,-1], link = function(x) x)
+print(summary(result.default))
+print(sqrt(mean((preds$aggr$mean - df.test$semimajoraxis)^2)))
+print(time.res)
+
+
 
 preds <- predict(result.default, df.test[,-1], link = function(x) x)
 sqrt(mean((preds$aggr$mean - df.test$semimajoraxis)^2))
