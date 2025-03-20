@@ -16,13 +16,14 @@
 #' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 #'
 #' @examples
-#' glm.logpost.bas(y = as.integer(rnorm(100) > 0), x  = cbind(1,matrix(rnorm(100))), model = c(TRUE,TRUE),complex = list(oc = 1))
+#' glm.logpost.bas(as.integer(rnorm(100) > 0),cbind(1,matrix(rnorm(100))),c(TRUE,TRUE),list(oc = 1))
 #' 
-#'
+#' @importFrom BAS uniform Jeffreys g.prior
+#' @importFrom stats poisson Gamma glm.control
 #' @export glm.logpost.bas
 glm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), family = "binomial", betaprior = Jeffreys(), laplace = FALSE)) {
   if (length(params) == 0)
-    params <- list(r =  1/dim(x)[1], family = "binomial", betaprior = Jeffreys(), laplace = FALSE)
+    params <- list(r =  1/dim(x)[1], family = "binomial", betaprior = g.prior(max(dim(x)[1],sum(model)-1)), laplace = FALSE)
   p <- sum(model) - 1 
   if(p==0)
   { 
@@ -116,20 +117,64 @@ glm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), 
 #' @export lm.logpost.bas
 lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5),betaprior = "g-prior",alpha = 4)) {
   if (length(params) == 0)
-    params <- list(r =  1/dim(x)[1], betaprior = "g-prior", laplace = FALSE)
+    params <- list(r =  1/dim(x)[1], betaprior = "g-prior",alpha = max(dim(x)[1],sum(model)^2))
   
-  if(sum(model)>1)
+  method.num <- switch(
+    params$betaprior,
+    "g-prior" = 0,
+    "hyper-g" = 1,
+    "EB-local" = 2,
+    "BIC" = 3,
+    "ZS-null" = 4,
+    "ZS-full" = 5,
+    "hyper-g-laplace" = 6,
+    "AIC" = 7,
+    "EB-global" = 2,
+    "hyper-g-n" = 8,
+    "JZS" = 9
+  )
+  
+  p <- sum(model) - 1 
+  if(p==0)
   { 
-    model[1] <- FALSE
-    Xy <- data.frame(x = x[,model], y = y)
+    probinit <- as.numeric(c(1,0.99))
+  }else{
+    probinit <- as.numeric(c(1,rep(0.99,p)))
+  }
   
-    suppressWarnings({mod <- bas.lm(y ~., data = Xy, prior = params$betaprior, method = "deterministic", alpha = params$alpha ,modelprior = uniform(), n.models = 1, initprobs = 'eplogp')})
-  }else
-  {
-    return(list(crit=-10000, coefs=c(0)))
-  } 
-  ret <- mod$logmarg + log(params$r) * sum(complex$oc)
+  mod<-NULL
   
+  tryCatch({
+      suppressWarnings({
+        mod <- .Call(BAS:::C_deterministic,
+                     y = y, X = x[,model],
+                     as.numeric(rep(1, length(y))),
+                     probinit,
+                     as.integer(rep(0,ifelse(p==0,2,1))),
+                     incint = as.integer(TRUE),
+                     alpha = as.numeric(params$alpha),
+                     method = as.integer(method.num),
+                     modelprior = uniform(),
+                     Rpivot = TRUE,
+                     Rtol = 1e-7)
+      })
+  }, error = function(e) {
+    # Handle the error by setting result to NULL
+    mod <- NULL
+    # You can also print a message or log the error if needed
+    cat("An error occurred:", conditionMessage(e), "\n")
+  })
+  
+  if(length(mod)==0) {
+    return(list(crit = -.Machine$double.xmax + log(params$r * sum(complex$oc)),coefs = rep(0,p+1)))
+  }
+  
+  if(p == 0)
+  {  
+    ret <- mod$logmarg[2] + log(params$r * sum(complex$oc)) 
+    return(list(crit=ret, coefs=mod$mle[[2]]))
+  }
+  ret <- mod$logmarg + log(params$r * sum(complex$oc)) 
   return(list(crit=ret, coefs=mod$mle[[1]]))
 }
 
