@@ -16,7 +16,7 @@
 library(FBMS)
 library(xtable)
 use.fbms = FALSE
-
+run.parallel <- T
 
 data(SangerData2)
 df = SangerData2
