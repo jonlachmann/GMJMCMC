@@ -2,7 +2,7 @@
 % Please edit documentation in R/likelihoods.R
 \name{logistic.loglik}
 \alias{logistic.loglik}
-\title{Log likelihood function for logistic regression with a prior p(m)=sum(total_width)
+\title{Log likelihood function for logistic regression with a Jeffreys parameter prior and BIC approximations of the posterior
 This function is created as an example of how to create an estimator that is used
 to calculate the marginal likelihood of a model.}
 \usage{
@@ -23,7 +23,7 @@ logistic.loglik(y, x, model, complex, params = list(r = exp(-0.5)))
 A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 }
 \description{
-Log likelihood function for logistic regression with a prior p(m)=sum(total_width)
+Log likelihood function for logistic regression with a Jeffreys parameter prior and BIC approximations of the posterior
 This function is created as an example of how to create an estimator that is used
 to calculate the marginal likelihood of a model.
 }

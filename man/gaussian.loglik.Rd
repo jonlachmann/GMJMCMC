@@ -2,7 +2,7 @@
 % Please edit documentation in R/likelihoods.R
 \name{gaussian.loglik}
 \alias{gaussian.loglik}
-\title{Log likelihood function for gaussian regression with a prior p(m)=r*sum(total_width).}
+\title{Log likelihood function for gaussian regression with a Jeffreys prior and BIC approximation of MLIK with both known and unknown variance of the responses}
 \usage{
 gaussian.loglik(y, x, model, complex, params)
 }
@@ -21,7 +21,7 @@ gaussian.loglik(y, x, model, complex, params)
 A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 }
 \description{
-Log likelihood function for gaussian regression with a prior p(m)=r*sum(total_width).
+Log likelihood function for gaussian regression with a Jeffreys prior and BIC approximation of MLIK with both known and unknown variance of the responses
 }
 \examples{
 gaussian.loglik(rnorm(100), matrix(rnorm(100)), TRUE, list(oc = 1), NULL)

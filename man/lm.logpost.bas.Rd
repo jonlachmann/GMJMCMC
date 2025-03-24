@@ -11,7 +11,7 @@ lm.logpost.bas(
   x,
   model,
   complex,
-  params = list(r = exp(-0.5), betaprior = "g-prior", alpha = 4)
+  params = list(r = exp(-0.5), prior_beta = "g-prior", alpha = 4)
 )
 }
 \arguments{

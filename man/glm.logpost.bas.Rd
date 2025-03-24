@@ -11,7 +11,7 @@ glm.logpost.bas(
   x,
   model,
   complex,
-  params = list(r = exp(-0.5), family = "binomial", betaprior = Jeffreys(), laplace =
+  params = list(r = exp(-0.5), family = "binomial", prior_beta = Jeffreys(), laplace =
     FALSE)
 )
 }
