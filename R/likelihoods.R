@@ -524,4 +524,165 @@ log_prior <- function (params, complex) {
   return(pl)
 }
 
-
+#' Master Log Marginal Likelihood Function
+#'
+#' This function serves as a unified interface to compute the log marginal likelihood
+#' for different regression models and priors by calling specific log likelihood functions.
+#'
+#' @param y A numeric vector containing the dependent variable.
+#' @param x A matrix containing the precalculated features (independent variables).
+#' @param model A logical vector indicating which variables to include in the model.
+#' @param complex A list of complexity measures for the features.
+#' @param params A list of parameters controlling the model family, prior, and tuning parameters.
+#'   Key elements include:
+#'   - family: "binomial", "poisson", "gamma", or "gaussian" (default: "gaussian")
+#'   - prior_beta: Type of prior as a string (default: "g-prior"). Possible values include:
+#'     - "beta.prime": Beta-prime prior (GLM, requires `n`)
+#'     - "bic.prior": BIC-based prior (GLM, requires `n`)
+#'     - "CCH": Chen-Clyde-Hsu prior (GLM, requires `a`, `b`, optionally `s`)
+#'     - "EB.global": Empirical Bayes global prior (GLM, optionally `g`, `tol`, `max.iterations`; requires an object in BAS)
+#'     - "EB.local": Empirical Bayes local prior (GLM, no additional args)
+#'     - "g-prior": Zellner's g-prior (GLM/Gaussian, requires `g`)
+#'     - "hyper.g": Hyper-g prior (GLM, requires `a`)
+#'     - "hyper.g.n": Hyper-g/n prior (GLM, requires `a`, `n`)
+#'     - "tCCH": Truncated Chen-Clyde-Hsu prior (GLM, requires `a`, `b`, optionally `s`, `rho`, `v`, `k`)
+#'     - "intrinsic": Intrinsic prior (GLM, requires `n`)
+#'     - "testBF.prior": Test Bayes factor prior (GLM, requires `g`)
+#'     - "TG": Truncated Gamma prior (GLM, requires `a`)
+#'     - "Jeffreys": Jeffreys prior (GLM/Gaussian, no additional args)
+#'     - "uniform": Uniform prior (GLM, no additional args)
+#'     - "CH": Custom Chen-Hsu prior (Gaussian TCCH, requires `a`, `b`, optionally `s`)
+#'     - "Hyper-g": Hyper-g prior (Gaussian TCCH, no additional args)
+#'     - "Uniform": Uniform prior (Gaussian TCCH, no additional args)
+#'     - "Beta-prime": Beta-prime prior (Gaussian TCCH, no additional args)
+#'     - "Benchmark": Benchmark prior (Gaussian TCCH, no additional args)
+#'     - "TruncGamma": Truncated Gamma prior (Gaussian TCCH, requires `at`, `st`)
+#'     - "ZS adapted": Zellner-Siow adapted prior (Gaussian TCCH, no additional args)
+#'     - "Robust": Robust prior (Gaussian TCCH, no additional args)
+#'     - "Hyper-g/n": Hyper-g/n prior (Gaussian TCCH, no additional args)
+#'     - "Intrinsic": Intrinsic prior (Gaussian TCCH, no additional args)
+#'     - "hyper-g": Hyper-g prior (Gaussian BAS, requires `alpha`)
+#'     - "EB-local": Empirical Bayes local prior (Gaussian BAS, requires `alpha`)
+#'     - "BIC": BIC prior (Gaussian BAS, requires `alpha`)
+#'     - "ZS-null": Zellner-Siow null prior (Gaussian BAS, requires `alpha`)
+#'     -Sums
+#'     - "ZS-full": Zellner-Siow full prior (Gaussian BAS, requires `alpha`)
+#'     - "hyper-g-laplace": Hyper-g Laplace prior (Gaussian BAS, requires `alpha`)
+#'     - "AIC": AIC prior (Gaussian BAS, requires `alpha`)
+#'     - "JZS": Jeffreys-Zellner-Siow prior (Gaussian BAS, requires `alpha`)
+#'   - r: Model complexity penalty (default: 1/length(y))
+#'   - g: Tuning parameter for g-prior (default: max(n, p^2))
+#'   - a, b, s, v, rho, k: Hyperparameters for various priors (replacing alpha, beta, etc., in GLM for consistency)
+#'   - at, st: Additional parameters for TruncGamma prior
+#'   - n: Sample size for some priors (default: length(y))
+#'   - var: Variance assumption for Gaussian models ("known" or "unknown", default: "unknown")
+#'   - laplace: Logical for Laplace approximation in GLM (default: FALSE)
+#'
+#' @return A list with elements:
+#'   \item{crit}{Log marginal likelihood combined with the log prior.}
+#'   \item{coefs}{Posterior mode of the coefficients.}
+#'
+#' @examples
+#' fbms.mlik.master(rnorm(100), matrix(rnorm(100)), TRUE, list(oc = 1), list(family = "gaussian", prior_beta = "g-prior"))
+#'
+#' @importFrom BAS beta.prime bic.prior CCH EB.global EB.local g.prior hyper.g hyper.g.n tCCH intrinsic testBF.prior TG Jeffreys uniform
+#' @export
+fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gaussian", prior_beta = "g-prior", r = exp(-0.5))) {
+  # Extract dimensions
+  n <- length(y)
+  p <- sum(model) - 1  # Number of predictors excluding intercept
+  
+  # Set default parameters if not fully specified
+  if (is.null(params$family)) params$family <- "gaussian"
+  if (is.null(params$prior_beta)) params$prior_beta <- "g-prior"
+  if (is.null(params$g)) params$g <- max(p^2, n)
+  if (is.null(params$r)) params$r <- 1/length(y)
+  
+  # Ensure complex has oc if not provided
+  if (is.null(complex$oc)) complex$oc <- 1
+  
+  # Homogenize and prepare params for nested calls
+  params_master <- params
+  params_nested <- list(r = params_master$r)
+  
+  # Decision logic based on family and prior_beta
+  if (params_master$family %in% c("binomial", "poisson", "gamma")) {
+    # GLM models using glm.logpost.bas or logistic.loglik
+    params_nested$family <- params_master$family
+    if (is.null(params_master$laplace)) params_nested$laplace <- FALSE else params_nested$laplace <- params_master$laplace
+    
+    if (params_master$prior_beta == "Jeffreys" && params_master$family == "binomial") {
+      # Use logistic.loglik for binomial with Jeffreys prior and BIC approximation
+      result <- logistic.loglik(y, x, model, complex, params_nested)
+    } else {
+      # Use glm.logpost.bas for binomial or poisson with BAS priors
+      params_nested$prior_beta <- switch(
+        params_master$prior_beta,
+        "beta.prime" = beta.prime(n = if (is.null(params_master$n)) n else params_master$n),
+        "bic.prior" = bic.prior(n = if (is.null(params_master$n)) n else params_master$n),
+        "CCH" = CCH(alpha = if (is.null(params_master$a)) 1 else params_master$a,
+                    beta = if (is.null(params_master$b)) 2 else params_master$b,
+                    s = if (is.null(params_master$s)) 0 else params_master$s),
+        "EB.global" = EB.global(tol = 0.1, g.0 = params_master$g, max.iterations = 100),  # Requires object, may need adjustment
+        "EB.local" = EB.local(),
+        "g-prior" = g.prior(g = if (is.null(params_master$g)) max(n, p + 1) else params_master$g),
+        "hyper.g" = hyper.g(alpha = if (is.null(params_master$a)) 3 else params_master$a),
+        "hyper.g.n" = hyper.g.n(alpha = if (is.null(params_master$a)) 3 else params_master$a,
+                                n = if (is.null(params_master$n)) n else params_master$n),
+        "tCCH" = tCCH(alpha = if (is.null(params_master$a)) 1 else params_master$a,
+                      beta = if (is.null(params_master$b)) 2 else params_master$b,
+                      s = if (is.null(params_master$s)) 0 else params_master$s,
+                      r = if (is.null(params_master$rho)) 3/2 else params_master$rho,
+                      v = if (is.null(params_master$v)) 1 else params_master$v,
+                      theta = if (is.null(params_master$k)) 1 else params_master$k),
+        "intrinsic" = intrinsic(n = if (is.null(params_master$n)) n else params_master$n),
+        "testBF.prior" = testBF.prior(g = if (is.null(params_master$g)) max(n, p + 1) else params_master$g),
+        "TG" = TG(alpha = if (is.null(params_master$a)) 2 else params_master$a),
+        "Jeffreys" = Jeffreys(),
+        "uniform" = uniform(),
+        params_master$prior_beta  # Default: pass as is if not recognized
+      )
+      result <- glm.logpost.bas(y, x, model, complex, params_nested)
+    }
+  } else if (params_master$family == "gaussian") {
+    # Gaussian models
+    params_nested$r <- params_master$r
+    
+    if (params_master$prior_beta == "g-prior" && is.null(params_master$method.num)) {
+      # Use gaussian.loglik.g for Zellner's g-prior
+      if (is.null(params_master$g)) params_nested$g <- max(n, p^2) else params_nested$g <- params_master$g
+      result <- gaussian.loglik.g(y, x, model, complex, params_nested)
+    } else if (params_master$prior_beta == "Jeffreys" && is.null(params_master$method.num)) {
+      # Use gaussian.loglik for Jeffreys prior with BIC approximation
+      if (is.null(params_master$var)) params_nested$var <- "unknown" else params_nested$var <- params_master$var
+      result <- gaussian.loglik(y, x, model, complex, params_nested)
+    } else if (params_master$prior_beta %in% c("CH", "Hyper-g", "Uniform", "Jeffreys", "Beta-prime", 
+                                               "Benchmark", "TruncGamma", "ZS adapted", 
+                                               "Robust", "Hyper-g/n", "Intrinsic")) {
+      # Use gaussian_tcch_log_likelihood for TCCH priors
+      params_nested$prior_beta <- params_master$prior_beta
+      if (!is.null(params_master$a)) params_nested$a <- params_master$a
+      if (!is.null(params_master$b)) params_nested$b <- params_master$b
+      if (!is.null(params_master$s)) params_nested$s <- params_master$s
+      if (!is.null(params_master$v)) params_nested$v <- params_master$v
+      if (!is.null(params_master$k)) params_nested$k <- params_master$k
+      if (!is.null(params_master$at)) params_nested$at <- params_master$at
+      if (!is.null(params_master$st)) params_nested$st <- params_master$st
+      result <- gaussian_tcch_log_likelihood(y, x, model, complex, params_nested)
+    } else {
+      # Use lm.logpost.bas for other BAS priors
+      params_nested$prior_beta <- params_master$prior_beta
+      if (is.null(params_master$alpha)) params_nested$alpha <- max(n, (p + 1)^2) else params_nested$alpha <- params_master$alpha
+      result <- lm.logpost.bas(y, x, model, complex, params_nested)
+    }
+  } else {
+    stop("Unsupported family: ", params_master$family, ". Supported families are 'binomial', 'poisson', 'gamma', or 'gaussian'.")
+  }
+  
+  # Ensure consistent return structure
+  if (is.null(result$crit) || is.null(result$coefs)) {
+    stop("Error in computation: Returned result does not contain 'crit' and 'coefs'.")
+  }
+  
+  return(list(crit = result$crit, coefs = result$coefs))
+}
