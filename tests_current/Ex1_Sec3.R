@@ -372,3 +372,192 @@ gaussian.loglik(y = df.train$semimajoraxis,x = cbind(1,df.train[,-1]),model = c(
 
 
 
+gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r = exp(-0.5), prior_beta = "Hyper-g")) {
+  
+  # Fit the linear model using fastglm
+  fitted_model <- fastglm(as.matrix(x[, model]), y, family = gaussian())
+  log_likelihood <- -(fitted_model$aic  -2 * (fitted_model$rank))/2
+  # Compute R-squared manually
+  y_mean <- mean(y)
+  TSS <- sum((y - y_mean)^2)
+  RSS <- sum(fitted_model$residuals^2)
+  R2_M <- 1 - (RSS / TSS)
+  
+  p_M <- fitted_model$rank
+  n <- length(y)
+  
+  # Switch-like structure to assign hyperparameters based on prior
+  if (params$prior_beta == "CH") {
+    # CH prior: b and s should be user-specified, with defaults if not provided
+    a <- ifelse(!is.null(params$a),params$a, 1)  # Default to 1 if not specified
+    b <- ifelse(!is.null(params$b),params$b, 2)  # Default to 1 if not specified
+    r <- 0
+    s <- ifelse(!is.null(params$s), params$s, 1)  # Default to 1 if not specified
+    v <- 1
+    k <- 1
+    
+  } else if (params$prior_beta == "Hyper-g") {
+    a <- 1
+    b <- 2
+    r <- 0
+    s <- 0
+    v <- 1
+    k <- 1
+    
+  } else if (params$prior_beta == "Uniform") {
+    a <- 2
+    b <- 2
+    r <- 0
+    s <- 0
+    v <- 1
+    k <- 1
+    
+  } else if (params$prior_beta == "Jeffreys") {
+    a <- 0.0001
+    b <- 2
+    r <- 0
+    s <- 0
+    v <- 1
+    k <- 1
+  } else if (params$prior_beta == "Beta-prime") {
+    a <- 1/2
+    b <- n - p_M - 1.5
+    r <- 0
+    s <- 0
+    v <- 1
+    k <- 1
+    
+  } else if (params$prior_beta == "Benchmark") {
+    a <- 0.02
+    b <- 0.02 * max(n, p_M^2)
+    r <- 0
+    s <- 0
+    v <- 1
+    k <- 1
+    
+  } else if (params$prior_beta == "TruncGamma") {
+    
+    a <- 2 * ifelse(!is.null(params$at),params$at, 1)
+    b <- 2
+    r <- 0
+    s <- 2 * ifelse(!is.null(params$st),params$st, 1)
+    v <- 1
+    k <- 1
+    
+  } else if (params$prior_beta == "ZS adapted") {
+    a <- 1
+    b <- 2
+    r <- 0
+    s <- n + 3
+    v <- 1
+    k <- 1
+    #browser()
+  } else if (params$prior_beta == "Robust") {
+    a <- 1
+    b <- 2
+    r <- 1.5
+    s <- 0
+    v <- (n + 1) / (p_M + 1)
+    k <- 1
+    
+  } else if (params$prior_beta == "Hyper-g/n") {
+    a <- 1
+    b <- 2
+    r <- 1.5
+    s <- 0
+    v <- 1
+    k <- 1
+    
+  } else if (params$prior_beta == "Intrinsic") {
+    a <- 1
+    b <- 1
+    r <- 1
+    s <- 0
+    v <- (n + p_M + 1) / (p_M + 1)
+    k <- (n + p_M + 1) / n
+    
+  } else {
+    stop("Unknown prior name: ", params$prior_beta)
+  }
+  
+  #
+  if (!is.null(r) & r == 0) {
+    #browser()
+    term1 <- lbeta((a + p_M) / 2, b / 2)
+    term2 <- phi1(b / 2, (n - 1) / 2, (a + b + p_M) / 2, s / (2 * v), min(0.8,R2_M/(v - (v - 1) * R2_M),log = T))
+    
+    if(R2_M/(v - (v - 1) * R2_M)>0.8)
+    {
+      warning("Infinite marginal log likelihood! phi1 last argument reduced to 0.8. Use a different prior_beta (Robust, Hyper-g/n, Intrinsic, or g-prior)")
+    }
+    
+    term3 <- lbeta(a / 2, b / 2) 
+    term4 <- hypergeometric1F1(b / 2, (a + b) / 2, s / (2 * v),log = T)
+    marginal_likelihood <- log_likelihood + (term1) + (term2) - (p_M / 2) * log(v) - ((n - 1) / 2)*log(1 - (1 - 1 / v) * R2_M) - (term3) - (term4)
+  } else if (!is.null(s) & s == 0) {
+    term1 <- lbeta((a + p_M) / 2, b / 2)
+    term2 <- hypergeometric2F1(r, b / 2, (a + b) / 2, 1 - k,log = T)
+    term3 <- tolerance::F1((a + p_M) / 2, (a + b + p_M + 1 - n - 2 * r) / 2, (n - 1) / 2, (a + b + p_M) / 2, 1 - k, 1 - k - (R2_M^2 * k) / ((1 - R2_M) * v))
+    marginal_likelihood <- log_likelihood + (a+p_M-2*r)/2*log(k) + (term1) - (term2) - (term3) - (p_M / 2) * log(v) - log(1 - R2_M) * ((n - 1) / 2) - lbeta(a / 2, b / 2)
+ 
+  } else {
+    stop("Invalid inputs: either r = 0 or s = 0 must be specified.")
+  }
+  
+  #browser()
+  
+  
+  if (length(params$r) == 0)  params$r <- 1/dim(x)[1]  # default value or parameter r
+  
+  lp <- log_prior(params, complex)
+  
+  return(list(crit = marginal_likelihood + lp, coefs = fitted_model$coefficients))
+}
+
+for(prior in c("CH", "Hyper-g", "Uniform", "Jeffreys", "Beta-prime", "Benchmark", "TruncGamma", "ZS adapted", "Robust", "Hyper-g/n", "Intrinsic"))
+{
+  print(prior)
+  print(gaussian_tcch_log_likelihood(y = df.train$semimajoraxis,x = cbind(1,df.train[,-1]),model = c(T,T,T,T,T,T,T,T,T,T),complex = list(oc = 0),params = list(r =  1/dim(df.train)[1], prior_beta = prior))$crit-
+          gaussian_tcch_log_likelihood(y = df.train$semimajoraxis,x = cbind(1,df.train[,-1]),model = c(T,F,F,F,F,T,T,T,T),complex = list(oc = 0),params = list(r =  1/dim(df.train)[1], prior_beta = prior))$crit)
+  
+}
+
+lm.logpost.bas(y = df.train$semimajoraxis,x = cbind(1,df.train[,-1]),model = c(T,T,T,T,T,T,T,T,T,T),complex = list(oc = 10),params = list(r =  1/dim(df.train)[1], betaprior = "g-prior",alpha = min(dim(df.train)[1],(dim(df.train)[2])^2)))
+
+
+
+
+
+#let us quickly test the Beroulli responses
+
+df.train$semimajoraxis = as.numeric(df.train$semimajoraxis>mean(df.train$semimajoraxis))
+
+
+glm.logpost.bas(y = df.train$semimajoraxis,x = cbind(1,df.train[,-1]),model = c(T,T,T,T,T,T,T,T,T),complex = list(oc = 0),params = list(r =  1/dim(df.train)[1], family = "binomial", betaprior = Jeffreys(),laplace = 1))$crit -
+  glm.logpost.bas(y = df.train$semimajoraxis,x = cbind(1,df.train[,-1]),model = c(T,F,F,F,F,T,T,T,T),complex = list(oc = 0),params = list(r =  1/dim(df.train)[1], family = "binomial", betaprior = Jeffreys(),laplace = 1))$crit
+
+# laplace or not does not matter, does not fully correspond to ours
+glm.logpost.bas(y = df.train$semimajoraxis,x = cbind(1,df.train[,-1]),model = c(T,T,T,T,T,T,T,T,T),complex = list(oc = 0),params = list(r =  1/dim(df.train)[1], family = "binomial", betaprior = bic.prior((dim(df.train)[1])),laplace = 1))$crit -
+  glm.logpost.bas(y = df.train$semimajoraxis,x = cbind(1,df.train[,-1]),model = c(T,F,F,F,F,T,T,T,T),complex = list(oc = 0),params = list(r =  1/dim(df.train)[1], family = "binomial", betaprior = bic.prior((dim(df.train)[1])),laplace = 1))$crit
+
+
+logistic.loglik(y = df.train$semimajoraxis,x = cbind(1,df.train[,-1]),model = c(T,T,T,T,T,T,T,T,T),complex = list(oc = 0),params = list(r =  1/dim(df.train)[1]))$crit - 
+  logistic.loglik(y = df.train$semimajoraxis,x = cbind(1,df.train[,-1]),model = c(T,F,F,F,F,T,T,T,T),complex = list(oc = 0),params = list(r =  1/dim(df.train)[1]))$crit
+
+
+-BIC(glm(semimajoraxis~.,df.train,family = "binomial"))/2 + BIC(glm(semimajoraxis~.,df.train[,-c(2,3,4,5)],family = "binomial"))/2
+
+
+tic()
+mean(sapply(1:10000,function(i)glm.logpost.bas(y = df.train$semimajoraxis,x = cbind(1,df.train[,-1]),model = c(T,T,T,T,T,T,T,T,T),complex = list(oc = 0),params = list(r =  1/dim(df.train)[1], family = "binomial", betaprior = Jeffreys(),laplace = 1))$crit))
+toc()
+
+tic()
+mean(sapply(1:10000,function(i)glm.logpost.bas(y = df.train$semimajoraxis,x = cbind(1,df.train[,-1]),model = c(T,T,T,T,T,T,T,T,T),complex = list(oc = 0),params = list(r =  1/dim(df.train)[1], family = "binomial", betaprior = bic.prior((dim(df.train)[1])),laplace = 1))$crit))
+toc()
+
+tic()
+mean(sapply(1:10000,function(i)logistic.loglik(y = df.train$semimajoraxis,x = cbind(1,df.train[,-1]),model = c(T,T,T,T,T,T,T,T,T),complex = list(oc = 0),params = list(r =  1/dim(df.train)[1]))$crit))
+toc()
+
+

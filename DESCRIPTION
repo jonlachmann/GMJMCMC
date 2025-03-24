@@ -20,7 +20,8 @@ Depends:
     stats,
     graphics,
     r2r,
-    BAS
+    BAS,
+    tolerance
 Imports:
     Rcpp
 LinkingTo:
