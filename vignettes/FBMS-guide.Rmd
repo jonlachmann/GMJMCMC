@@ -20,10 +20,11 @@ knitr::opts_chunk$set(
 Below are provided examples on how to run the algorithm and what the results tell us, we begin by loading the package and a supplied dataset
 ```{r setup}
 library(FBMS)
-library(GenSA)
-library(fastglm)
+#library(GenSA)
+#library(fastglm)
 data("breastcancer")
 bc <- breastcancer[,c(ncol(breastcancer),2:(ncol(breastcancer)-1))]
+bc <- cbind(bc[, 1], 1, bc[, -1])
 ```
 We need some nonlinear transformations for the algorithm to use, the package offers a selection of these, but you are also able to define your own. Here we create a list of the ones to use, all but one are supplied by the package.
 ```{r}
@@ -53,7 +54,7 @@ params$feat$alpha <- "random"
 We are now ready to run the algorithm, in this vignette we will only run very few iterations for demonstration purposes, but the only thing that needs to be changed are the number or populations to visit `T`, the number of iterations per population `N` and the number of iterations for the final population `N.final`
 ```{r}
 set.seed(1234)
-result <- gmjmcmc(bc, loglik.example, logistic.loglik.alpha, transforms, P=3, N=30, N.final=60, probs, params)
+result <- gmjmcmc(bc[, -1], bc[, 1], fixed = 1, loglik.example, logistic.loglik.alpha, transforms, P=3, N=30, N.final=60, probs, params)
 ```
 We can then summarize the results using the supplied function and get a plot of the importance of the parameters in the last population of features
 ```{r, fig.width=6, fig.height=6}
