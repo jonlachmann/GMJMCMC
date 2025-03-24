@@ -55,7 +55,7 @@ set.seed(6001)
 
 
 
-params$loglik = list(r = 1/dim(df)[1], family = "binomial", betaprior = g.prior(100), laplace = F)
+params$mlpost = list(r = 1/dim(df)[1], family = "binomial", betaprior = g.prior(100), laplace = F)
 
 result <- fbms(data = df, method = "gmjmcmc", family = "custom",
                transforms = transforms, probs = probs, loglik.pi = glm.logpost.bas, params = params,P=3)
@@ -84,7 +84,7 @@ if (use.fbms) {
 }
 # Default tuning parameters for logistic regression:
 #
-# params$loglik$r = 1/n
+# params$mlpost$r = 1/n
 
 summary(result)
 

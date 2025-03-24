@@ -45,7 +45,7 @@ probs$gen <- c(1,1,0,1) #No projections allowed
 
 
 params <- gen.params.gmjmcmc(df.training)
-params$loglik$p <- 50 #number of leaves
+params$mlpost$p <- 50 #number of leaves
 params$feat$pop.max <- 31
 params$feat$L <- 15
 ##############################################
@@ -103,7 +103,7 @@ if (use.fbms) {
   
 }
 summary(result)
-mpm <- get.mpm.model(result,y = df.training$Y2,x = df.training[,-1],family = "custom", loglik.pi = estimate.logic.lm,params = params$loglik)
+mpm <- get.mpm.model(result,y = df.training$Y2,x = df.training[,-1],family = "custom", loglik.pi = estimate.logic.lm,params = params$mlpost)
 mbest <- get.best.model(result)
 
 
@@ -152,7 +152,7 @@ if (use.fbms) {
                                       transforms = transforms, probs = probs, params = params, P=25)
 }
 summary(result_parallel)
-mpm <- get.mpm.model(result_parallel,y = df.training$Y2,x = df.training[,-1],family = "custom", loglik.pi = estimate.logic.lm,params = params$loglik)
+mpm <- get.mpm.model(result_parallel,y = df.training$Y2,x = df.training[,-1],family = "custom", loglik.pi = estimate.logic.lm,params = params$mlpost)
 mbest <- get.best.model(result_parallel)
 
 
@@ -193,13 +193,13 @@ probs$gen <- c(1,1,0,1) #No projections allowed
 probs$filter <- 0.6
 
 params <- gen.params.gmjmcmc(df.training)
-params$loglik$p <- 50 #number of leaves
-params$loglik$n <- n #used in specifying parameter v of the tCCH prior
-params$loglik$p.a <- 1
-params$loglik$p.b <- 1
-params$loglik$p.r <- 1.5
-params$loglik$p.s <- 0
-params$loglik$p.k <- 1
+params$mlpost$p <- 50 #number of leaves
+params$mlpost$n <- n #used in specifying parameter v of the tCCH prior
+params$mlpost$p.a <- 1
+params$mlpost$p.b <- 1
+params$mlpost$p.r <- 1.5
+params$mlpost$p.s <- 0
+params$mlpost$p.k <- 1
 params$feat$pop.max <- 31
 
 library(BAS) #needed for hypergeometric functions
@@ -253,7 +253,7 @@ if (use.fbms) {
   
 }
 summary(result)
-mpm <- get.mpm.model(result,y = df.training$Y2,x = df.training[,-1],family = "custom", loglik.pi = estimate.logic.lm,params = params$loglik)
+mpm <- get.mpm.model(result,y = df.training$Y2,x = df.training[,-1],family = "custom", loglik.pi = estimate.logic.lm,params = params$mlpost)
 mbest <- get.best.model(result)
 
 
@@ -295,7 +295,7 @@ if (use.fbms) {
                                       transforms = transforms, probs = probs, params = params, P=25)
 }
 summary(result_parallel)
-mpm <- get.mpm.model(result_parallel,y = df.training$Y2,x = df.training[,-1],family = "custom", loglik.pi = estimate.logic.lm,params = params$loglik)
+mpm <- get.mpm.model(result_parallel,y = df.training$Y2,x = df.training[,-1],family = "custom", loglik.pi = estimate.logic.lm,params = params$mlpost)
 mbest <- get.best.model(result_parallel)
 
 

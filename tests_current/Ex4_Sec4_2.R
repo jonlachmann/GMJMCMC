@@ -36,7 +36,7 @@ df <- as.data.frame(cbind(y, X))
 
 transforms <- c("")
 params <- gen.params.gmjmcmc(df)
-#params$loglik$var = "unknown" #this will set the variance to unknwon
+#params$mlpost$var = "unknown" #this will set the variance to unknwon
 probs <- gen.probs.gmjmcmc(transforms)
 probs$gen <- c(1,0,0,1)            #Include interactions and mutations
 

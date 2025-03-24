@@ -22,6 +22,8 @@ summary(data)
 te.ind <- 540:939
 df.train = data[-te.ind,]
 df.test = data[te.ind,]
+x.train <- cbind(1, df.train[, -1])
+y.train <- df.train[, 1]
 
 to3 <- function(x) x^3
 transforms <- c("sigmoid","sin_deg","exp_dbl","p0","troot","to3")
@@ -37,14 +39,14 @@ use.fbms = FALSE
 ####################################################
 
 params <- gen.params.gmjmcmc(df.train)
-params$loglik$var <- "unknown"
+params$mlpost$var <- "unknown"
 
 if (use.fbms) {
  result.default <- fbms(formula = semimajoraxis ~ 1 + . , data = df.train, method = "gmjmcmc", transforms = transforms, params = params)
 } else {
- result.default <- gmjmcmc(df.train, transforms = transforms, params = params)
+ result.default <- gmjmcmc(x.train, y.train, fixed = 1, transforms = transforms, params = params)
 }
-summary(result.default,labels = F)
+summary(result.default, labels = FALSE)
 
 
 preds <- predict(result.default, df.test[,-1], link = function(x) x)
@@ -72,7 +74,7 @@ if (use.fbms) {
  result.P50 <- fbms(data = df.train, method = "gmjmcmc", transforms = transforms,
                     P=50, N.init=1000, N.final=1000, params = params)
 } else {
- result.P50 <- gmjmcmc(df.train,  transforms = transforms,
+ result.P50 <- gmjmcmc(cbind(1, df.train[, -1]), df.train[, 1], fixed = 1, transforms = transforms,
                        P=50, N.init=1000, N.final=1000, params = params)
 }
 summary(result.P50, labels = names(df.train)[-1])
@@ -88,14 +90,14 @@ if (use.fbms) {
  result_parallel <- fbms(data = df.train, method = "gmjmcmc.parallel", transforms = transforms,
                          runs = 40, cores = 10, P=25,params = params)
 } else {
- result_parallel <- gmjmcmc.parallel(runs = 40, cores = 10, data = df.train, loglik.pi = gaussian.loglik, 
-                                     transforms = transforms, P=25,params = params)
+ result_parallel <- gmjmcmc.parallel(runs = 40, cores = 10, x = cbind(1, df.train[, -1]), y = df.train[, 1], fixed = 1, loglik.pi = gaussian.loglik,
+                                     transforms = transforms, P = 25, params = params)
 }
 summary(result_parallel, tol = 0.01)
 
 
 ####### fixed variance
-params$loglik$var <- 1
+params$mlpost$var <- 1
 set.seed(124)
 if (use.fbms) {
   result_parallel_unitphi <- fbms(data = df.train, method = "gmjmcmc.parallel", transforms = transforms,
@@ -133,9 +135,9 @@ gaussian.loglik.g <- function (y, x, model, complex, params)
 
 
 #default for N.final = N.init
-params$loglik$betaprior <- "hyper-g-n"
-params$loglik$r <- 1/dim(df.train)[1]
-params$loglik$alpha <- dim(df.train)[1]
+params$mlpost$betaprior <- "hyper-g-n"
+params$mlpost$r <- 1/dim(df.train)[1]
+params$mlpost$alpha <- dim(df.train)[1]
 set.seed(1)
 if (use.fbms) {
   result_parallel_g <- fbms(data = df.train,family = "custom", method = "gmjmcmc.parallel",loglik.pi = lm.logpost.bas, transforms = transforms,
@@ -282,7 +284,7 @@ for(prior in c("g-prior",
                "JZS"))
 {
   print(paste0("testing ",prior))
-  params$loglik <- list(r =  1/dim(df.train)[1], betaprior = prior,alpha = max(dim(df.train)[1],(dim(df.train)[2])^2))
+  params$mlpost <- list(r =  1/dim(df.train)[1], betaprior = prior,alpha = max(dim(df.train)[1],(dim(df.train)[2])^2))
   
   
   #ours are stil a bit faster than the BAS ones, but BAS are relatively fine too
@@ -299,7 +301,7 @@ for(prior in c("g-prior",
 
 #default for N.final = N.init
 params <- gen.params.gmjmcmc(df.train)
-params$loglik$g <- dim(df.train)[1]
+params$mlpost$g <- dim(df.train)[1]
 tic()
 result.default <- fbms(formula = semimajoraxis ~ 1 + . , data = df.train, method = "gmjmcmc.parallel",cores = 10, runs = 10, transforms = transforms, loglik.pi = gaussian.loglik.g, params = params, P = 50)
 time.res = toc()

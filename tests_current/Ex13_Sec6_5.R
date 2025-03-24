@@ -44,8 +44,8 @@ time <- df.train$time
 
 
 params <- gen.params.gmjmcmc(data = df.train[,-1])
-params$loglik$r = 0.5 
-params$loglik$time = time    #the time variable goes into the params structure
+params$mlpost$r = 0.5
+params$mlpost$time = time    #the time variable goes into the params structure
 
 params$feat$keep.min = 0.2
 

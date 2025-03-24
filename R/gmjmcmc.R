@@ -50,6 +50,7 @@ gmjmcmc <- function (
   y,
   loglik.pi = gaussian.loglik,
   loglik.alpha = gaussian.loglik.alpha,
+  mlpost_params = NULL,
   transforms,
   fixed = 0,
   P = 10,
@@ -66,6 +67,7 @@ gmjmcmc <- function (
   # Generate default probabilities and parameters if there are none supplied.
   if (is.null(probs)) probs <- gen.probs.gmjmcmc(transforms)
   if (is.null(params)) params <- gen.params.gmjmcmc(data)
+  if (!is.null(mlpost_params)) params$mlpost <- mlpost_params
 
   # Extract labels from column names in dataframe
   labels <- get.labels(data, verbose)
@@ -108,7 +110,7 @@ gmjmcmc <- function (
     
     # Initialize first model of population
     model.cur <- as.logical(rbinom(n = length(S[[p]]), size = 1, prob = 0.5))
-    model.cur.res <- loglik.pre(loglik.pi, model.cur, complex, data.t, params$loglik, NULL, FALSE)
+    model.cur.res <- loglik.pre(loglik.pi, model.cur, complex, data.t, params$mlpost, NULL, FALSE)
     model.cur <- list(prob = 0, model = model.cur, coefs = model.cur.res$coefs, crit = model.cur.res$crit, alpha = 0)
     best.crit <- model.cur$crit # Reset first best criteria value
 
@@ -187,8 +189,7 @@ gmjmcmc <- function (
 gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs.F.0, marg.probs, labels, probs, params, verbose = TRUE) {
   # Sample which features to keep based on marginal inclusion below probs$filter
   feats.keep <- as.logical(rbinom(n = length(marg.probs), size = 1, prob = pmin(marg.probs / probs$filter, 1)))
-  
- 
+
   # Always keep original covariates if that setting is on
   if (params$keep.org) {
     if (params$prel.filter > 0) {
@@ -198,24 +199,21 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs.F.0, ma
     else feats.keep[seq_along(F.0)] <- T
   }
 
-
   # Avoid removing too many features
   if (length(feats.keep) > 0 && mean(feats.keep) < params$keep.min & sum(feats.keep) < params$pop.max/2) {
     feats.add.n <- round((params$keep.min - mean(feats.keep)) * length(feats.keep))
     feats.add <- sample(which(!feats.keep), feats.add.n)
-    if((length(feats.add) + sum(feats.keep))>=params$pop.max)
+    if ((length(feats.add) + sum(feats.keep)) >= params$pop.max)
       feats.keep[feats.add] <- T
   }
   
-  if(sum(feats.keep)>params$pop.max)
-  {
+  if (sum(feats.keep)>params$pop.max) {
     warning("Number of features to keep greater than pop.max! 
             Continue with first pop.max features to be kept!
             \n Ignore if the final set of features with high probabilities is smaller than the specified $feat$pop.max
             \n Otherwise check your tuning parameters and increase $feat$pop.max or probs$filter!")
     feats.keep[which(feats.keep==TRUE)[(params$pop.max+1):length(which(feats.keep==TRUE))]] <- FALSE
   }
-  
 
   # Create a list of which features to replace
   feats.replace <- which(!feats.keep)
@@ -225,18 +223,15 @@ gmjmcmc.transition <- function (S.t, F.0, data, loglik.alpha, marg.probs.F.0, ma
   marg.probs.use <- c(rep(params$eps, length(F.0)), pmin(pmax(marg.probs, params$eps), (1-params$eps)))
 
   # Perform the replacements
-  if(length(S.t)>params$pop.max)
+  if (length(S.t) > params$pop.max)
     feats.replace <- sort(feats.replace,decreasing = T)
   for (i in feats.replace) {
     prev.size <- length(S.t)
-    prev.feat.string <- print.feature(S.t[[i]], labels=labels, round = 2)
-    if(prev.size>params$pop.max)
-    {
+    prev.feat.string <- print.feature(S.t[[i]], labels = labels, round = 2)
+    if (prev.size > params$pop.max) {
       cat("Removed feature", prev.feat.string, "\n")
       S.t[[i]] <- NULL
-    }
-    else
-    {
+    } else {
       S.t[[i]] <- gen.feature(c(F.0, S.t), marg.probs.use, data, loglik.alpha, probs, length(F.0), params, verbose)
       if (prev.size > length(S.t)) {
         if (verbose) {

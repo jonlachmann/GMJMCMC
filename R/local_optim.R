@@ -80,10 +80,10 @@ greedy.optim <- function (model, data, loglik.pi, indices, complex, params, logl
 
 local.optim <- function (model, data, loglik.pi, indices, complex, type, params, kernel = NULL, visited.models = NULL, sub = FALSE) {
   if (type == 1) {
-    return(simulated.annealing(model, data, loglik.pi, indices, complex, params$sa, params$loglik, kernel, visited.models = visited.models, sub = sub))
+    return(simulated.annealing(model, data, loglik.pi, indices, complex, params$sa, params$mlpost, kernel, visited.models = visited.models, sub = sub))
   }
   if (type == 2) {
-    return(greedy.optim(model, data, loglik.pi, indices, complex, params$greedy, params$loglik, kernel, visited.models = visited.models, sub = sub))
+    return(greedy.optim(model, data, loglik.pi, indices, complex, params$greedy, params$mlpost, kernel, visited.models = visited.models, sub = sub))
   }
   if (type == 3) {
     return("not implemented")

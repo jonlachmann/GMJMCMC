@@ -44,7 +44,7 @@ params <- gen.params.gmjmcmc(df)
 params$feat$D <- 1   # Set depth of features to 1
 
 #to set variance to unknown uncomment below
-#params$loglik$var <- "unknown"
+#params$mlpost$var <- "unknown"
 
 ####################################################
 #

@@ -66,8 +66,8 @@ probs <- gen.probs.gmjmcmc(transforms)
 probs$gen <- c(0,0,1,1) #Only projections!
 
 params <- gen.params.gmjmcmc(df.training)
-#params$loglik$r = 0.9
-#params$loglik$var = "unknown"
+#params$mlpost$r = 0.9
+#params$mlpost$var = "unknown"
 
 
 #############################################################################

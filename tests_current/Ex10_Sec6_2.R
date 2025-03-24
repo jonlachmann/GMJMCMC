@@ -42,11 +42,11 @@ probs$gen <- c(1,1,0,1) # Modifications and interactions!
 
 params <- gen.params.gmjmcmc(df)
 params$feat$D <- 1   # Set depth of features to 1 (still allows for interactions)
-params$loglik$r = 1/dim(df)[1]
+params$mlpost$r = 1/dim(df)[1]
 params$feat$pop.max = 10
 
 #specify indices for a random effect
-params$loglik$dr = droplevels(Zambia$dr) # district ids for repeated measurements 
+params$mlpost$dr = droplevels(Zambia$dr) # district ids for repeated measurements
 
 
 #estimator function with lme4
@@ -87,7 +87,7 @@ mixed.model.loglik.lme4 <- function (y, x, model, complex, params)
 
 #estimator function with INLA
 
-params$loglik$INLA.num.threads = 10 # Number of threads used by INLA
+params$mlpost$INLA.num.threads = 10 # Number of threads used by INLA
 #params$feat$keep.min = 0.2
 
 
@@ -135,7 +135,7 @@ mixed.model.loglik.inla <- function (y, x, model, complex, params)
 
 #estimator function with RTMB
 
-params$loglik$nr_dr =  sum((table(Zambia$dr))>0)   #number of districts (that is number of different random intercepts)
+params$mlpost$nr_dr =  sum((table(Zambia$dr))>0)   #number of districts (that is number of different random intercepts)
 
 mixed.model.loglik.rtmb <- function (y, x, model, complex, params) 
 {
@@ -288,7 +288,7 @@ summary(result2c, labels = names(df)[-1])
 
 set.seed(22052024)
 
-params$loglik$INLA.num.threads = 1 # Number of threads used by INLA set to 1
+params$mlpost$INLA.num.threads = 1 # Number of threads used by INLA set to 1
 result2a <- gmjmcmc.parallel(runs = 20, cores = 20, data = df, loglik.pi = mixed.model.loglik.inla, transforms = transforms, N.init=30, probs = probs, params = params, P = 25)
 
 plot(result2a)
@@ -300,7 +300,7 @@ summary(result2a, labels = names(df)[-1])
 params$feat$check.col = F
 
 set.seed(20062024)
-params$loglik$INLA.num.threads = 1 # Number of threads used by INLA set to 1
+params$mlpost$INLA.num.threads = 1 # Number of threads used by INLA set to 1
 result2b <- gmjmcmc.parallel(runs = 100, cores = 20, data = df, loglik.pi = mixed.model.loglik.inla, transforms = transforms, N.init=16, probs = probs, params = params, P = 15)
 
 summary(result2b, labels = names(df)[-1])

@@ -152,7 +152,7 @@ check.data <- function (x, y, fixed, verbose) {
 
 # Function to extract column names if they are well formed
 get.labels <- function (data, verbose) {
-  labels <- colnames(data$x)[seq.int(from = data$fixed + 1, ncol(data$x))]
+  labels <- colnames(data$x)
   if (is.null(labels)) return(FALSE)
   if (sum(is.na(labels)) != 0) {
     if (verbose) cat("NA labels present, using x#\n")

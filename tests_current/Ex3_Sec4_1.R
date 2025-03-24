@@ -44,7 +44,7 @@ params$feat$pop.max <- 50
 #
 ####################################################
 n = dim(df)[1]; p=dim(df)[2]
-params$loglik$g <- max(n,p^2)   # Using recommendation from Fernandez et al (2001)
+params$mlpost$g <- max(n,p^2)   # Using recommendation from Fernandez et al (2001)
 
 #this will be added to the package
 log_prior <- function(params,complex){

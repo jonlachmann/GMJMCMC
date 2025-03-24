@@ -31,7 +31,7 @@
 #' plot(result)
 #'
 #' @export mjmcmc
-mjmcmc <- function (x, y, loglik.pi = gaussian.loglik, fixed = 0, N = 100, probs = NULL, params = NULL, sub = FALSE, verbose = TRUE) {
+mjmcmc <- function (x, y, loglik.pi = gaussian.loglik, mlpost_params = NULL, fixed = 0, N = 100, probs = NULL, params = NULL, sub = FALSE, verbose = TRUE) {
   # Verify that data is well-formed
   labels <- names(x)
   data <- check.data(x, y, fixed, verbose)
@@ -39,6 +39,7 @@ mjmcmc <- function (x, y, loglik.pi = gaussian.loglik, fixed = 0, N = 100, probs
   # Generate default probabilities and parameters if there are none supplied.
   if (is.null(probs)) probs <- gen.probs.mjmcmc()
   if (is.null(params)) params <- gen.params.mjmcmc(data)
+  if (!is.null(mlpost_params)) params$mlpost <- mlpost_params
 
   # Acceptance probability
   accept <- 0
@@ -49,7 +50,7 @@ mjmcmc <- function (x, y, loglik.pi = gaussian.loglik, fixed = 0, N = 100, probs
 
   # Initialize first model
   model.cur <- as.logical(rbinom(n = length(S), size = 1, prob = 0.5))
-  model.cur.res <- loglik.pre(loglik.pi, model.cur, complex, data, params$loglik, visited.models = NULL, sub = sub)
+  model.cur.res <- loglik.pre(loglik.pi, model.cur, complex, data, params$mlpost, visited.models = NULL, sub = sub)
   model.cur <- list(prob = 0, model = model.cur, coefs = model.cur.res$coefs, crit = model.cur.res$crit, alpha = 0)
 
   if (verbose) cat("\nMJMCMC begin.\n")
@@ -214,7 +215,7 @@ mjmcmc.prop <- function (data, loglik.pi, model.cur, complex, pip_estimate, prob
     model.cur$prob <- prob.proposal(proposal$model, model.cur$model, q.g, params$mh, pip_estimate)
   }
   # Calculate log likelihoods for the proposed model
-  proposal.res <- loglik.pre(loglik.pi, proposal$model, complex, data, params$loglik, visited.models=visited.models, sub = sub)
+  proposal.res <- loglik.pre(loglik.pi, proposal$model, complex, data, params$mlpost, visited.models=visited.models, sub = sub)
   proposal$crit <- proposal.res$crit
 
   # Calculate acceptance probability for proposed model

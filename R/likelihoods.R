@@ -254,9 +254,7 @@ gaussian.loglik <- function (y, x, model, complex, params) {
 #' gaussian.loglik.g(rnorm(100), matrix(rnorm(100)), TRUE, list(oc=1))
 #'
 #' @export gaussian.loglik.g
-gaussian.loglik.g <- function (y, x, model, complex, params = NULL)
-{
-  
+gaussian.loglik.g <- function (y, x, model, complex, params = NULL) {
   suppressWarnings({
     mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())
   })
@@ -267,8 +265,7 @@ gaussian.loglik.g <- function (y, x, model, complex, params = NULL)
   RSS <- sum(mod$residuals^2)
   Rsquare <- 1 - (RSS / TSS)
   
-  if (length(params$r) == 0)  
-  {
+  if (length(params$r) == 0) {
     params$r <- 1/dim(x)[1] 
     params$g <- max(mod$rank^2,length(y))
   }
@@ -277,7 +274,7 @@ gaussian.loglik.g <- function (y, x, model, complex, params = NULL)
   mloglik <- 0.5*(log(1.0 + params$g) * (dim(x)[1] - mod$rank)  - log(1.0 + params$g * (1.0 - Rsquare)) * (dim(x)[1]  - 1))*(mod$rank!=1)
   
   # logarithm of model prior
-   # default value or parameter r
+  # default value or parameter r
   lp <- log_prior(params, complex)
   
   return(list(crit = mloglik + lp, coefs = mod$coefficients))

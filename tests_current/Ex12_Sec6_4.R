@@ -37,8 +37,8 @@ n = dim(df)[1]
 p = dim(df)[2] - 1   
 
 params <- gen.params.gmjmcmc(data = df)
-params$loglik$r = 0.5 
-params$loglik$subs = 0.01
+params$mlpost$r = 0.5
+params$mlpost$subs = 0.01
 
 
 transforms <- c("sigmoid","pm1","p0","p05","p2","p3")

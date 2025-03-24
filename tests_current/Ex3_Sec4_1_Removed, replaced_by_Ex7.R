@@ -41,8 +41,8 @@ transforms = c("")
 probs = gen.probs.gmjmcmc(transforms)
 probs$gen = c(0,0,0,1)
 probs$filter=0.8
-params$loglik$var = "unknown"
-#params$loglik$r = 1
+params$mlpost$var = "unknown"
+#params$mlpost$r = 1
 set.seed(123)
 
 start.time=Sys.time()
@@ -112,7 +112,7 @@ params = gen.params.gmjmcmc(df[,ids3])
 params$feat$check.col <- F
 params$feat$pop.max = 60
 params$prel.select <- ids3
-params$loglik$var <- "unknown"
+params$mlpost$var <- "unknown"
 probs = gen.probs.gmjmcmc(transforms)
 probs$gen = c(0,0,0,1)
 

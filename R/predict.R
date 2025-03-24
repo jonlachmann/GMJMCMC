@@ -122,7 +122,7 @@ predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.
 #' preds <- predict(result, matrix(rnorm(600), 100))
 #'
 #' @export
-predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = NULL,tol =  0.0000001, ...) {
+predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = NULL, tol = 0.0000001, ...) {
   x <- impute_x(object, x)
   
   transforms.bak <- set.transforms(object$transforms)
@@ -141,7 +141,7 @@ predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles =
       # Precalculate the features for the new data
       x.precalc <- precalc.features(list(x = x, fixed = object$fixed), features)$x
 
-      yhat <- matrix(0, nrow=nrow(x), ncol=length(models))
+      yhat <- matrix(0, nrow = nrow(x), ncol = length(models))
       for (k in seq_along(models)) {
         # Models which have 0 weight are skipped since they may also be invalid, and would not influence the predictions.
         if (models[[k]]$crit == -.Machine$double.xmax) next

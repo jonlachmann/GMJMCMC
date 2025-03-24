@@ -214,7 +214,7 @@ gen.params.mjmcmc <- function (data) {
   mh_params <- list(neigh.size = 1, neigh.min = 1, neigh.max = 2)      # Regular MH parameters
   ## Compile the list and return
   params <- list(burn_in=burn_in, mh=mh_params, large=large_params, random=random_params,
-                 sa=sa_params, greedy=greedy_params, loglik=list())
+                 sa=sa_params, greedy=greedy_params, mlpost=list())
 
   return(params)
 }

@@ -33,9 +33,17 @@
 #'
 #' @seealso \code{\link{mjmcmc}}, \code{\link{gmjmcmc}}, \code{\link{gmjmcmc.parallel}}
 #' @export
-fbms <- function(formula = NULL, family = "gaussian", data = NULL, impute = FALSE,
+fbms <- function(formula = NULL, family = "gaussian",
+                 beta_prior = list(type = "g-prior", g = 5),
+                 model_prior = list(r = exp(-0.5)),
+                 data = NULL, impute = FALSE,
                  loglik.pi = gaussian.loglik,
                  method = "mjmcmc", verbose = TRUE, ...) {
+  if (is.list(beta_prior) || is.list(model_prior)) {
+    mlpost_params <- gen.mlpost.params(beta_prior, model_prior)
+    loglik.pi <- select.mlpost.fun(beta_prior, model_prior, family)
+  }
+
   if (family == "gaussian")
     loglik.pi <- gaussian.loglik
   else if (family == "binomial")
@@ -106,13 +114,13 @@ fbms <- function(formula = NULL, family = "gaussian", data = NULL, impute = FALS
   }
   
   if (method == "mjmcmc.parallel")
-    res <- mjmcmc.parallel(X, Y, loglik.pi, fixed = intercept, verbose = verbose, ...)
+    res <- mjmcmc.parallel(X, Y, loglik.pi, mlpost_params = mlpost_params, fixed = intercept, verbose = verbose, ...)
   else if (method == "mjmcmc")
-    res <- mjmcmc(X, Y, loglik.pi, fixed = intercept, verbose = verbose, ...)
+    res <- mjmcmc(X, Y, loglik.pi, mlpost_params = mlpost_params, fixed = intercept, verbose = verbose, ...)
   else if (method == "gmjmcmc.parallel")
-    res <- gmjmcmc.parallel(x = X, y = Y, loglik.pi = loglik.pi, fixed = intercept, verbose = verbose,...)
+    res <- gmjmcmc.parallel(x = X, y = Y, loglik.pi = loglik.pi, mlpost_params = mlpost_params, fixed = intercept, verbose = verbose,...)
   else if (method == "gmjmcmc")
-    res <- gmjmcmc(X, Y, loglik.pi, fixed = intercept, verbose = verbose, ...)
+    res <- gmjmcmc(X, Y, loglik.pi, mlpost_params = mlpost_params, fixed = intercept, verbose = verbose, ...)
   else
     stop("Error: Method must be one of gmjmcmc, gmjmcmc.parallel, mjmcmc or mjmcmc.parallel!")
   
@@ -121,3 +129,12 @@ fbms <- function(formula = NULL, family = "gaussian", data = NULL, impute = FALS
   options(na.action = na.opt)
   return(res)
 }
+
+gen.mlpost.params <- function (beta_prior, model_prior) {
+  return(list())
+}
+
+select.mlpost.fun <- function (beta_prior, model_prior, family) {
+  return(gaussian.loglik.g)
+}
+

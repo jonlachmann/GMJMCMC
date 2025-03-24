@@ -37,11 +37,11 @@ probs$gen <- c(1,1,0,1) # Only modifications!
 
 params <- gen.params.gmjmcmc(df)
 params$feat$D <- 2   # Set depth of features to 2 (allow for interactions)
-params$loglik$r = 1/dim(df)[1]
+params$mlpost$r = 1/dim(df)[1]
 
 #specify indices for a random effect
-params$loglik$PID = data$Ind # patient ids for repeated measurements 
-params$loglik$INLA.num.threads = 10 # Number of threads used by INLA
+params$mlpost$PID = data$Ind # patient ids for repeated measurements
+params$mlpost$INLA.num.threads = 10 # Number of threads used by INLA
 
 params$feat$keep.min = 0.2
 
@@ -113,7 +113,7 @@ summary(result)
 set.seed(23052024)
 
 tic()
-params$loglik$INLA.num.threads = 1 # Number of threads used by INLA set to 1
+params$mlpost$INLA.num.threads = 1 # Number of threads used by INLA set to 1
 if (use.fbms) {
   result2 <- fbms(data = df, family = "custom", loglik.pi = poisson.loglik.inla, 
                   method = "gmjmcmc.parallel", runs = 40, cores = 40, 
