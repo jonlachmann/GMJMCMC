@@ -523,7 +523,6 @@ log_prior <- function (params, complex) {
   pl <- log(params$r) * (sum(complex$oc))
   return(pl)
 }
-
 #' Master Log Marginal Likelihood Function
 #'
 #' This function serves as a unified interface to compute the log marginal likelihood
@@ -540,8 +539,7 @@ log_prior <- function (params, complex) {
 #'     - "beta.prime": Beta-prime prior (GLM, requires `n`)
 #'     - "bic.prior": BIC-based prior (GLM, requires `n`)
 #'     - "CCH": Chen-Clyde-Hsu prior (GLM, requires `a`, `b`, optionally `s`)
-#'     - "EB.global": Empirical Bayes global prior (GLM, optionally `g`, `tol`, `max.iterations`; requires an object in BAS)
-#'     - "EB.local": Empirical Bayes local prior (GLM, no additional args)
+#'     - "EB.local": Empirical Bayes local prior (GLM/Gaussian BAS, requires `alpha` for Gaussian)
 #'     - "g-prior": Zellner's g-prior (GLM/Gaussian, requires `g`)
 #'     - "hyper.g": Hyper-g prior (GLM, requires `a`)
 #'     - "hyper.g.n": Hyper-g/n prior (GLM, requires `a`, `n`)
@@ -562,17 +560,15 @@ log_prior <- function (params, complex) {
 #'     - "Hyper-g/n": Hyper-g/n prior (Gaussian TCCH, no additional args)
 #'     - "Intrinsic": Intrinsic prior (Gaussian TCCH, no additional args)
 #'     - "hyper-g": Hyper-g prior (Gaussian BAS, requires `alpha`)
-#'     - "EB-local": Empirical Bayes local prior (Gaussian BAS, requires `alpha`)
 #'     - "BIC": BIC prior (Gaussian BAS, requires `alpha`)
 #'     - "ZS-null": Zellner-Siow null prior (Gaussian BAS, requires `alpha`)
-#'     -Sums
 #'     - "ZS-full": Zellner-Siow full prior (Gaussian BAS, requires `alpha`)
 #'     - "hyper-g-laplace": Hyper-g Laplace prior (Gaussian BAS, requires `alpha`)
 #'     - "AIC": AIC prior (Gaussian BAS, requires `alpha`)
 #'     - "JZS": Jeffreys-Zellner-Siow prior (Gaussian BAS, requires `alpha`)
 #'   - r: Model complexity penalty (default: 1/length(y))
 #'   - g: Tuning parameter for g-prior (default: max(n, p^2))
-#'   - a, b, s, v, rho, k: Hyperparameters for various priors (replacing alpha, beta, etc., in GLM for consistency)
+#'   - a, b, s, v, rho, k: Hyperparameters for various priors
 #'   - at, st: Additional parameters for TruncGamma prior
 #'   - n: Sample size for some priors (default: length(y))
 #'   - var: Variance assumption for Gaussian models ("known" or "unknown", default: "unknown")
@@ -585,7 +581,7 @@ log_prior <- function (params, complex) {
 #' @examples
 #' fbms.mlik.master(rnorm(100), matrix(rnorm(100)), TRUE, list(oc = 1), list(family = "gaussian", prior_beta = "g-prior"))
 #'
-#' @importFrom BAS beta.prime bic.prior CCH EB.global EB.local g.prior hyper.g hyper.g.n tCCH intrinsic testBF.prior TG Jeffreys uniform
+#' @importFrom BAS beta.prime bic.prior CCH EB.local g.prior hyper.g hyper.g.n tCCH intrinsic testBF.prior TG Jeffreys uniform
 #' @export
 fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gaussian", prior_beta = "g-prior", r = exp(-0.5))) {
   # Extract dimensions
@@ -605,9 +601,21 @@ fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gauss
   params_master <- params
   params_nested <- list(r = params_master$r)
   
+  # Define valid priors for each family
+  glm_priors <- c("beta.prime", "bic.prior", "CCH", "EB.local", "g-prior", "hyper.g", "hyper.g.n", 
+                  "tCCH", "intrinsic", "testBF.prior", "TG", "Jeffreys", "uniform")
+  gaussian_tcch_priors <- c("CH", "Hyper-g", "Uniform", "Beta-prime", "Benchmark", "TruncGamma", 
+                            "ZS adapted", "Robust", "Hyper-g/n", "Intrinsic")
+  gaussian_bas_priors <- c("g-prior", "hyper-g", "EB.local", "BIC", "ZS-null", "ZS-full", 
+                           "hyper-g-laplace", "AIC", "JZS")
+  
   # Decision logic based on family and prior_beta
   if (params_master$family %in% c("binomial", "poisson", "gamma")) {
-    # GLM models using glm.logpost.bas or logistic.loglik
+    if (!params_master$prior_beta %in% glm_priors) {
+      stop(sprintf("Prior '%s' is not supported for family '%s'. Supported GLM priors: %s", 
+                   params_master$prior_beta, params_master$family, paste(glm_priors, collapse = ", ")))
+    }
+    
     params_nested$family <- params_master$family
     if (is.null(params_master$laplace)) params_nested$laplace <- FALSE else params_nested$laplace <- params_master$laplace
     
@@ -615,7 +623,7 @@ fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gauss
       # Use logistic.loglik for binomial with Jeffreys prior and BIC approximation
       result <- logistic.loglik(y, x, model, complex, params_nested)
     } else {
-      # Use glm.logpost.bas for binomial or poisson with BAS priors
+      # Use glm.logpost.bas for binomial, poisson, or gamma with BAS priors
       params_nested$prior_beta <- switch(
         params_master$prior_beta,
         "beta.prime" = beta.prime(n = if (is.null(params_master$n)) n else params_master$n),
@@ -623,7 +631,6 @@ fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gauss
         "CCH" = CCH(alpha = if (is.null(params_master$a)) 1 else params_master$a,
                     beta = if (is.null(params_master$b)) 2 else params_master$b,
                     s = if (is.null(params_master$s)) 0 else params_master$s),
-        "EB.global" = EB.global(tol = 0.1, g.0 = params_master$g, max.iterations = 100),  # Requires object, may need adjustment
         "EB.local" = EB.local(),
         "g-prior" = g.prior(g = if (is.null(params_master$g)) max(n, p + 1) else params_master$g),
         "hyper.g" = hyper.g(alpha = if (is.null(params_master$a)) 3 else params_master$a),
@@ -640,12 +647,17 @@ fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gauss
         "TG" = TG(alpha = if (is.null(params_master$a)) 2 else params_master$a),
         "Jeffreys" = Jeffreys(),
         "uniform" = uniform(),
-        params_master$prior_beta  # Default: pass as is if not recognized
+        stop("Unrecognized prior_beta for GLM: ", params_master$prior_beta)
       )
       result <- glm.logpost.bas(y, x, model, complex, params_nested)
     }
   } else if (params_master$family == "gaussian") {
-    # Gaussian models
+    if (!(params_master$prior_beta %in% c(glm_priors, gaussian_tcch_priors, gaussian_bas_priors))) {
+      stop(sprintf("Prior '%s' is not supported for family 'gaussian'. Supported priors: %s, %s, %s", 
+                   params_master$prior_beta, paste(glm_priors, collapse = ", "), 
+                   paste(gaussian_tcch_priors, collapse = ", "), paste(gaussian_bas_priors, collapse = ", ")))
+    }
+    
     params_nested$r <- params_master$r
     
     if (params_master$prior_beta == "g-prior" && is.null(params_master$method.num)) {
@@ -656,9 +668,7 @@ fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gauss
       # Use gaussian.loglik for Jeffreys prior with BIC approximation
       if (is.null(params_master$var)) params_nested$var <- "unknown" else params_nested$var <- params_master$var
       result <- gaussian.loglik(y, x, model, complex, params_nested)
-    } else if (params_master$prior_beta %in% c("CH", "Hyper-g", "Uniform", "Jeffreys", "Beta-prime", 
-                                               "Benchmark", "TruncGamma", "ZS adapted", 
-                                               "Robust", "Hyper-g/n", "Intrinsic")) {
+    } else if (params_master$prior_beta %in% gaussian_tcch_priors) {
       # Use gaussian_tcch_log_likelihood for TCCH priors
       params_nested$prior_beta <- params_master$prior_beta
       if (!is.null(params_master$a)) params_nested$a <- params_master$a
@@ -669,11 +679,13 @@ fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gauss
       if (!is.null(params_master$at)) params_nested$at <- params_master$at
       if (!is.null(params_master$st)) params_nested$st <- params_master$st
       result <- gaussian_tcch_log_likelihood(y, x, model, complex, params_nested)
-    } else {
-      # Use lm.logpost.bas for other BAS priors
+    } else if (params_master$prior_beta %in% gaussian_bas_priors) {
+      # Use lm.logpost.bas for BAS priors
       params_nested$prior_beta <- params_master$prior_beta
       if (is.null(params_master$alpha)) params_nested$alpha <- max(n, (p + 1)^2) else params_nested$alpha <- params_master$alpha
       result <- lm.logpost.bas(y, x, model, complex, params_nested)
+    } else {
+      stop(sprintf("Prior '%s' is not supported for Gaussian family in this context.", params_master$prior_beta))
     }
   } else {
     stop("Unsupported family: ", params_master$family, ". Supported families are 'binomial', 'poisson', 'gamma', or 'gaussian'.")
