@@ -326,18 +326,37 @@ gaussian.loglik.alpha <- function (a, data, mu_func) {
 #' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 #'
 #' @examples
-#' linear.g.prior.loglik(rnorm(100), matrix(rnorm(100)), TRUE, list(oc=1))
+#' gaussian.loglik.g(rnorm(100), matrix(rnorm(100)), TRUE, list(oc=1))
 #'
-#' @export linear.g.prior.loglik
-linear.g.prior.loglik <- function (y, x, model, complex, params = list(g = 4)) {
-  out <- lm.fit(as.matrix(x[, model]), y)
-  rsquared <- 1 - sum(var(out$residuals)) / sum(var(y))
-  p <- out$rank
-  n <- nrow(x)
-  logmarglik <- 0.5 * (log(1 + params$g) * (n - p) - log(1 + params$g * (1 - rsquared)) * (n - 1)) * (p != 1)
-  return(list(crit=logmarglik, coefs=out$coefficients))
+#' @export gaussian.loglik.g
+gaussian.loglik.g <- function (y, x, model, complex, params = NULL)
+{
+  
+  suppressWarnings({
+    mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())
+  })
+  
+  # Calculate R-squared
+  y_mean <- mean(y)
+  TSS <- sum((y - y_mean)^2)
+  RSS <- sum(mod$residuals^2)
+  Rsquare <- 1 - (RSS / TSS)
+  
+  if (length(params$r) == 0)  
+  {
+    params$r <- 1/dim(x)[1] 
+    params$g <- max(mod$rank^2,length(y))
+  }
+  
+  # logarithm of marginal likelihood
+  mloglik <- 0.5*(log(1.0 + params$g) * (dim(x)[1] - mod$rank)  - log(1.0 + params$g * (1.0 - Rsquare)) * (dim(x)[1]  - 1))*(mod$rank!=1)
+  
+  # logarithm of model prior
+   # default value or parameter r
+  lp <- log_prior(params, complex)
+  
+  return(list(crit = mloglik + lp, coefs = mod$coefficients))
 }
-
 
 
 #' Log likelihood function for Gaussian regression with parameter priors from BAS package
@@ -355,7 +374,7 @@ linear.g.prior.loglik <- function (y, x, model, complex, params = list(g = 4)) {
 #'   \item{coefs}{Posterior mode of the coefficients.}
 #'
 #' @examples
-#' linear.g.prior.loglik(rnorm(100), matrix(rnorm(100)), TRUE, list(oc=1))
+#' gaussian_tcch_log_likelihood(rnorm(100), matrix(rnorm(100)), TRUE, list(oc=1))
 #'
 #' @importFrom BAS phi1 hypergeometric1F1 hypergeometric2F1
 #' @importFrom tolerance F1
