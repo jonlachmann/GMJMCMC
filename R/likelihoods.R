@@ -140,7 +140,7 @@ lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5),pr
                      probinit,
                      as.integer(rep(0,ifelse(p==0,2,1))),
                      incint = as.integer(F),
-                     alpha = as.numeric(params$alpha),
+                     alpha = ifelse(length(params$alpha)>0,as.numeric(params$alpha),NULL),
                      method = as.integer(params$prior_beta),
                      modelprior = uniform(),
                      Rpivot = TRUE,
@@ -256,7 +256,7 @@ gaussian.loglik <- function (y, x, model, complex, params) {
   if(params$var == "unknown")
     ret <- (-(mod$aic + (log(length(y))-2) * (mod$rank) - 2 * log(params$r) * (sum(complex$oc)))) / 2
   else
-    ret <- (-(mod$deviance/params$var + log(length(y)) * (mod$rank - 1) - 2 * log(params$r) * (sum(complex$oc)))) / 2
+    ret <- (-(mod$deviance/params$var + log(length(y)) * (mod$rank - 1) - 2 * log_prior(params, complex))) / 2
   
   return(list(crit=ret, coefs=mod$coefficients))
 }
@@ -278,18 +278,20 @@ gaussian.loglik <- function (y, x, model, complex, params) {
 #' @export gaussian.loglik.g
 gaussian.loglik.g <- function (y, x, model, complex, params = NULL)
 {
-  
+  if(length(params)==0)
+    params <- list()
+  if (length(params$r) == 0)
+    params$r <- 1/dim(x)[1]
   suppressWarnings({
     mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())
   })
-  
   # Calculate R-squared
   y_mean <- mean(y)
   TSS <- sum((y - y_mean)^2)
   RSS <- sum(mod$residuals^2)
   Rsquare <- 1 - (RSS / TSS)
   
-  if (length(params$r) == 0)  
+  if (length(params$r) == 0 || length(params$g) == 0)  
   {
     params$r <- 1/dim(x)[1] 
     params$g <- max(mod$rank^2,length(y))
@@ -614,7 +616,7 @@ fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gauss
   if (is.null(params$family)) params$family <- "gaussian"
   if (is.null(params$prior_beta)) params$prior_beta <- "g-prior"
   if (is.null(params$g)) params$g <- max(p^2, n)
-  if (is.null(params$gn)) params$n <- n
+  if (is.null(params$n)) params$n <- n
   if (is.null(params$r)) params$r <- 1/n
   
   # Ensure complex has oc if not provided, ignore by default
@@ -628,17 +630,17 @@ fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gauss
   #glm_only_priors <- c("CCH", "tCCH", "TG")
   glm_and_gaussian_priors <- c("CH", "tCCH", "TG","beta.prime", "EB-local", "g-prior", "hyper-g", "hyper-g-n", 
                                "intrinsic", "ZS-adapted", "Jeffreys", "uniform", "benchmark", "robust", "Jeffreys-BIC")
-  gaussian_only_priors <- c("ZS-null", "ZS-full", "hyper-g-laplace", "AIC", "JZS","EB-global")
+  gaussian_only_priors <- c("ZS-null", "ZS-full", "hyper-g-laplace","BIC", "AIC", "JZS","EB-global")
   
   #review a bit 
   gaussian_not_robust <-  c("CH", "tCCH", "ZS-adapted", "TG","beta.prime", "benchmark","Jeffreys")
-  gaussian_robust <- c("g-prior", "hyper-g", "EB-local", "Jeffreys-BIC", "ZS-null", "ZS-full", "hyper-g-laplace",
+  gaussian_robust <- c("g-prior", "hyper-g", "EB-local","BIC", "Jeffreys-BIC", "ZS-null", "ZS-full", "hyper-g-laplace",
                        "AIC",  "hyper-g-n",  "JZS")
   gaussian_tcch <- c("CH", "tCCH", "TG","beta.prime", "intrinsic", "ZS-adapted", "uniform","Jeffreys", "benchmark", "robust")
-  gaussian_bas <- c("g-prior", "hyper-g", "EB-local","ZS-null", "ZS-full", "hyper-g-laplace", "AIC", "EB-global", "hyper-g-n", "JZS")
+  gaussian_bas <- c("g-prior", "hyper-g", "EB-local","ZS-null", "ZS-full", "BIC", "hyper-g-laplace", "AIC", "EB-global", "hyper-g-n", "JZS")
  
   all_priors <- c(glm_and_gaussian_priors, gaussian_only_priors)
-  
+  #browser()
   # Validate prior_beta
   if (!params_master$prior_beta %in% all_priors) {
     stop(sprintf("Prior '%s' is not supported. Supported priors: %s", 
@@ -704,7 +706,7 @@ fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gauss
                             theta = 1), 
         "TG" = TG(alpha = if (is.null(params_master$a)) stop("a must be provided") else params_master$a),  
         "robust" = robust(n = if (is.null(params_master$n)) as.numeric(n) else as.numeric(params_master$n)), 
-        "hyper-g-n" = hyper.g.n(alpha = if (is.null(params_master$a)) stop("a must be provided") else params_master$a,
+        "hyper-g-n" = hyper.g.n(alpha = if (is.null(params_master$a)) 3 else params_master$a,
                                 n = params_master$n),
         "BIC" = bic.prior(n = if (is.null(params_master$n)) n else params_master$n),
         stop("Unrecognized prior_beta for GLM: ", params_master$prior_beta)
@@ -720,7 +722,7 @@ fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gauss
     }
     
     params_nested$r <- params_master$r
-    
+
     if (params_master$prior_beta %in% gaussian_tcch) {
      
       params_nested$prior_beta <- switch(
@@ -747,7 +749,7 @@ fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gauss
       )
       result <- gaussian_tcch_log_likelihood(y, x, model, complex, params_nested)
      
-    }else if (params_master$prior_beta == "Jeffreys-BIC" && is.null(params_master$method.num)) {
+    }else if (params_master$prior_beta == "Jeffreys-BIC") {
       if (is.null(params_master$var)) params_nested$var <- "unknown" else params_nested$var <- params_master$var
       result <- gaussian.loglik(y, x, model, complex, params_nested)
     } else if (params_master$prior_beta %in% gaussian_bas) {
@@ -768,12 +770,14 @@ fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gauss
       )
       if(params_master$prior_beta == "g-prior")
       {  
-        if (!is.null(params_master$g)) params_nested$alpha <- params_master$g else stop("g must be provided")
+        if (!is.null(params_master$g)) params_nested$g <- params_master$g else stop("g must be provided")
+        result <- gaussian.loglik.g(y, x, model, complex, params_nested)
       }
-      else
-        if (!is.null(params_master$a)) params_nested$alpha <- params_master$a else stop("a must be provided")
-        
+      else{
+        if (!is.null(params_master$a)) params_nested$alpha <- params_master$a else params_nested$alpha = -1
         result <- lm.logpost.bas(y, x, model, complex, params_nested)
+      }
+        
     } else {
       stop("Unexpected error in prior_beta logic for Gaussian.")
     }

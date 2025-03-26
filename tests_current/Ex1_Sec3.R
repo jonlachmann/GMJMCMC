@@ -22,6 +22,7 @@ summary(data)
 te.ind <- 540:939
 df.train = data[-te.ind,]
 df.test = data[te.ind,]
+n <- dim(df.train)[1]
 
 to3 <- function(x) x^3
 transforms <- c("sigmoid","sin_deg","exp_dbl","p0","troot","to3")
@@ -38,6 +39,40 @@ use.fbms = FALSE
 
 params <- gen.params.gmjmcmc(df.train)
 params$loglik$var <- "unknown"
+
+params <- gen.params.gmjmcmc(df.train)
+params$loglik$prior_beta <- "Jeffreys-BIC"
+params$loglik$var <- 1
+params$loglik$family <- "gaussian"
+params$loglik$r <- 1/n
+result <- gmjmcmc.parallel(data = df.train,loglik.pi = fbms.mlik.master, transforms = transforms, params = params,cores = 10,runs = 40, P = 25)
+summary(result)
+
+
+params <- gen.params.gmjmcmc(df.train)
+params$loglik$prior_beta <- "g-prior"
+params$loglik$g <- n
+params$loglik$family <- "gaussian"
+params$loglik$r <- 1/n
+result <- gmjmcmc.parallel(data = df.train,loglik.pi = fbms.mlik.master, transforms = transforms, params = params,cores = 10,runs = 40, P = 25)
+summary(result)
+
+
+params <- gen.params.gmjmcmc(df.train)
+params$loglik$prior_beta <- "EB-local"
+params$loglik$family <- "gaussian"
+params$loglik$r <- 1/n
+result <- gmjmcmc.parallel(data = df.train,loglik.pi = fbms.mlik.master, transforms = transforms, params = params,cores = 10,runs = 40, P = 25)
+summary(result)
+
+params <- gen.params.gmjmcmc(df.train)
+params$loglik$prior_beta <- "hyper-g"
+params$loglik$family <- "gaussian"
+params$loglik$a <- 3
+params$loglik$r <- 1/n
+result <- gmjmcmc.parallel(data = df.train,loglik.pi = fbms.mlik.master, transforms = transforms, params = params,cores = 10,runs = 40, P = 25)
+summary(result)
+
 
 if (use.fbms) {
  result.default <- fbms(formula = semimajoraxis ~ 1 + . , data = df.train, method = "gmjmcmc", transforms = transforms, params = params)
@@ -133,15 +168,13 @@ gaussian.loglik.g <- function (y, x, model, complex, params)
 
 
 #default for N.final = N.init
-params$loglik$betaprior <- "hyper-g-n"
-params$loglik$r <- 1/dim(df.train)[1]
-params$loglik$alpha <- dim(df.train)[1]
+params$loglik$g = n
 set.seed(1)
 if (use.fbms) {
-  result_parallel_g <- fbms(data = df.train,family = "custom", method = "gmjmcmc.parallel",loglik.pi = lm.logpost.bas, transforms = transforms,
+  result_parallel_g <- fbms(data = df.train,family = "custom", method = "gmjmcmc.parallel",loglik.pi = gaussian.loglik.g, transforms = transforms,
                           runs = 40, cores = 10, P=25,params = params)
 } else {
-  result_parallel_g <- gmjmcmc.parallel(runs = 40, cores = 10, data = df.train, loglik.pi = lm.logpost.bas, 
+  result_parallel_g <- gmjmcmc.parallel(runs = 40, cores = 10, data = df.train, loglik.pi = gaussian.loglik.g, 
                                       transforms = transforms, P=25,params = params)
 }
 summary(result_parallel_g, tol = 0.01)
