@@ -64,7 +64,7 @@ glm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), 
                                                          Rcontrol = glm.control(),
                                                          Rlaplace =  as.integer(params$laplace))
     })
-  else
+  else{
     suppressWarnings({
       mod <- .Call(BAS:::C_glm_deterministic,
                    y = as.numeric(y), X = as.matrix(x[,model]),
@@ -77,7 +77,7 @@ glm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), 
                                                          family = Gamma(), 
                                                          Rcontrol = glm.control(),
                                                          Rlaplace =  as.integer(params$laplace))
-    })
+    })}
   }, error = function(e) {
     # Handle the error by setting result to NULL
     mod <- NULL
@@ -107,7 +107,7 @@ glm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), 
 #' @param x The matrix containing the precalculated features
 #' @param model The model to estimate as a logical vector
 #' @param complex A list of complexity measures for the features
-#' @param params A list of parameters for the log likelihood, supplied by the user, important to specify the tuning parameters of beta priors and in Gaussian models
+#' @param params A list of parameters for the log likelihood, supplied by the user, important to specify the tuning parameters of beta priors where the corresponding integers as prior_beta must be provided "g-prior" = 0, "hyper-g" = 1, "EB-local" = 2, "BIC" = 3, "ZS-null" = 4, "ZS-full" = 5, "hyper-g-laplace" = 6, "AIC" = 7, "EB-global" = 2, "hyper-g-n" = 8, "JZS" = 9 and in Gaussian models
 #'
 #' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 #'
@@ -118,22 +118,8 @@ glm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), 
 #' @export lm.logpost.bas
 lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5),prior_beta = "g-prior",alpha = 4)) {
   if (length(params) == 0)
-    params <- list(r =  1/dim(x)[1], prior_beta = "g-prior",alpha = max(dim(x)[1],sum(model)^2))
+    params <- list(r =  1/dim(x)[1], prior_beta = 0,alpha = max(dim(x)[1],sum(model)^2))
   
-  method.num <- switch(
-    params$prior_beta,
-    "g-prior" = 0,
-    "hyper-g" = 1,
-    "EB-local" = 2,
-    "BIC" = 3,
-    "ZS-null" = 4,
-    "ZS-full" = 5,
-    "hyper-g-laplace" = 6,
-    "AIC" = 7,
-    "EB-global" = 2,
-    "hyper-g-n" = 8,
-    "JZS" = 9
-  )
   
   p <- sum(model) - 1 
   if(p==0)
@@ -155,7 +141,7 @@ lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5),pr
                      as.integer(rep(0,ifelse(p==0,2,1))),
                      incint = as.integer(F),
                      alpha = as.numeric(params$alpha),
-                     method = as.integer(method.num),
+                     method = as.integer(params$prior_beta),
                      modelprior = uniform(),
                      Rpivot = TRUE,
                      Rtol = 1e-7)
@@ -202,6 +188,42 @@ logistic.loglik <- function (y, x, model, complex, params = list(r = exp(-0.5)))
   if (length(params) == 0)
     params <- list(r = 1/dim(x)[1])
   suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = binomial())})
+  ret <- (-(mod$deviance + log(length(y)) * (mod$rank - 1) - 2 * log(params$r) * sum(complex$oc))) / 2
+  return(list(crit=ret, coefs=mod$coefficients))
+}
+
+#' Log likelihood function for glm regression with a Jeffreys parameter prior and BIC approximations of the posterior
+#' This function is created as an example of how to create an estimator that is used
+#' to calculate the marginal likelihood of a model.
+#'
+#' @param y A vector containing the dependent variable
+#' @param x The matrix containing the precalculated features
+#' @param model The model to estimate as a logical vector
+#' @param complex A list of complexity measures for the features
+#' @param params A list of parameters for the log likelihood, supplied by the user, family must be specified
+#'
+#' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
+#'
+#' @examples
+#' glm.loglik(abs(rnorm(100))+1, matrix(rnorm(100)), TRUE, list(oc = 1))
+#' 
+#'
+#' @export glm.loglik
+glm.loglik <- function (y, x, model, complex, params = list(r = exp(-0.5),family = "Gamma")) {
+  if (length(params) == 0)
+    params <- list(r = 1/dim(x)[1])
+  
+  if(params$family == "binomial")
+  {
+    fam = binomial()
+  }else if(params$family == "poisson"){
+    fam = poisson()
+  }else
+  {
+    fam = Gamma()
+  }
+  
+  suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = fam)})
   ret <- (-(mod$deviance + log(length(y)) * (mod$rank - 1) - 2 * log(params$r) * sum(complex$oc))) / 2
   return(list(crit=ret, coefs=mod$coefficients))
 }
@@ -304,7 +326,7 @@ gaussian.loglik.g <- function (y, x, model, complex, params = NULL)
 #' @importFrom BAS phi1 hypergeometric1F1 hypergeometric2F1
 #' @importFrom tolerance F1
 #' @export 
-gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r = exp(-0.5), prior_beta = "Intrinsic")) {
+gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r = exp(-0.5), prior_beta = "intrinsic")) {
   
   # Fit the linear model using fastglm
   fitted_model <- fastglm(as.matrix(x[, model]), y, family = gaussian())
@@ -319,16 +341,16 @@ gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r =
   n <- length(y)
   
   # Switch-like structure to assign hyperparameters based on prior
-  if (params$prior_beta == "CH") {
+  if (params$prior_beta[[1]] == "CH") {
     # CH prior: b and s should be user-specified, with defaults if not provided
-    a <- ifelse(!is.null(params$a),params$a, 1)  # Default to 1 if not specified
-    b <- ifelse(!is.null(params$b),params$b, 2)  # Default to 1 if not specified
+    a <- ifelse(!is.null(params$prior_beta$a),params$prior_beta$a, 1)  # Default to 1 if not specified
+    b <- ifelse(!is.null(params$prior_beta$b),params$prior_beta$b, 2)  # Default to 1 if not specified
     r <- 0
-    s <- ifelse(!is.null(params$s), params$s, 1)  # Default to 1 if not specified
+    s <- ifelse(!is.null(params$prior_beta$s), params$prior_beta$s, 1)  # Default to 1 if not specified
     v <- 1
     k <- 1
     
-  } else if (params$prior_beta == "Hyper-g") {
+  } else if (params$prior_beta[[1]] == "hyper-g") {
     a <- 1
     b <- 2
     r <- 0
@@ -336,7 +358,7 @@ gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r =
     v <- 1
     k <- 1
     
-  } else if (params$prior_beta == "Uniform") {
+  } else if (params$prior_beta[[1]] == "uniform") {
     a <- 2
     b <- 2
     r <- 0
@@ -344,14 +366,14 @@ gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r =
     v <- 1
     k <- 1
     
-  } else if (params$prior_beta == "Jeffreys") {
+  } else if (params$prior_beta[[1]] == "Jeffreys") {
     a <- 0.0001
     b <- 2
     r <- 0
     s <- 0
     v <- 1
     k <- 1
-  } else if (params$prior_beta == "Beta-prime") {
+  } else if (params$prior_beta[[1]] == "beta.prime") {
     a <- 1/2
     b <- n - p_M - 1.5
     r <- 0
@@ -359,7 +381,7 @@ gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r =
     v <- 1
     k <- 1
     
-  } else if (params$prior_beta == "Benchmark") {
+  } else if (params$prior_beta[[1]] == "benchmark") {
     a <- 0.02
     b <- 0.02 * max(n, p_M^2)
     r <- 0
@@ -367,23 +389,23 @@ gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r =
     v <- 1
     k <- 1
     
-  } else if (params$prior_beta == "TruncGamma") {
+  } else if (params$prior_beta[[1]] == "TG") {
     
-    a <- 2 * ifelse(!is.null(params$at),params$at, 1)
+    a <- 2 * ifelse(!is.null(params$prior_beta$a),params$prior_beta$a, 1)
     b <- 2
     r <- 0
-    s <- 2 * ifelse(!is.null(params$st),params$st, 1)
+    s <- 2 * ifelse(!is.null(params$prior_beta$s),params$prior_beta$s, 1)
     v <- 1
     k <- 1
     
-  } else if (params$prior_beta == "ZS adapted") {
+  } else if (params$prior_beta[[1]] == "ZS-adapted") {
     a <- 1
     b <- 2
     r <- 0
     s <- n + 3
     v <- 1
     k <- 1
-  } else if (params$prior_beta == "Robust") {
+  } else if (params$prior_beta[[1]] == "robust") {
     a <- 1
     b <- 2
     r <- 1.5
@@ -391,7 +413,7 @@ gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r =
     v <- (n + 1) / (p_M + 1)
     k <- 1
     
-  } else if (params$prior_beta == "Hyper-g/n") {
+  } else if (params$prior_beta[[1]] == "hyper-g-n") {
     a <- 1
     b <- 2
     r <- 1.5
@@ -399,7 +421,7 @@ gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r =
     v <- 1
     k <- 1
     
-  } else if (params$prior_beta == "Intrinsic") {
+  } else if (params$prior_beta[[1]] == "intrinsic") {
     a <- 1
     b <- 1
     r <- 1
@@ -407,7 +429,14 @@ gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r =
     v <- (n + p_M + 1) / (p_M + 1)
     k <- (n + p_M + 1) / n
     
-  } else {
+  }else if (params$prior_beta[[1]] == "tCCH") {
+    a <- params$prior_beta$a
+    b <- params$prior_beta$b
+    r <- params$prior_beta$rho
+    s <- params$prior_beta$s
+    v <- params$prior_beta$v
+    k <- params$prior_beta$k
+  }else {
     stop("Unknown prior name: ", params$prior_beta)
   }
   
@@ -523,6 +552,8 @@ log_prior <- function (params, complex) {
   pl <- log(params$r) * (sum(complex$oc))
   return(pl)
 }
+
+
 #' Master Log Marginal Likelihood Function
 #'
 #' This function serves as a unified interface to compute the log marginal likelihood
@@ -534,45 +565,36 @@ log_prior <- function (params, complex) {
 #' @param complex A list of complexity measures for the features.
 #' @param params A list of parameters controlling the model family, prior, and tuning parameters.
 #'   Key elements include:
-#'   - family: "binomial", "poisson", "gamma", or "gaussian" (default: "gaussian")
+#'   - family: "binomial", "poisson", "gamma" (all three referred to as GLM below), or "gaussian" (default: "gaussian")
 #'   - prior_beta: Type of prior as a string (default: "g-prior"). Possible values include:
-#'     - "beta.prime": Beta-prime prior (GLM, requires `n`)
-#'     - "bic.prior": BIC-based prior (GLM, requires `n`)
-#'     - "CCH": Chen-Clyde-Hsu prior (GLM, requires `a`, `b`, optionally `s`)
-#'     - "EB.local": Empirical Bayes local prior (GLM/Gaussian BAS, requires `alpha` for Gaussian)
+#'     - "beta.prime": Beta-prime prior (GLM/Gaussian, no additional args)
+#'     - "CH": Compound Hypergeometric prior (GLM/Gaussian, requires `a`, `b`, optionally `s`)
+#'     - "EB-local": Empirical Bayes local prior (GLM/Gaussian, requires `a` for Gaussian)
+#'     - "EB-global": Empirical Bayes local prior (Gaussian, requires `a` for Gaussian)
 #'     - "g-prior": Zellner's g-prior (GLM/Gaussian, requires `g`)
-#'     - "hyper.g": Hyper-g prior (GLM, requires `a`)
-#'     - "hyper.g.n": Hyper-g/n prior (GLM, requires `a`, `n`)
-#'     - "tCCH": Truncated Chen-Clyde-Hsu prior (GLM, requires `a`, `b`, optionally `s`, `rho`, `v`, `k`)
-#'     - "intrinsic": Intrinsic prior (GLM, requires `n`)
-#'     - "testBF.prior": Test Bayes factor prior (GLM, requires `g`)
-#'     - "TG": Truncated Gamma prior (GLM, requires `a`)
+#'     - "hyper-g": Hyper-g prior (GLM/Gaussian, requires `a`)
+#'     - "hyper-g-n": Hyper-g/n prior (GLM/Gaussian, requires `a`)
+#'     - "tCCH": Truncated Compound Hypergeometric prior (GLM/Gaussian, requires `a`, `b`, `s`, `rho`, `v`, `k`)
+#'     - "intrinsic": Intrinsic prior (GLM/Gaussian, no additional args)
+#'     - "TG": Truncated Gamma prior (GLM/Gamma, requires `a`, `s`)
 #'     - "Jeffreys": Jeffreys prior (GLM/Gaussian, no additional args)
-#'     - "uniform": Uniform prior (GLM, no additional args)
-#'     - "CH": Custom Chen-Hsu prior (Gaussian TCCH, requires `a`, `b`, optionally `s`)
-#'     - "Hyper-g": Hyper-g prior (Gaussian TCCH, no additional args)
-#'     - "Uniform": Uniform prior (Gaussian TCCH, no additional args)
-#'     - "Beta-prime": Beta-prime prior (Gaussian TCCH, no additional args)
-#'     - "Benchmark": Benchmark prior (Gaussian TCCH, no additional args)
-#'     - "TruncGamma": Truncated Gamma prior (Gaussian TCCH, requires `at`, `st`)
-#'     - "ZS adapted": Zellner-Siow adapted prior (Gaussian TCCH, no additional args)
-#'     - "Robust": Robust prior (Gaussian TCCH, no additional args)
-#'     - "Hyper-g/n": Hyper-g/n prior (Gaussian TCCH, no additional args)
-#'     - "Intrinsic": Intrinsic prior (Gaussian TCCH, no additional args)
-#'     - "hyper-g": Hyper-g prior (Gaussian BAS, requires `alpha`)
-#'     - "BIC": BIC prior (Gaussian BAS, requires `alpha`)
-#'     - "ZS-null": Zellner-Siow null prior (Gaussian BAS, requires `alpha`)
-#'     - "ZS-full": Zellner-Siow full prior (Gaussian BAS, requires `alpha`)
-#'     - "hyper-g-laplace": Hyper-g Laplace prior (Gaussian BAS, requires `alpha`)
-#'     - "AIC": AIC prior (Gaussian BAS, requires `alpha`)
-#'     - "JZS": Jeffreys-Zellner-Siow prior (Gaussian BAS, requires `alpha`)
-#'   - r: Model complexity penalty (default: 1/length(y))
+#'     - "uniform": Uniform prior (GLM/Gaussian, no additional args)
+#'     - "benchmark": Benchmark prior (Gaussian/GLM, no additional args)
+#'     - "ZS-adapted": Zellner-Siow adapted prior (Gaussian TCCH, no additional args)
+#'     - "robust": Robust prior (Gaussian/GLM, no additional args)
+#'     - "Jeffreys-BIC": Jeffreys prior with BIC approximation of marginal likelihood (Gaussian/GLM)
+#'     - "ZS-null": Zellner-Siow null prior (Gaussian, requires `a`)
+#'     - "ZS-full": Zellner-Siow full prior (Gaussian, requires `a`)
+#'     - "hyper-g-laplace": Hyper-g Laplace prior (Gaussian, requires `a`)
+#'     - "AIC": AIC prior from BAS (Gaussian, requires penalty `a`)
+#'     - "BIC": BIC prior from BAS (Gaussian/GLM)
+#'     - "JZS": Jeffreys-Zellner-Siow prior (Gaussian, requires `a`)
+#'   - r: Model complexity penalty (default: 1/n)
 #'   - g: Tuning parameter for g-prior (default: max(n, p^2))
 #'   - a, b, s, v, rho, k: Hyperparameters for various priors
-#'   - at, st: Additional parameters for TruncGamma prior
 #'   - n: Sample size for some priors (default: length(y))
 #'   - var: Variance assumption for Gaussian models ("known" or "unknown", default: "unknown")
-#'   - laplace: Logical for Laplace approximation in GLM (default: FALSE)
+#'   - laplace: Logical for Laplace approximation in GLM only (default: FALSE)
 #'
 #' @return A list with elements:
 #'   \item{crit}{Log marginal likelihood combined with the log prior.}
@@ -581,7 +603,7 @@ log_prior <- function (params, complex) {
 #' @examples
 #' fbms.mlik.master(rnorm(100), matrix(rnorm(100)), TRUE, list(oc = 1), list(family = "gaussian", prior_beta = "g-prior"))
 #'
-#' @importFrom BAS beta.prime bic.prior CCH EB.local g.prior hyper.g hyper.g.n tCCH intrinsic testBF.prior TG Jeffreys uniform
+#' @importFrom BAS beta.prime bic.prior CCH EB.local g.prior hyper.g hyper.g.n tCCH intrinsic TG Jeffreys uniform
 #' @export
 fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gaussian", prior_beta = "g-prior", r = exp(-0.5))) {
   # Extract dimensions
@@ -592,100 +614,168 @@ fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gauss
   if (is.null(params$family)) params$family <- "gaussian"
   if (is.null(params$prior_beta)) params$prior_beta <- "g-prior"
   if (is.null(params$g)) params$g <- max(p^2, n)
-  if (is.null(params$r)) params$r <- 1/length(y)
+  if (is.null(params$gn)) params$n <- n
+  if (is.null(params$r)) params$r <- 1/n
   
-  # Ensure complex has oc if not provided
-  if (is.null(complex$oc)) complex$oc <- 1
+  # Ensure complex has oc if not provided, ignore by default
+  if (is.null(complex$oc)) complex$oc <- 0
   
   # Homogenize and prepare params for nested calls
   params_master <- params
   params_nested <- list(r = params_master$r)
   
   # Define valid priors for each family
-  glm_priors <- c("beta.prime", "bic.prior", "CCH", "EB.local", "g-prior", "hyper.g", "hyper.g.n", 
-                  "tCCH", "intrinsic", "testBF.prior", "TG", "Jeffreys", "uniform")
-  gaussian_tcch_priors <- c("CH", "Hyper-g", "Uniform", "Beta-prime", "Benchmark", "TruncGamma", 
-                            "ZS adapted", "Robust", "Hyper-g/n", "Intrinsic")
-  gaussian_bas_priors <- c("g-prior", "hyper-g", "EB.local", "BIC", "ZS-null", "ZS-full", 
-                           "hyper-g-laplace", "AIC", "JZS")
+  #glm_only_priors <- c("CCH", "tCCH", "TG")
+  glm_and_gaussian_priors <- c("CH", "tCCH", "TG","beta.prime", "EB-local", "g-prior", "hyper-g", "hyper-g-n", 
+                               "intrinsic", "ZS-adapted", "Jeffreys", "uniform", "benchmark", "robust", "Jeffreys-BIC")
+  gaussian_only_priors <- c("ZS-null", "ZS-full", "hyper-g-laplace", "AIC", "JZS","EB-global")
+  
+  #review a bit 
+  gaussian_not_robust <-  c("CH", "tCCH", "ZS-adapted", "TG","beta.prime", "benchmark","Jeffreys")
+  gaussian_robust <- c("g-prior", "hyper-g", "EB-local", "Jeffreys-BIC", "ZS-null", "ZS-full", "hyper-g-laplace",
+                       "AIC",  "hyper-g-n",  "JZS")
+  gaussian_tcch <- c("CH", "tCCH", "TG","beta.prime", "intrinsic", "ZS-adapted", "uniform","Jeffreys", "benchmark", "robust")
+  gaussian_bas <- c("g-prior", "hyper-g", "EB-local","ZS-null", "ZS-full", "hyper-g-laplace", "AIC", "EB-global", "hyper-g-n", "JZS")
+ 
+  all_priors <- c(glm_and_gaussian_priors, gaussian_only_priors)
+  
+  # Validate prior_beta
+  if (!params_master$prior_beta %in% all_priors) {
+    stop(sprintf("Prior '%s' is not supported. Supported priors: %s", 
+                 params_master$prior_beta, paste(all_priors, collapse = ", ")))
+  }
   
   # Decision logic based on family and prior_beta
   if (params_master$family %in% c("binomial", "poisson", "gamma")) {
-    if (!params_master$prior_beta %in% glm_priors) {
-      stop(sprintf("Prior '%s' is not supported for family '%s'. Supported GLM priors: %s", 
-                   params_master$prior_beta, params_master$family, paste(glm_priors, collapse = ", ")))
+    if (params_master$prior_beta %in% gaussian_only_priors) {
+      stop(sprintf("Prior '%s' is not supported for GLM family '%s'. Supported GLM priors: %s", 
+                   params_master$prior_beta, params_master$family, 
+                   paste(c(glm_only_priors, glm_and_gaussian_priors), collapse = ", ")))
     }
     
     params_nested$family <- params_master$family
     if (is.null(params_master$laplace)) params_nested$laplace <- FALSE else params_nested$laplace <- params_master$laplace
     
-    if (params_master$prior_beta == "Jeffreys" && params_master$family == "binomial") {
-      # Use logistic.loglik for binomial with Jeffreys prior and BIC approximation
-      result <- logistic.loglik(y, x, model, complex, params_nested)
+    #if(params_nested$laplace)
+    #  print("Laplace approximations will be used")
+    
+    if (params_master$prior_beta == "Jeffreys-BIC") {
+      if(params_nested$family == "binomial")
+        result <- logistic.loglik(y, x, model, complex, params_nested)
+      else if(params_nested$family%in% c("poisson", "gamma"))
+        result <- glm.loglik(y, x, model, complex, params_nested)
+      
     } else {
-      # Use glm.logpost.bas for binomial, poisson, or gamma with BAS priors
       params_nested$prior_beta <- switch(
         params_master$prior_beta,
-        "beta.prime" = beta.prime(n = if (is.null(params_master$n)) n else params_master$n),
-        "bic.prior" = bic.prior(n = if (is.null(params_master$n)) n else params_master$n),
-        "CCH" = CCH(alpha = if (is.null(params_master$a)) 1 else params_master$a,
-                    beta = if (is.null(params_master$b)) 2 else params_master$b,
-                    s = if (is.null(params_master$s)) 0 else params_master$s),
-        "EB.local" = EB.local(),
-        "g-prior" = g.prior(g = if (is.null(params_master$g)) max(n, p + 1) else params_master$g),
-        "hyper.g" = hyper.g(alpha = if (is.null(params_master$a)) 3 else params_master$a),
-        "hyper.g.n" = hyper.g.n(alpha = if (is.null(params_master$a)) 3 else params_master$a,
-                                n = if (is.null(params_master$n)) n else params_master$n),
-        "tCCH" = tCCH(alpha = if (is.null(params_master$a)) 1 else params_master$a,
-                      beta = if (is.null(params_master$b)) 2 else params_master$b,
-                      s = if (is.null(params_master$s)) 0 else params_master$s,
-                      r = if (is.null(params_master$rho)) 3/2 else params_master$rho,
-                      v = if (is.null(params_master$v)) 1 else params_master$v,
-                      theta = if (is.null(params_master$k)) 1 else params_master$k),
-        "intrinsic" = intrinsic(n = if (is.null(params_master$n)) n else params_master$n),
-        "testBF.prior" = testBF.prior(g = if (is.null(params_master$g)) max(n, p + 1) else params_master$g),
-        "TG" = TG(alpha = if (is.null(params_master$a)) 2 else params_master$a),
+        "beta.prime" = beta.prime(n = n),
+        "CH" = CCH(alpha = if (is.null(params_master$a)) stop("a must be provided") else params_master$a,
+                    beta = if (is.null(params_master$b)) stop("b must be provided") else params_master$b,
+                    s = if (is.null(params_master$s)) stop("s must be provided") else params_master$s),
+        "EB-local" = EB.local(),
+        "g-prior" = g.prior(g = params_master$g),
+        "hyper-g" = hyper.g(alpha = if (is.null(params_master$a)) stop("a must be provided") else params_master$a),
+        "tCCH" = tCCH(alpha = if (is.null(params_master$a)) stop("a must be provided") else params_master$a,
+                      beta = if (is.null(params_master$b)) stop("b must be provided") else params_master$b,
+                      s = if (is.null(params_master$s)) stop("s must be provided") else params_master$s,
+                      r = if (is.null(params_master$rho)) stop("rho must be provided") else params_master$rho,
+                      v = if (is.null(params_master$v)) stop("v must be provided") else params_master$v,
+                      theta = if (is.null(params_master$k)) stop("k must be provided") else params_master$k),
+        "intrinsic" = intrinsic(n = params_master$n),
+        "TG" = TG(alpha = if (is.null(params_master$a)) stop("a must be provided") else params_master$a),
         "Jeffreys" = Jeffreys(),
-        "uniform" = uniform(),
+        "uniform" = tCCH(alpha = 2,
+                         beta = 2,
+                         s = 0,
+                         r = 0,
+                         v = 1,
+                         theta = 1), 
+        "benchmark" =  tCCH(alpha = 0.02,
+                            beta = 0.02*max(n,p^2),
+                            s = 0,
+                            r = 0,
+                            v = 1,
+                            theta = 1),  
+        "ZS-adapted" =  tCCH(alpha = 1,
+                            beta = 2,
+                            s = n + 3,
+                            r = 0,
+                            v = 1,
+                            theta = 1), 
+        "TG" = TG(alpha = if (is.null(params_master$a)) stop("a must be provided") else params_master$a),  
+        "robust" = robust(n = if (is.null(params_master$n)) as.numeric(n) else as.numeric(params_master$n)), 
+        "hyper-g-n" = hyper.g.n(alpha = if (is.null(params_master$a)) stop("a must be provided") else params_master$a,
+                                n = params_master$n),
+        "BIC" = bic.prior(n = if (is.null(params_master$n)) n else params_master$n),
         stop("Unrecognized prior_beta for GLM: ", params_master$prior_beta)
       )
       result <- glm.logpost.bas(y, x, model, complex, params_nested)
     }
   } else if (params_master$family == "gaussian") {
-    if (!(params_master$prior_beta %in% c(glm_priors, gaussian_tcch_priors, gaussian_bas_priors))) {
-      stop(sprintf("Prior '%s' is not supported for family 'gaussian'. Supported priors: %s, %s, %s", 
-                   params_master$prior_beta, paste(glm_priors, collapse = ", "), 
-                   paste(gaussian_tcch_priors, collapse = ", "), paste(gaussian_bas_priors, collapse = ", ")))
+    
+    if (params_master$prior_beta %in% gaussian_not_robust) {
+      warning(sprintf("Prior '%s' is not reccomended supported for Gaussian family '%s'. Can be unstable for strong signals (R^2 > 0.9). Reccomended priors under Gaussian family: %s", 
+                   params_master$prior_beta, params_master$family, 
+                   paste(gaussian_robust, collapse = ", ")))
     }
     
     params_nested$r <- params_master$r
     
-    if (params_master$prior_beta == "g-prior" && is.null(params_master$method.num)) {
-      # Use gaussian.loglik.g for Zellner's g-prior
-      if (is.null(params_master$g)) params_nested$g <- max(n, p^2) else params_nested$g <- params_master$g
-      result <- gaussian.loglik.g(y, x, model, complex, params_nested)
-    } else if (params_master$prior_beta == "Jeffreys" && is.null(params_master$method.num)) {
-      # Use gaussian.loglik for Jeffreys prior with BIC approximation
+    if (params_master$prior_beta %in% gaussian_tcch) {
+     
+      params_nested$prior_beta <- switch(
+        params_master$prior_beta,
+        "beta.prime" = list("beta.prime"),
+        "CH" = list("CH",a = if (is.null(params_master$a)) stop("a must be provided") else params_master$a,
+                    b = if (is.null(params_master$b)) stop("b must be provided") else params_master$b,
+                    s = if (is.null(params_master$s)) stop("s must be provided") else params_master$s),
+        "tCCH" = list("tCCH", a = if (is.null(params_master$a)) stop("a must be provided") else params_master$a,
+                      b = if (is.null(params_master$b)) stop("b must be provided") else params_master$b,
+                      s = if (is.null(params_master$s)) stop("s must be provided") else params_master$s,
+                      rho = if (is.null(params_master$rho)) stop("rho must be provided") else params_master$rho,
+                      v = if (is.null(params_master$v)) stop("v must be provided") else params_master$v,
+                      k = if (is.null(params_master$k)) stop("k must be provided") else params_master$k),
+        "intrinsic" = list("intrinsic"),
+        "TG" = list("TG",a = if (is.null(params_master$a)) stop("a must be provided") else params_master$a,
+                    s = if (is.null(params_master$s)) stop("s must be provided") else params_master$s),
+        "Jeffreys" = list("Jeffreys"),
+        "ZS-adapted" = list("ZS-adapted"),
+        "benchmark" = list("benchmark"),
+        "robust" = list("robust"),
+        "uniform" = list("uniform"),
+        stop("Unrecognized prior_beta for Gaussian GLM: ", params_master$prior_beta)
+      )
+      result <- gaussian_tcch_log_likelihood(y, x, model, complex, params_nested)
+     
+    }else if (params_master$prior_beta == "Jeffreys-BIC" && is.null(params_master$method.num)) {
       if (is.null(params_master$var)) params_nested$var <- "unknown" else params_nested$var <- params_master$var
       result <- gaussian.loglik(y, x, model, complex, params_nested)
-    } else if (params_master$prior_beta %in% gaussian_tcch_priors) {
-      # Use gaussian_tcch_log_likelihood for TCCH priors
-      params_nested$prior_beta <- params_master$prior_beta
-      if (!is.null(params_master$a)) params_nested$a <- params_master$a
-      if (!is.null(params_master$b)) params_nested$b <- params_master$b
-      if (!is.null(params_master$s)) params_nested$s <- params_master$s
-      if (!is.null(params_master$v)) params_nested$v <- params_master$v
-      if (!is.null(params_master$k)) params_nested$k <- params_master$k
-      if (!is.null(params_master$at)) params_nested$at <- params_master$at
-      if (!is.null(params_master$st)) params_nested$st <- params_master$st
-      result <- gaussian_tcch_log_likelihood(y, x, model, complex, params_nested)
-    } else if (params_master$prior_beta %in% gaussian_bas_priors) {
-      # Use lm.logpost.bas for BAS priors
-      params_nested$prior_beta <- params_master$prior_beta
-      if (is.null(params_master$alpha)) params_nested$alpha <- max(n, (p + 1)^2) else params_nested$alpha <- params_master$alpha
-      result <- lm.logpost.bas(y, x, model, complex, params_nested)
+    } else if (params_master$prior_beta %in% gaussian_bas) {
+      
+      params_nested$prior_beta  <- switch(
+        params_master$prior_beta,
+        "g-prior" = 0,
+        "hyper-g" = 1,
+        "EB-local" = 2,
+        "BIC" = 3,
+        "ZS-null" = 4,
+        "ZS-full" = 5,
+        "hyper-g-laplace" = 6,
+        "AIC" = 7,
+        "EB-global" = 2,
+        "hyper-g-n" = 8,
+        "JZS" = 9
+      )
+      if(params_master$prior_beta == "g-prior")
+      {  
+        if (!is.null(params_master$g)) params_nested$alpha <- params_master$g else stop("g must be provided")
+      }
+      else
+        if (!is.null(params_master$a)) params_nested$alpha <- params_master$a else stop("a must be provided")
+        
+        result <- lm.logpost.bas(y, x, model, complex, params_nested)
     } else {
-      stop(sprintf("Prior '%s' is not supported for Gaussian family in this context.", params_master$prior_beta))
+      stop("Unexpected error in prior_beta logic for Gaussian.")
     }
   } else {
     stop("Unsupported family: ", params_master$family, ". Supported families are 'binomial', 'poisson', 'gamma', or 'gaussian'.")
