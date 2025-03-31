@@ -96,7 +96,7 @@ check.collinearity <- function (proposal, features, F.0.size, data, mock) {
 # Generate features to represent the covariates, just takes the count needed
 gen.covariates <- function (data) {
   features <- list()
-  for (i in (data$fixed + 1):ncol(data$x)) {
+  for (i in seq_len(ncol(data$x) - data$fixed)) {
     features <- c(features, i)
     class(features[[length(features)]]) <- "feature"
   }

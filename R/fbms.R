@@ -33,12 +33,12 @@
 #'
 #' @seealso \code{\link{mjmcmc}}, \code{\link{gmjmcmc}}, \code{\link{gmjmcmc.parallel}}
 #' @export
-fbms <- function(formula = NULL, family = "gaussian",
-                 beta_prior = list(type = "g-prior", g = 5),
-                 model_prior = list(r = exp(-0.5)),
-                 data = NULL, impute = FALSE,
-                 loglik.pi = gaussian.loglik,
-                 method = "mjmcmc", verbose = TRUE, ...) {
+fbms <- function (formula = NULL, family = "gaussian",
+                  beta_prior = list(type = "g-prior", g = 5),
+                  model_prior = list(r = exp(-0.5)),
+                  data = NULL, impute = FALSE,
+                  loglik.pi = gaussian.loglik,
+                  method = "mjmcmc", verbose = TRUE, ...) {
   if (is.list(beta_prior) || is.list(model_prior)) {
     mlpost_params <- gen.mlpost.params(beta_prior, model_prior)
     loglik.pi <- select.mlpost.fun(beta_prior, model_prior, family)
@@ -56,7 +56,7 @@ fbms <- function(formula = NULL, family = "gaussian",
     }
     
     na.opt <- getOption("na.action")
-    if(impute)
+    if (impute)
       options(na.action='na.pass')
     else
       options(na.action='na.omit')
@@ -69,9 +69,9 @@ fbms <- function(formula = NULL, family = "gaussian",
     
     
     Y <- model.response(mf, "any")
-    X <- model.matrix(formula, data = data)[, -1]
-    intercept <- attr(terms(formula, data = data), "intercept")
-    if (intercept) X <- cbind(1, X)
+    X <- model.matrix(formula, data = data)
+    intercept <- attr(terms(formula, data = data), "intercept") == 1
+    if (intercept) X <- X[, -1, drop = FALSE]
     mis.Y <- which(is.na(Y))
     if (length(mis.Y) > 0) {
       warning("Missing values in the response. Dropped.")
@@ -101,7 +101,6 @@ fbms <- function(formula = NULL, family = "gaussian",
     }
   } else {
     Y <- data[, 1]
-    X <- cbind(1, data[, -1])
     intercept <- TRUE
     imputed <- NULL
     na.opt <- getOption("na.action")
@@ -114,13 +113,13 @@ fbms <- function(formula = NULL, family = "gaussian",
   }
   
   if (method == "mjmcmc.parallel")
-    res <- mjmcmc.parallel(X, Y, loglik.pi, mlpost_params = mlpost_params, fixed = intercept, verbose = verbose, ...)
+    res <- mjmcmc.parallel(x = X, y = Y, loglik.pi = loglik.pi, mlpost_params = mlpost_params, intercept = intercept, verbose = verbose, ...)
   else if (method == "mjmcmc")
-    res <- mjmcmc(X, Y, loglik.pi, mlpost_params = mlpost_params, fixed = intercept, verbose = verbose, ...)
+    res <- mjmcmc(x = X, y = Y, loglik.pi = loglik.pi, mlpost_params = mlpost_params, intercept = intercept, verbose = verbose, ...)
   else if (method == "gmjmcmc.parallel")
-    res <- gmjmcmc.parallel(x = X, y = Y, loglik.pi = loglik.pi, mlpost_params = mlpost_params, fixed = intercept, verbose = verbose,...)
+    res <- gmjmcmc.parallel(x = X, y = Y, loglik.pi = loglik.pi, mlpost_params = mlpost_params, intercept = intercept, verbose = verbose,...)
   else if (method == "gmjmcmc")
-    res <- gmjmcmc(X, Y, loglik.pi, mlpost_params = mlpost_params, fixed = intercept, verbose = verbose, ...)
+    res <- gmjmcmc(x = X, y = Y, loglik.pi = loglik.pi, mlpost_params = mlpost_params, intercept = intercept, verbose = verbose, ...)
   else
     stop("Error: Method must be one of gmjmcmc, gmjmcmc.parallel, mjmcmc or mjmcmc.parallel!")
   

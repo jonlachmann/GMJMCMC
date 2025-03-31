@@ -31,8 +31,24 @@
 #' plot(result)
 #'
 #' @export mjmcmc
-mjmcmc <- function (x, y, loglik.pi = gaussian.loglik, mlpost_params = NULL, fixed = 0, N = 100, probs = NULL, params = NULL, sub = FALSE, verbose = TRUE) {
+mjmcmc <- function (
+  x,
+  y,
+  loglik.pi = gaussian.loglik,
+  mlpost_params = NULL,
+  intercept = FALSE,
+  fixed = 0,
+  N = 100,
+  probs = NULL,
+  params = NULL,
+  sub = FALSE,
+  verbose = TRUE
+) {
   # Verify that data is well-formed
+  if (intercept) {
+    x <- cbind(1, x)
+    fixed <- fixed + 1
+  }
   labels <- names(x)
   data <- check.data(x, y, fixed, verbose)
 
@@ -63,6 +79,7 @@ mjmcmc <- function (x, y, loglik.pi = gaussian.loglik, mlpost_params = NULL, fix
   # Return formatted results
   result$fixed <- data$fixed
   result$labels <- labels
+  result$intercept <- intercept
   class(result) <- "mjmcmc"
   return(result)
 }

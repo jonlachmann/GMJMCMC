@@ -107,7 +107,9 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
     accept.tot <- results[[i]]$accept.tot
     best <- results[[i]]$best
     for (item in names(results[[i]])) {
-      if (!(item %in% (c("accept.tot", "best", "transforms", "fixed")))) results[[i]][[item]] <- results[[i]][[item]][pops.use[[i]]]
+      if (!(item %in% (c("accept.tot", "best", "transforms", "fixed", "intercept")))) {
+        results[[i]][[item]] <- results[[i]][[item]][pops.use[[i]]]
+      }
     }
     results[[i]]$accept.tot <- accept.tot
     results[[i]]$best <- best
@@ -129,6 +131,7 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
   if (is.null(data)) mock.data <- list(x = matrix(runif((feat.count)^2, -100, 100), ncol = feat.count))
   else mock.data <- data
   mock.data$fixed = results[[1]]$fixed
+  if (results[[1]]$intercept) mock.data$x <- cbind(1, mock.data$x)
   
   mock.data.precalc <- precalc.features(mock.data, features)$x[ , seq_len(feat.count) + results[[1]]$fixed, drop = FALSE]
 
@@ -167,7 +170,8 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
     best.log.posteriors = bests,
     rep.thread = pw$thread.best,
     transforms = results[[1]]$transforms,
-    fixed = results[[1]]$fixed
+    fixed = results[[1]]$fixed,
+    intercept = results[[1]]$intercept
   )
   attr(merged, "class") <- "gmjmcmc_merged"
   return(merged)
@@ -230,7 +234,7 @@ population.weigths <- function (results, pops.use) {
 #'
 #' @export model.string
 model.string <- function (model, features, link = "I", round = 2) {
-  modelstring <- paste0(sapply(features[model], print.feature, alphas = TRUE, round = round), collapse="+")
+  modelstring <- paste0(sapply(features[model], print.feature, alphas = TRUE, round = round), collapse = "+")
   modelfun <- set_alphas(modelstring)
   modelfun$formula <- paste0(link, "(", modelfun$formula, ")")
   return(modelfun)
@@ -293,14 +297,26 @@ get.mpm.model <- function(result, y, x, labels = F, family = "gaussian", loglik.
   if (family == "binomial")
     loglik.pi <- logistic.loglik
 
-  sm <- summary(result, labels = labels, verbose = FALSE)
-  mpm <- sm$feats.strings[sm$marg.probs > 0.5]
+  if (is(result, "mjmcmc.parallel")) {
+    models <- unlist(lapply(object, function (x) x$models), recursive = FALSE)
+    marg.probs <- marginal.probs.renorm(models)$probs
+    features <- object[[1]]$populations
+  } else if (is(result, "gmjmcmc")) {
+    best_pop <- which.max(unlist(object$best.margs))
+    marg.probs <- object$marg.probs[[best_pop]]
+    features <- object$populations[[best_pop]]
+  } else if (is(result, "gmjmcmc.parallel") || is(result, "mjmcmc")) {
+    marg.probs <- object$marg.probs
+    features <- object$features
+  }
+  features <- features[marg.probs > 0.5]
+
+  if (result$intercept) {
+    x <- cbind(1, x)
+  }
+  precalc <- precalc.features(list(x = x, y = y, fixed = result$fixed), features)
   
-  x.precalc <- model.matrix(
-    as.formula(paste0("~I(", paste0(mpm, collapse = ")+I("), ")")),
-    data = x)
-  
-  model <- loglik.pi(y = y, x = x.precalc, model = rep(TRUE, length(mpm) + 1), complex = list(oc = 0), params = params)
+  model <- loglik.pi(y = y, x = precalc$x, model = rep(TRUE, length(features) + result$fixed), complex = list(oc = 0), params = params)
   class(model) <- "bgnlm_model"
   model$crit <- "MPM"
   return(model)
@@ -349,8 +365,8 @@ get.best.model <- function(result, labels = FALSE) {
     if (length(labels) == 1 && labels[1] == FALSE && length(result[[1]]$labels) > 0) {
       labels <- result[[1]]$labels
     }
-    best.chain <- which.max(sapply(result,function(x)x$best.crit))
-    return(get.best.model.mjmcmc(result[[best.chain]], labels))
+    best.chain <- which.max(sapply(result$chains, function (x) x$best.crit))
+    return(get.best.model.mjmcmc(result$chains[[best.chain]], labels))
   }
   
   if (is(result,"gmjmcmc")) {
@@ -373,7 +389,9 @@ get.best.model.gmjmcmc <- function (result, labels) {
   best.pop.id <- which.max(sapply(result$best.margs,function(x)x))
   best.mod.id <- which.max(sapply(result$models[[best.pop.id]],function(x)x$crit))
   ret <- result$models[[best.pop.id]][[best.mod.id]]
-  names(ret$coefs) <- c("Intercept",sapply(result$populations[[best.pop.id]],print.feature,labels = labels)[which(ret$model)])
+  coefnames <- sapply(result$populations[[best.pop.id]], print.feature, labels = labels)[ret$model]
+  if (result$intercept) coefnames <- c("Intercept", coefnames)
+  names(ret$coefs) <- coefnames
   class(ret) = "bgnlm_model"
   return(ret)
 }
@@ -384,7 +402,9 @@ get.best.model.mjmcmc <- function (result, labels) {
   }
   best.mod.id <- which.max(sapply(result$models,function(x)x$crit))
   ret <- result$models[[best.mod.id]]
-  names(ret$coefs) <- c("Intercept",sapply(result$populations,print.feature,labels = labels)[which(ret$model)])
+  coefnames <- sapply(result$populations, print.feature, labels = labels)[ret$model]
+  if (result$intercept) coefnames <- c("Intercept", coefnames)
+  names(ret$coefs) <- coefnames
   class(ret) = "bgnlm_model"
   return(ret)
 }
@@ -522,13 +542,13 @@ plot.mjmcmc_parallel <- function (x, count = "all", ...) {
 
 merge_mjmcmc_parallel <- function (x) {
   run.weights <- run.weigths(x)
-  marg.probs <- x[[1]]$marg.probs * run.weights[1]
-  for (i in seq_along(x[-1])) {
-    marg.probs <- marg.probs + x[[i]]$marg.probs * run.weights[i]
+  marg.probs <- x$chains[[1]]$marg.probs * run.weights[1]
+  for (i in seq_along(x[-c(1, (-1:0 + length(x)))])) {
+    marg.probs <- marg.probs + x$chains[[i]]$marg.probs * run.weights[i]
   }
   return(structure(
     list(
-      features = sapply(x[[1]]$populations, print),
+      features = sapply(x$chains[[1]]$populations, print),
       marg.probs = marg.probs,
       results = x
     ),
@@ -538,7 +558,7 @@ merge_mjmcmc_parallel <- function (x) {
 
 
 run.weigths <- function (results) {
-  best.crits <- sapply(results, function (x) x$best.crit)
+  best.crits <- sapply(results$chains, function (x) x$best.crit)
   max.crit <- max(best.crits)
   return(exp(best.crits - max.crit) / sum(exp(best.crits - max.crit)))
 }

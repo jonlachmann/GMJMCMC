@@ -39,7 +39,7 @@ alpha_2 <- function (feature) {
 #'
 alpha_3 <- function (feature, data, loglik, verbose) {
   # Create the string representation of the feature with variable alphas
-  featfun <- print.feature(feature, dataset = TRUE, alphas = TRUE)
+  featfun <- print.feature(feature, dataset = TRUE, fixed = data$fixed, alphas = TRUE)
   featfun <- set_alphas(featfun)
   # Return if there are no alphas to set
   if (featfun$count == 0) return(feature)
@@ -73,7 +73,7 @@ alpha_3 <- function (feature, data, loglik, verbose) {
 #'
 alpha_4 <- function (feature) {
   # Create the string representation of the feature with variable alphas
-  featfun <- print.feature(feature, dataset = TRUE, alphas = TRUE)
+  featfun <- print.feature(feature, dataset = TRUE, fixed = data$fixed, alphas = TRUE)
   featfun <- set_alphas(featfun)
   
   feature <- update.alphas(feature, rnorm(featfun$count,0,1))

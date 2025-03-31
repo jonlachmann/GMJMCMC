@@ -94,7 +94,10 @@ rmclapply <- function(runs, args, fun, mc.cores = NULL) {
 #'
 #' @export
 mjmcmc.parallel <- function(runs = 2, cores = getOption("mc.cores", 2L), ...) {
-  results <- rmclapply(seq_len(runs), args = list(...), mc.cores = cores, fun = mjmcmc)
+  results <- list()
+  results$chains <- rmclapply(seq_len(runs), args = list(...), mc.cores = cores, fun = mjmcmc)
+  results$fixed <- results$chains[[1]]$fixed
+  results$intercept <- results$chains[[1]]$intercept
   class(results) <- "mjmcmc_parallel"
   gc()
   return(results)

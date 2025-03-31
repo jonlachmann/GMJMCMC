@@ -20,8 +20,9 @@
 #' @export
 summary.gmjmcmc <- function (object, pop = "best", tol = 0.0001, labels = FALSE, effects = NULL, data = NULL, verbose = TRUE, ...) {
   transforms.bak <- set.transforms(object$transforms)
-  if (length(labels) == 1 && labels[1] == FALSE && length(object$labels) > 0)
+  if (length(labels) == 1 && labels[1] == FALSE && length(object$labels) > 0) {
     labels = object$labels
+  }
   if (pop == "all") {
     results <- list()
     results[[1]] <- object
@@ -114,14 +115,14 @@ summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, effect
   best <- max(sapply(object$results, function (y) y$best))
   feats.strings <- sapply(object$features, FUN = function(x) print.feature(x = x, labels = labels, round = 2))
 
-
   if (!is.null(effects) & !is.null(labels)) {
     effects <- compute_effects(object,labels = labels, quantiles = effects)
   }
 
   obj <- summary_internal(
     best = object$crit.best,
-    feats.strings, object$marg.probs,
+    feats.strings = feats.strings,
+    marg.probs = object$marg.probs,
     effects = effects,
     best.pop = object$pop.best,
     thread.best = object$thread.best,
@@ -154,9 +155,13 @@ summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, effect
 #'
 #' @export
 summary.mjmcmc <- function (object, tol = 0.0001, labels = FALSE, effects = NULL, verbose = TRUE, ...) {
-  if (length(labels) == 1 && labels[1] == FALSE && length(object$labels) > 0)
-    labels = object$labels
-  return(summary.mjmcmc_parallel(list(object), tol = tol, labels = labels, effects = effects, verbose = verbose))
+  return(summary.mjmcmc_parallel(
+    list(chains = list(object), fixed = object$fixed, intercept = object$intercept),
+    tol = tol,
+    labels = labels,
+    effects = effects,
+    verbose = verbose
+  ))
 }
 
 #' Function to print a quick summary of the results
@@ -180,18 +185,15 @@ summary.mjmcmc <- function (object, tol = 0.0001, labels = FALSE, effects = NULL
 summary.mjmcmc_parallel <- function (object, tol = 0.0001, labels = FALSE, effects = NULL, verbose = TRUE, ...) {
   # Get features as strings for printing
   if (length(labels) == 1 && labels[1] == FALSE && length(object[[1]]$labels) > 0) {
-    labels = object[[1]]$labels
+    labels = object$chains[[1]]$labels
   }
-  feats.strings <- sapply(object[[1]]$populations, FUN = function(x) print.feature(x = x, labels = labels, round = 2))
+  feats.strings <- sapply(object$chains[[1]]$populations, FUN = function(x) print.feature(x = x, labels = labels, round = 2))
   # Get marginal posterior of features
-  models <- unlist(lapply(object, function (x) x$models), recursive = FALSE)
+  models <- unlist(lapply(object$chains, function (x) x$models), recursive = FALSE)
   marg.probs <- marginal.probs.renorm(models)$probs
-  best <- max(sapply(object, function (x) x$best))
+  best <- max(sapply(object$chains, function (x) x$best))
   if (!is.null(effects) & !is.null(labels)) {
-    if (is.list(object))
-      effects <- compute_effects(object[[1]],labels = labels, quantiles = effects)
-    else
-      effects <- compute_effects(object,labels = labels, quantiles = effects)
+    effects <- compute_effects(object$chains[[1]], labels = labels, quantiles = effects)
   }
   return(summary_internal(best, feats.strings, marg.probs, effects, tol = tol, verbose = verbose))
 }

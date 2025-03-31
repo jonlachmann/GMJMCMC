@@ -52,6 +52,7 @@ gmjmcmc <- function (
   loglik.alpha = gaussian.loglik.alpha,
   mlpost_params = NULL,
   transforms,
+  intercept = FALSE,
   fixed = 0,
   P = 10,
   N.init = 100,
@@ -62,6 +63,10 @@ gmjmcmc <- function (
   verbose = TRUE
 ) {
   # Verify that the data is well-formed
+  if (intercept) {
+    x <- cbind(1, x)
+    fixed <- fixed + 1
+  }
   data <- check.data(x, y, fixed, verbose)
 
   # Generate default probabilities and parameters if there are none supplied.
@@ -164,6 +169,7 @@ gmjmcmc <- function (
   )
   results$labels <- labels
   results$fixed <- fixed
+  results$intercept <- intercept
   attr(results, "class") <- "gmjmcmc"
   return(results)
 }

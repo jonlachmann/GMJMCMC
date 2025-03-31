@@ -109,7 +109,7 @@ update.alphas <- function (feature, alphas, recurse=FALSE) {
 #' print(result$populations[[1]][1])
 #' 
 #' @export
-print.feature <- function (x, dataset = FALSE, alphas = FALSE, labels = FALSE, round = FALSE, ...) {
+print.feature <- function (x, dataset = FALSE, fixed = 0, alphas = FALSE, labels = FALSE, round = FALSE, ...) {
   fString <- ""
   feat <- x[[length(x)]]
   # This is a more complex feature
@@ -145,15 +145,15 @@ print.feature <- function (x, dataset = FALSE, alphas = FALSE, labels = FALSE, r
           if (alphas) fString <- paste0(fString, "?*")
           else fString <- paste0(fString, feat[j,3], "*")
         }
-        fString <- paste0(fString, print.feature(x[[feat[j, 2]]], dataset, alphas, labels, round), op)
+        fString <- paste0(fString, print.feature(x[[feat[j, 2]]], dataset, fixed, alphas, labels, round), op)
       }
     }
     fString <- paste0(fString, ")")
   }
   # This is a plain covariate
   else if (is.numeric(feat)) {
-    if (dataset) fString <- paste0("data$x[,", feat, "]")
-    else if (labels[1] != F) fString <- labels[feat]
+    if (dataset) fString <- paste0("data$x[,", fixed + feat, "]")
+    else if (labels[1] != FALSE) fString <- labels[feat]
     else fString <- paste0("x", feat)
   } else stop("Invalid feature structure")
   return(fString)

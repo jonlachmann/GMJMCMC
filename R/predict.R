@@ -72,7 +72,7 @@ predict.gmjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.02
   transforms.bak <- set.transforms(object$transforms)
   x <- impute_x(object, x)
   
-  merged <- merge_results(list(object), data = list(x = x), populations = pop, tol = tol)
+  merged <- merge_results(list(object), data = list(x = x, object$fixed), populations = pop, tol = tol)
   set.transforms(transforms.bak)
   return(predict.gmjmcmc_merged(merged, x, link, quantiles))
 }
@@ -124,10 +124,13 @@ predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.
 #' @export
 predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = NULL, tol = 0.0000001, ...) {
   x <- impute_x(object, x)
+  if (object$intercept) {
+    x <- cbind(1, x)
+  }
   
   transforms.bak <- set.transforms(object$transforms)
   if (!is.null(pop))
-    object <- merge_results(object$results.raw, pop, 2, tol, data = x)
+    object <- merge_results(object$results.raw, pop, 2, tol, data = list(x = x, fixed = object$fixed))
   
   preds <- list()
   for (i in seq_along(object$results)) {
@@ -183,10 +186,14 @@ predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles =
 predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
   # Select the models and features to predict from at this iteration
   x <- impute_x(object, x)
+
+  if (object$intercept) {
+    x <- cbind(1, x)
+  }
   
   models <- c(object$models, object$lo.models)[object$model.probs.idx]
 
-  yhat <- matrix(0, nrow=nrow(x), ncol=length(models))
+  yhat <- matrix(0, nrow = nrow(x), ncol = length(models))
   for (k in seq_along(models)) {
     # Models which have 0 weight are skipped since they may also be invalid, and would not influence the predictions.
     if (models[[k]]$crit == -.Machine$double.xmax) next
@@ -212,19 +219,13 @@ predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025
 #' 
 #' @export
 predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
-  max.crits <- numeric()
   x <- impute_x(object, x)
-  
-  for (i in seq_along(object)) {
-    max.crits <- c(max.crits, object[[i]]$best.crit)
-  }
+
+  max.crits <- sapply(object$chains, function (x) x$best.crit)
   max.crit <- max(max.crits)
   result.weights <- exp(max.crits - max.crit) / sum(exp(max.crits - max.crit))
 
-  preds <- list()
-  for (i in seq_along(object)) {
-    preds[[i]] <- predict.mjmcmc(object[[i]], x, link, quantiles)
-  }
+  preds <- lapply(object$chains, predict.mjmcmc,x, link, quantiles)
 
   aggr <- list()
   aggr$mean <- 0 * preds[[1]]$mean

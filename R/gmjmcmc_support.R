@@ -98,7 +98,7 @@ marginal.probs.renorm <- function (models, type = "features") {
 precalc.features <- function (data, features) {
   precalc <- matrix(NA, nrow(data$x), length(features))
   for (f in seq_along(features)) {
-    feature_string <- print.feature(features[[f]], dataset = TRUE)
+    feature_string <- print.feature(features[[f]], dataset = TRUE, fixed = data$fixed)
     precalc[, f] <- eval(parse(text = feature_string))
   }
   # Replace any -Inf and Inf values caused by under- or overflow
@@ -158,5 +158,6 @@ get.labels <- function (data, verbose) {
     if (verbose) cat("NA labels present, using x#\n")
     return(FALSE)
   }
+  if (data$fixed > 0) labels <- labels[-seq_len(data$fixed)]
   return(labels)
 }
