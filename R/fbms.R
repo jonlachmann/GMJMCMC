@@ -33,23 +33,33 @@
 #'
 #' @seealso \code{\link{mjmcmc}}, \code{\link{gmjmcmc}}, \code{\link{gmjmcmc.parallel}}
 #' @export
-fbms <- function (formula = NULL, family = "gaussian",
-                  beta_prior = list(type = "g-prior", g = 5),
-                  model_prior = list(r = exp(-0.5)),
-                  data = NULL, impute = FALSE,
-                  loglik.pi = gaussian.loglik,
-                  method = "mjmcmc", verbose = TRUE, ...) {
+fbms <- function (
+  formula = NULL,
+  family = "gaussian",
+  beta_prior = list(type = "g-prior", g = 5),
+  model_prior = list(r = exp(-0.5)),
+  data = NULL,
+  impute = FALSE,
+  loglik.pi = gaussian.loglik,
+  method = "mjmcmc",
+  verbose = TRUE,
+  ...
+) {
   if (is.list(beta_prior) || is.list(model_prior)) {
-    mlpost_params <- gen.mlpost.params(beta_prior, model_prior)
-    loglik.pi <- select.mlpost.fun(beta_prior, model_prior, family)
+    mlpost_params <- model_prior
+    loglik.pi <- select.mlpost.fun(beta_prior$type, model_prior, family)
+    mlpost_params$beta_prior <- gen.mlpost.params(beta_prior$type, model_prior, beta_prior, ncol(data) - 1, nrow(data))
+    mlpost_params$beta_prior$type <- beta_prior$type
+  } else {
+    if (family == "gaussian")
+      loglik.pi <- gaussian.loglik
+    else if (family == "binomial")
+      loglik.pi <- logistic.loglik
+    else if (family == "custom")
+      loglik.pi <- loglik.pi
   }
 
-  if (family == "gaussian")
-    loglik.pi <- gaussian.loglik
-  else if (family == "binomial")
-    loglik.pi <- logistic.loglik
-  else if (family == "custom")
-    loglik.pi <- loglik.pi
+
   if (!is.null(formula)) {
     if (missing(data)) {
       data <- environment(formula)
@@ -57,16 +67,15 @@ fbms <- function (formula = NULL, family = "gaussian",
     
     na.opt <- getOption("na.action")
     if (impute)
-      options(na.action='na.pass')
+      options(na.action = 'na.pass')
     else
-      options(na.action='na.omit')
+      options(na.action = 'na.omit')
     mf <- match.call(expand.dots = FALSE)
     m <- match(c("formula", "data"), names(mf), 0L)
     mf <- mf[c(1L, m)]
     mf$drop.unused.levels <- TRUE
     mf[[1L]] <- quote(stats::model.frame)
     mf <- eval(mf, parent.frame())
-    
     
     Y <- model.response(mf, "any")
     X <- model.matrix(formula, data = data)
@@ -101,6 +110,7 @@ fbms <- function (formula = NULL, family = "gaussian",
     }
   } else {
     Y <- data[, 1]
+    X <- data[, -1, drop = FALSE]
     intercept <- TRUE
     imputed <- NULL
     na.opt <- getOption("na.action")
@@ -129,11 +139,131 @@ fbms <- function (formula = NULL, family = "gaussian",
   return(res)
 }
 
-gen.mlpost.params <- function (beta_prior, model_prior) {
-  return(list())
+gen.mlpost.params <- function (beta_prior, model_prior, user_params, p, n) {
+  if (beta_prior == "beta.prime") {
+    return(BAS::beta.prime(n = n))
+  } else if (beta_prior == "CH") {
+    check_required_params(c("a", "b", "s"), user_params, beta_prior)
+    return(BAS::CCH(alpha = user_params$a, beta = user_params$b, s = user_params$s))
+  } else if (beta_prior == "EB-local") {
+    return(BAS::EB.local())
+  } else if (beta_prior == "g-prior") {
+    if (is.null(user_params$g)) {
+      user_params$g <- max(p^2, n)
+    }
+    return(BAS::g.prior(user_params$g))
+  } else if (beta_prior == "hyper-g") {
+    check_required_params("a", user_params, beta_prior)
+    return(BAS::hyper.g(alpha = user_params$a))
+  } else if (beta_prior == "tCCH") {
+    check_required_params(c("a", "b", "s", "rho", "v", "k"), user_params, beta_prior)
+    return(BAS::tCCH(
+      alpha = user_params$a,
+      beta = user_params$b,
+      s = user_params$s,
+      r = user_params$rho,
+      v = user_params$v,
+      theta = user_params$k
+    ))
+  } else if (beta_prior == "intrinsic") {
+    return(BAS::intrinsic(n = n))
+  } else if (beta_prior == "TG") {
+    check_required_params("a", user_params, beta_prior)
+    return(BAS::TG(alpha = user_params$a))
+  } else if (beta_prior == "Jeffreys") {
+    return(BAS::Jeffreys())
+  } else if (beta_prior == "uniform") {
+    return(BAS::tCCH(alpha = 2, beta = 2, s = 0, r = 0, v = 1, theta = 1))
+  } else if (beta_prior == "benchmark") {
+    return(BAS::tCCH(alpha = 0.02, beta = 0.02 * max(n, p^2), s = 0, r = 0, v = 1, theta = 1))
+  } else if (beta_prior == "ZS-adapted") {
+    return(BAS::tCCH(alpha = 1, beta = 2, s = n + 3, r = 0, v = 1, theta = 1))
+  } else if (beta_prior == "robust") {
+    return(BAS::robust(n = n))
+  } else if (beta_prior == "hyper-g-n") {
+    if (is.null(user_params$a)) user_params$a <- 3
+    return(BAS::hyper.g.n(alpha = user_params$a, n = n))
+  } else if (beta_prior == "BIC") {
+    return(BAS::bic.prior(n = n))
+  } else if (beta_prior == "ZS-null") {
+    return(list(method = 4))
+  } else if (beta_prior == "ZS-full") {
+    return(list(method = 5))
+  } else if (beta_prior == "hyper-g-laplace") {
+    return(list(method = 6))
+  } else if (beta_prior == "AIC") {
+    return(list(method = 7))
+  } else if (beta_prior == "EB-global") {
+    return(list(method = 2))
+  } else if (beta_prior == "JZS") {
+    return(list(method = 9))
+  } else if (beta_prior == "Jeffreys-BIC") {
+    return(NULL)
+  }
+
+  stop("Unknown prior, please verify your inputs.")
+}
+
+check_required_params <- function (required, user_params, beta_prior) {
+  for (req in required) {
+    if (is.null(user_params[[req]]) || !is.numeric(user_params[[req]])) {
+      par_names <- paste0(required, collapse = ", ")
+      stop(paste0("The parameters: ", par_names, " must be provided for the ", beta_prior, " prior."))
+      return(FALSE)
+    }
+  }
+  return(TRUE)
 }
 
 select.mlpost.fun <- function (beta_prior, model_prior, family) {
-  return(gaussian.loglik.g)
+  if (!(family %in% c("binomial", "poisson", "gamma", "gaussian"))) {
+    stop(paste0(
+      "Unsupported family: ", family, ". Supported families are 'binomial', 'poisson', 'gamma', or 'gaussian'."
+    ))
+  }
+
+  gaussian_only_priors <- c("ZS-null", "ZS-full", "hyper-g-laplace","BIC", "AIC", "JZS","EB-global")
+  gaussian_not_robust <- c("CH", "tCCH", "ZS-adapted", "TG", "beta.prime", "benchmark", "Jeffreys")
+  gaussian_robust <- c("g-prior", "hyper-g", "EB-local","BIC", "Jeffreys-BIC", "ZS-null", "ZS-full", "hyper-g-laplace",
+                       "AIC",  "hyper-g-n",  "JZS")
+  gaussian_tcch <- c("CH", "tCCH", "TG","beta.prime", "intrinsic", "ZS-adapted", "uniform","Jeffreys", "benchmark", "robust")
+  gaussian_bas <- c("g-prior", "hyper-g", "EB-local","ZS-null", "ZS-full", "BIC", "hyper-g-laplace", "AIC", "EB-global", "hyper-g-n", "JZS")
+  glm_priors <- c("CH", "tCCH", "TG","beta.prime", "EB-local", "g-prior", "hyper-g", "hyper-g-n",
+                               "intrinsic", "ZS-adapted", "Jeffreys", "uniform", "benchmark", "robust", "Jeffreys-BIC")
+
+  if (family %in% c("binomial", "poisson", "gamma")) {
+    if (beta_prior %in% gaussian_only_priors) {
+      stop(paste0(
+        "Prior ", beta_prior, " is not supported for the GLM family", family,
+        ". Supported priors are: ", paste(glm_priors, collapse = ", ")
+      ))
+    }
+    if (beta_prior == "Jeffreys-BIC") {
+      if (family == "binomial") {
+        return(logistic.loglik)
+      } else {
+        return(glm.loglik)
+      }
+    } else {
+      return(glm.logpost.bas)
+    }
+  } else if (family == "gaussian") {
+    if (beta_prior %in% gaussian_not_robust) {
+      warning(paste0(
+        "Prior ", beta_prior, " is not recommended for Gaussian family models as it may be unstable for strong signals (R^2 > 0.9).",
+        "Recommended priors under the Gaussian family are: ", paste(gaussian_robust, collapse = ", ")
+      ))
+    }
+    if (beta_prior %in% gaussian_tcch) {
+      return(gaussian_tcch_log_likelihood)
+    } else if (beta_prior == "Jeffreys-BIC") {
+      return(gaussian.loglik)
+    } else if (beta_prior == "g-prior") {
+      return(gaussian.loglik.g)
+    } else if (beta_prior %in% gaussian_bas) {
+      return(lm.logpost.bas)
+    }
+  }
+  stop("Unknown prior, please verify your inputs.")
 }
 

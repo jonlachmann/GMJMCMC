@@ -35,16 +35,11 @@
 #'
 #' @export
 predict.bgnlm_model <- function(object, x, link = function(x) { x }, ... ) {
-  x.precalc <- model.matrix(
-    as.formula(paste0("~I(", paste0(names(object$coefs)[-1][object$coefs[-1]!=0], collapse = ")+I("), ")")),
-    data = x
-  )
-  #browser()
-  if(dim(x.precalc)[2]<length(object$coefs[object$coefs!=0]))
-  {
-    x.precalc <- cbind(1,x.precalc)
+  if (object$intercept) {
+    x <- cbind(1, x)
   }
-  yhat <- link(x.precalc %*% object$coefs[object$coefs!=0])
+  precalc <- precalc.features(list(x = x, y = NULL, fixed = object$fixed), object$features)
+  yhat <- link(precalc$x %*% object$coefs[object$coefs != 0])
   return(yhat)
 }
 

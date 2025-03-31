@@ -298,16 +298,16 @@ get.mpm.model <- function(result, y, x, labels = F, family = "gaussian", loglik.
     loglik.pi <- logistic.loglik
 
   if (is(result, "mjmcmc.parallel")) {
-    models <- unlist(lapply(object, function (x) x$models), recursive = FALSE)
+    models <- unlist(lapply(result, function (x) x$models), recursive = FALSE)
     marg.probs <- marginal.probs.renorm(models)$probs
-    features <- object[[1]]$populations
+    features <- result[[1]]$populations
   } else if (is(result, "gmjmcmc")) {
-    best_pop <- which.max(unlist(object$best.margs))
-    marg.probs <- object$marg.probs[[best_pop]]
-    features <- object$populations[[best_pop]]
+    best_pop <- which.max(unlist(result$best.margs))
+    marg.probs <- result$marg.probs[[best_pop]]
+    features <- result$populations[[best_pop]]
   } else if (is(result, "gmjmcmc.parallel") || is(result, "mjmcmc")) {
-    marg.probs <- object$marg.probs
-    features <- object$features
+    marg.probs <- result$marg.probs
+    features <- result$features
   }
   features <- features[marg.probs > 0.5]
 
@@ -315,10 +315,15 @@ get.mpm.model <- function(result, y, x, labels = F, family = "gaussian", loglik.
     x <- cbind(1, x)
   }
   precalc <- precalc.features(list(x = x, y = y, fixed = result$fixed), features)
-  
-  model <- loglik.pi(y = y, x = precalc$x, model = rep(TRUE, length(features) + result$fixed), complex = list(oc = 0), params = params)
-  class(model) <- "bgnlm_model"
-  model$crit <- "MPM"
+
+  coefs <- loglik.pi(y = y, x = precalc$x, model = rep(TRUE, length(features) + result$fixed), complex = list(oc = 0), params = params)$coefs
+  model <- structure(list(
+    coefs = coefs,
+    features = features,
+    fixed = result$fixed,
+    intercept = result$intercept
+  ), class = "bgnlm_model")
+
   return(model)
 }
 

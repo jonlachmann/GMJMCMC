@@ -16,68 +16,47 @@
 #' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 #'
 #' @examples
-#' glm.logpost.bas(as.integer(rnorm(100) > 0),cbind(1,matrix(rnorm(100))),c(TRUE,TRUE),list(oc = 1))
+#' glm.logpost.bas(as.integer(rnorm(100) > 0), cbind(1, matrix(rnorm(100))), c(TRUE, TRUE), list(oc = 1))
 #' 
 #' @importFrom BAS uniform Jeffreys g.prior
 #' @importFrom stats poisson Gamma glm.control
 #' @export glm.logpost.bas
 glm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), family = "binomial", prior_beta = Jeffreys(), laplace = FALSE)) {
   if (length(params) == 0)
-    params <- list(r =  1/dim(x)[1], family = "binomial", prior_beta = g.prior(max(dim(x)[1],sum(model)-1)), laplace = FALSE)
+    params <- list(r = 1 / dim(x)[1], family = "binomial", prior_beta = g.prior(max(dim(x)[1], sum(model) - 1)), laplace = FALSE)
   p <- sum(model) - 1 
-  if(p==0)
-  { 
-    probinit <- as.numeric(c(1,0.99))
+  if (p == 0) {
+    probinit <- as.numeric(c(1, 0.99))
     model[2] <- T
-  }else{
-    probinit <- as.numeric(c(1,rep(0.99,p)))
+  } else {
+    probinit <- as.numeric(c(1, rep(0.99, p)))
   }
   
-  mod<-NULL
+  mod <- NULL
+
+  if (params$family == "binomial")
+    family_use <- binomial()
+  else if (params$family == "poisson")
+    family_use <- poisson()
+  else
+    family_use <- Gamma()
   
-  tryCatch({
-  if(params$family == "binomial")
-    suppressWarnings({
-      mod <- .Call(BAS:::C_glm_deterministic,
-                   y = as.numeric(y), X = as.matrix(x[,model]),
-                                  Roffset = as.numeric(rep(0, length(y))),
-                                  Rweights = as.numeric(rep(1, length(y))),
-                                  Rprobinit = probinit,
-                                  Rmodeldim = as.integer(rep(0,ifelse(p==0,2,1))),
-                                                         modelprior = uniform(),
-                                                         betaprior = params$prior_beta,
-                                                         family = binomial(), 
-                                                         Rcontrol = glm.control(),
-                                                         Rlaplace =  as.integer(params$laplace))
+  tryCatch({ suppressWarnings({
+      mod <- .Call(
+        BAS:::C_glm_deterministic,
+        y = as.numeric(y),
+        X = as.matrix(x[, model]),
+        Roffset = as.numeric(rep(0, length(y))),
+        Rweights = as.numeric(rep(1, length(y))),
+        Rprobinit = probinit,
+        Rmodeldim = as.integer(rep(0, ifelse(p == 0,2,1))),
+        modelprior = uniform(),
+        betaprior = params$prior_beta,
+        family = family_use,
+        Rcontrol = glm.control(),
+        Rlaplace =  as.integer(params$laplace)
+      )
     })
-  else if(params$family == "poisson")
-    suppressWarnings({
-      mod <- .Call(BAS:::C_glm_deterministic,
-                   y = as.numeric(y),  X = as.matrix(x[,model]),
-                                  Roffset = as.numeric(rep(0, length(y))),
-                                  Rweights = as.numeric(rep(1, length(y))),
-                                  Rprobinit = probinit,
-                                  Rmodeldim = as.integer(rep(0,ifelse(p==0,2,1))),
-                                                         modelprior = uniform(),
-                                                         betaprior = params$prior_beta,
-                                                         family = poisson(), 
-                                                         Rcontrol = glm.control(),
-                                                         Rlaplace =  as.integer(params$laplace))
-    })
-  else{
-    suppressWarnings({
-      mod <- .Call(BAS:::C_glm_deterministic,
-                   y = as.numeric(y), X = as.matrix(x[,model]),
-                                  Roffset = as.numeric(rep(0, length(y))),
-                                  Rweights = as.numeric(rep(1, length(y))),
-                                  Rprobinit = probinit,
-                                  Rmodeldim = as.integer(rep(0,ifelse(p==0,2,1))),
-                                                         modelprior = uniform(),
-                                                         betaprior = params$prior_beta,
-                                                         family = Gamma(),
-                                                         Rcontrol = glm.control(),
-                                                         Rlaplace =  as.integer(params$laplace))
-    })}
   }, error = function(e) {
     # Handle the error by setting result to NULL
     mod <- NULL
@@ -85,17 +64,16 @@ glm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), 
     cat("An error occurred:", conditionMessage(e), "\n")
   })
 
-  if(length(mod)==0) {
-    return(list(crit = -.Machine$double.xmax + log(params$r * sum(complex$oc)),coefs = rep(0,p+1)))
+  if (length(mod) == 0) {
+    return(list(crit = -.Machine$double.xmax + log(params$r * sum(complex$oc)), coefs = rep(0, p + 1)))
   }
 
-  if(p == 0)
-  {
+  if (p == 0) {
     ret <- mod$logmarg[2] + log(params$r) * sum(complex$oc)
-    return(list(crit=ret, coefs=mod$mle[[2]]))
+    return(list(crit = ret, coefs = mod$mle[[2]]))
   }
   ret <- mod$logmarg + log(params$r) * sum(complex$oc)
-  return(list(crit=ret, coefs=mod$mle[[1]]))
+  return(list(crit = ret, coefs = mod$mle[[1]]))
 }
 
 
@@ -116,32 +94,33 @@ glm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), 
 #'
 #'
 #' @export lm.logpost.bas
-lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5),prior_beta = "g-prior",alpha = 4)) {
+lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), beta_prior = list(method = 1))) {
   if (length(params) == 0)
-    params <- list(r =  1/dim(x)[1], prior_beta = 0,alpha = max(dim(x)[1],sum(model)^2))
-
+    params <- list(
+      r = 1/dim(x)[1],
+      beta_prior = list(method = 0, alpha = max(dim(x)[1], sum(model)^2))
+    )
 
   p <- sum(model) - 1
-  if(p==0)
-  {
-    probinit <- as.numeric(c(1,0.99))
+  if (p == 0) {
+    probinit <- as.numeric(c(1, 0.99))
     model[2] <- T
-  }else{
-    probinit <- as.numeric(c(1,rep(0.99,p)))
+  } else {
+    probinit <- as.numeric(c(1, rep(0.99, p)))
   }
 
-  mod<-NULL
+  mod <- NULL
 
   tryCatch({
       suppressWarnings({
         mod <- .Call(BAS:::C_deterministic,
-                     y = y, X = as.matrix(x[,model]),
+                     y = y, X = as.matrix(x[, model]),
                      as.numeric(rep(1, length(y))),
                      probinit,
-                     as.integer(rep(0,ifelse(p==0,2,1))),
+                     as.integer(rep(0, ifelse(p == 0,2,1))),
                      incint = as.integer(F),
-                     alpha = ifelse(length(params$alpha)>0,as.numeric(params$alpha),NULL),
-                     method = as.integer(params$prior_beta),
+                     alpha = ifelse(length(params$beta_prior$alpha) > 0, as.numeric(params$beta_prior$alpha),NULL),
+                     method = as.integer(params$beta_prior$method),
                      modelprior = uniform(),
                      Rpivot = TRUE,
                      Rtol = 1e-7)
@@ -153,17 +132,16 @@ lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5),pr
     cat("An error occurred:", conditionMessage(e), "\n")
   })
 
-  if(length(mod)==0) {
-    return(list(crit = -.Machine$double.xmax + log(params$r * sum(complex$oc)),coefs = rep(0,p+1)))
+  if (length(mod) == 0) {
+    return(list(crit = -.Machine$double.xmax + log(params$r * sum(complex$oc)), coefs = rep(0, p + 1)))
   }
 
-  if(p == 0)
-  {
+  if (p == 0) {
     ret <- mod$logmarg[2] + log(params$r) * sum(complex$oc)
-    return(list(crit=ret, coefs=mod$mle[[2]]))
+    return(list(crit = ret, coefs = mod$mle[[2]]))
   }
   ret <- mod$logmarg + log(params$r) * sum(complex$oc)
-  return(list(crit=ret, coefs=mod$mle[[1]]))
+  return(list(crit = ret, coefs = mod$mle[[1]]))
 }
 
 
@@ -186,10 +164,10 @@ lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5),pr
 #' @export logistic.loglik
 logistic.loglik <- function (y, x, model, complex, params = list(r = exp(-0.5))) {
   if (length(params) == 0)
-    params <- list(r = 1/dim(x)[1])
+    params <- list(r = 1 / dim(x)[1])
   suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = binomial())})
   ret <- (-(mod$deviance + log(length(y)) * (mod$rank - 1) - 2 * log(params$r) * sum(complex$oc))) / 2
-  return(list(crit=ret, coefs=mod$coefficients))
+  return(list(crit = ret, coefs = mod$coefficients))
 }
 
 #' Log likelihood function for glm regression with a Jeffreys parameter prior and BIC approximations of the posterior
@@ -209,23 +187,21 @@ logistic.loglik <- function (y, x, model, complex, params = list(r = exp(-0.5)))
 #'
 #'
 #' @export glm.loglik
-glm.loglik <- function (y, x, model, complex, params = list(r = exp(-0.5),family = "Gamma")) {
+glm.loglik <- function (y, x, model, complex, params = list(r = exp(-0.5), family = "Gamma")) {
   if (length(params) == 0)
-    params <- list(r = 1/dim(x)[1])
+    params <- list(r = 1 / dim(x)[1])
 
-  if(params$family == "binomial")
-  {
+  if (params$family == "binomial") {
     fam = binomial()
-  }else if(params$family == "poisson"){
+  } else if (params$family == "poisson") {
     fam = poisson()
-  }else
-  {
+  } else {
     fam = Gamma()
   }
 
   suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = fam)})
   ret <- (-(mod$deviance + log(length(y)) * (mod$rank - 1) - 2 * log(params$r) * sum(complex$oc))) / 2
-  return(list(crit=ret, coefs=mod$coefficients))
+  return(list(crit = ret, coefs = mod$coefficients))
 }
 
 
@@ -278,9 +254,10 @@ gaussian.loglik <- function (y, x, model, complex, params) {
 #' gaussian.loglik.g(rnorm(100), matrix(rnorm(100)), TRUE, list(oc=1))
 #'
 #' @export gaussian.loglik.g
-gaussian.loglik.g <- function (y, x, model, complex, params = NULL)
-{
-  if(length(params)==0)
+gaussian.loglik.g <- function (y, x, model, complex, params = NULL) {
+  if (sum(model) == 0)
+    return(list(crit = -Inf, coefs = numeric()))
+  if (length(params) == 0)
     params <- list()
   if (length(params$r) == 0)
     params$r <- 1/dim(x)[1]
@@ -330,8 +307,7 @@ gaussian.loglik.g <- function (y, x, model, complex, params = NULL)
 #' @importFrom BAS phi1 hypergeometric1F1 hypergeometric2F1
 #' @importFrom tolerance F1
 #' @export
-gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r = exp(-0.5), prior_beta = "intrinsic")) {
-
+gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r = exp(-0.5), beta_prior = "intrinsic")) {
   # Fit the linear model using fastglm
   fitted_model <- fastglm(as.matrix(x[, model]), y, family = gaussian())
   log_likelihood <- -(fitted_model$aic  -2 * (fitted_model$rank))/2
@@ -345,130 +321,118 @@ gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r =
   n <- length(y)
 
   # Switch-like structure to assign hyperparameters based on prior
-  if (params$prior_beta[[1]] == "CH") {
+  hyper <- params$beta_prior$hyper.parameters
+  if (params$beta_prior$type == "CH") {
     # CH prior: b and s should be user-specified, with defaults if not provided
-    a <- ifelse(!is.null(params$prior_beta$a),params$prior_beta$a, 1)  # Default to 1 if not specified
-    b <- ifelse(!is.null(params$prior_beta$b),params$prior_beta$b, 2)  # Default to 1 if not specified
+    a <- ifelse(!is.null(hyper$a), hyper$a, 1)  # Default to 1 if not specified
+    b <- ifelse(!is.null(hyper$b), hyper$b, 2)  # Default to 1 if not specified
     r <- 0
-    s <- ifelse(!is.null(params$prior_beta$s), params$prior_beta$s, 1)  # Default to 1 if not specified
+    s <- ifelse(!is.null(hyper$s), hyper$s, 1)  # Default to 1 if not specified
     v <- 1
     k <- 1
-
-  } else if (params$prior_beta[[1]] == "hyper-g") {
+  } else if (params$beta_prior$type == "hyper-g") {
     a <- 1
     b <- 2
     r <- 0
     s <- 0
     v <- 1
     k <- 1
-
-  } else if (params$prior_beta[[1]] == "uniform") {
+  } else if (params$beta_prior$type == "uniform") {
     a <- 2
     b <- 2
     r <- 0
     s <- 0
     v <- 1
     k <- 1
-
-  } else if (params$prior_beta[[1]] == "Jeffreys") {
+  } else if (params$beta_prior$type == "Jeffreys") {
     a <- 0.0001
     b <- 2
     r <- 0
     s <- 0
     v <- 1
     k <- 1
-  } else if (params$prior_beta[[1]] == "beta.prime") {
+  } else if (params$beta_prior$type == "beta.prime") {
     a <- 1/2
     b <- n - p_M - 1.5
     r <- 0
     s <- 0
     v <- 1
     k <- 1
-
-  } else if (params$prior_beta[[1]] == "benchmark") {
+  } else if (params$beta_prior$type == "benchmark") {
     a <- 0.02
     b <- 0.02 * max(n, p_M^2)
     r <- 0
     s <- 0
     v <- 1
     k <- 1
-
-  } else if (params$prior_beta[[1]] == "TG") {
-
-    a <- 2 * ifelse(!is.null(params$prior_beta$a),params$prior_beta$a, 1)
+  } else if (params$beta_prior$type == "TG") {
+    a <- 2 * ifelse(!is.null(hyper$a), hyper$a, 1)
     b <- 2
     r <- 0
-    s <- 2 * ifelse(!is.null(params$prior_beta$s),params$prior_beta$s, 1)
+    s <- 2 * ifelse(!is.null(hyper$s), hyper$s, 1)
     v <- 1
     k <- 1
-
-  } else if (params$prior_beta[[1]] == "ZS-adapted") {
+  } else if (params$beta_prior$type == "ZS-adapted") {
     a <- 1
     b <- 2
     r <- 0
     s <- n + 3
     v <- 1
     k <- 1
-  } else if (params$prior_beta[[1]] == "robust") {
+  } else if (params$beta_prior$type == "robust") {
     a <- 1
     b <- 2
     r <- 1.5
     s <- 0
     v <- (n + 1) / (p_M + 1)
     k <- 1
-
-  } else if (params$prior_beta[[1]] == "hyper-g-n") {
+  } else if (params$beta_prior$type == "hyper-g-n") {
     a <- 1
     b <- 2
     r <- 1.5
     s <- 0
     v <- 1
     k <- 1
-
-  } else if (params$prior_beta[[1]] == "intrinsic") {
+  } else if (params$beta_prior$type == "intrinsic") {
     a <- 1
     b <- 1
     r <- 1
     s <- 0
     v <- (n + p_M + 1) / (p_M + 1)
     k <- (n + p_M + 1) / n
-
-  }else if (params$prior_beta[[1]] == "tCCH") {
-    a <- params$prior_beta$a
-    b <- params$prior_beta$b
-    r <- params$prior_beta$rho
-    s <- params$prior_beta$s
-    v <- params$prior_beta$v
-    k <- params$prior_beta$k
-  }else {
-    stop("Unknown prior name: ", params$prior_beta)
+  } else if (params$beta_prior$type == "tCCH") {
+    a <- hyper$a
+    b <- hyper$b
+    r <- hyper$r
+    s <- hyper$s
+    v <- hyper$v
+    k <- hyper$k
+  } else {
+    stop("Unknown prior name: ", params$beta_prior$type)
   }
 
-  #
   if (!is.null(r) & r == 0) {
-
     term1 <- lbeta((a + p_M) / 2, b / 2)
-    term2 <- phi1(b / 2, (n - 1) / 2, (a + b + p_M) / 2, s / (2 * v), min(0.8,R2_M/(v - (v - 1) * R2_M),log = T))
+    term2 <- phi1(b / 2, (n - 1) / 2, (a + b + p_M) / 2, s / (2 * v), min(0.8, R2_M / (v - (v - 1) * R2_M), log = TRUE))
 
-    if(R2_M/(v - (v - 1) * R2_M)>0.8)
-    {
+    if (R2_M / (v - (v - 1) * R2_M) > 0.8) {
       warning("Infinite marginal log likelihood! phi1 last argument reduced to 0.8. Use a different prior_beta (Robust, Hyper-g/n, Intrinsic, or g-prior)")
     }
 
     term3 <- lbeta(a / 2, b / 2)
-    term4 <- hypergeometric1F1(b / 2, (a + b) / 2, s / (2 * v),log = T)
-    marginal_likelihood <- log_likelihood + (term1) + (term2) - (p_M / 2) * log(v) - ((n - 1) / 2)*log(1 - (1 - 1 / v) * R2_M) - (term3) - (term4)
+    term4 <- hypergeometric1F1(b / 2, (a + b) / 2, s / (2 * v), log = TRUE)
+    marginal_likelihood <- log_likelihood + (term1) + (term2) - (p_M / 2) * log(v) - ((n - 1) / 2) * log(1 - (1 - 1 / v) * R2_M) - (term3) - (term4)
   } else if (!is.null(s) & s == 0) {
     term1 <- lbeta((a + p_M) / 2, b / 2)
-    term2 <- hypergeometric2F1(r, b / 2, (a + b) / 2, 1 - k,log = T)
+    term2 <- hypergeometric2F1(r, b / 2, (a + b) / 2, 1 - k, log = TRUE)
     term3 <- F1((a + p_M) / 2, (a + b + p_M + 1 - n - 2 * r) / 2, (n - 1) / 2, (a + b + p_M) / 2, 1 - k, 1 - k - (R2_M^2 * k) / ((1 - R2_M) * v))
-    marginal_likelihood <- log_likelihood + (a+p_M-2*r)/2*log(k) + (term1) - (term2) - (term3) - (p_M / 2) * log(v) - log(1 - R2_M) * ((n - 1) / 2) - lbeta(a / 2, b / 2)
+    marginal_likelihood <- log_likelihood + (a + p_M - 2 * r) / 2 * log(k) + (term1) - (term2) - (term3) - (p_M / 2) * log(v) - log(1 - R2_M) * ((n - 1) / 2) - lbeta(a / 2, b / 2)
 
   } else {
     stop("Invalid inputs: either r = 0 or s = 0 must be specified.")
   }
 
-  if (length(params$r) == 0)  params$r <- 1/dim(x)[1]  # default value or parameter r
+  if (length(params$r) == 0) params$r <- 1 / dim(x)[1]  # default value or parameter r
 
   lp <- log_prior(params, complex)
 

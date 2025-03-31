@@ -143,7 +143,7 @@ points(pred_mpm,df.test$Mean,col = 4)
 set.seed(5002)
 
 if (use.fbms) {
-  result_parallel <- fbms(data = df.training, family = "custom", loglik.pi = estimate.logic.lm,N.init = 500,N.final = 500,
+  result_parallel <- fbms(data = df.training, family = "custom", loglik.pi = estimate.logic.lm, N.init = 500, N.final = 500,
                           method = "gmjmcmc.parallel", runs = 16, cores = 8,
                           transforms = transforms, probs = probs, params = params, P=25)
 } else {
@@ -152,7 +152,7 @@ if (use.fbms) {
                                       transforms = transforms, probs = probs, params = params, P=25)
 }
 summary(result_parallel)
-mpm <- get.mpm.model(result_parallel,y = df.training$Y2,x = df.training[,-1],family = "custom", loglik.pi = estimate.logic.lm,params = params$mlpost)
+mpm <- get.mpm.model(result_parallel, y = df.training$Y2, x = df.training[,-1],family = "custom", loglik.pi = estimate.logic.lm,params = params$mlpost)
 mbest <- get.best.model(result_parallel)
 
 

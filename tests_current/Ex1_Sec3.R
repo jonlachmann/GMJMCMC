@@ -15,15 +15,13 @@
 library(FBMS)
 
 data <- read.csv("https://raw.githubusercontent.com/OpenExoplanetCatalogue/oec_tables/master/comma_separated/open_exoplanet_catalogue.txt")
-data <- na.omit(data[,c("semimajoraxis","mass","radius","period","eccentricity","hoststar_mass","hoststar_radius","hoststar_metallicity","hoststar_temperature","binaryflag")]) 
+data <- na.omit(data[, c("semimajoraxis", "mass", "radius", "period", "eccentricity", "hoststar_mass", "hoststar_radius", "hoststar_metallicity", "hoststar_temperature", "binaryflag")])
 summary(data)
 
 
 te.ind <- 540:939
-df.train = data[-te.ind,]
-df.test = data[te.ind,]
-x.train <- cbind(1, df.train[, -1])
-y.train <- df.train[, 1]
+df.train = data[-te.ind, ]
+df.test = data[te.ind, ]
 
 to3 <- function(x) x^3
 transforms <- c("sigmoid","sin_deg","exp_dbl","p0","troot","to3")
@@ -44,7 +42,7 @@ params$mlpost$var <- "unknown"
 if (use.fbms) {
  result.default <- fbms(formula = semimajoraxis ~ 1 + . , data = df.train, method = "gmjmcmc", transforms = transforms, params = params)
 } else {
- result.default <- gmjmcmc(x.train, y.train, fixed = 1, transforms = transforms, params = params)
+ result.default <- gmjmcmc(df.train[, -1], df.train[, 1], intercept = TRUE, transforms = transforms, params = params)
 }
 summary(result.default, labels = FALSE)
 
@@ -54,11 +52,11 @@ sqrt(mean((preds$aggr$mean - df.test$semimajoraxis)^2))
 
 #new additional ways to predict using MPM and best model
 get.best.model(result = result.default)
-preds <- predict(get.best.model(result.default), df.test[,-1])
+preds <- predict(get.best.model(result.default), df.test[, -1])
 sqrt(mean((preds - df.test$semimajoraxis)^2))
 
-get.mpm.model(result = result.default,y = df.test$semimajoraxis,x=df.test[,-1])
-preds <- predict(get.mpm.model(result.default,y = df.test$semimajoraxis,x=df.test[,-1]), df.test[,-1])
+get.mpm.model(result = result.default, y = df.test$semimajoraxis, x = df.test[, -1])
+preds <- predict(get.mpm.model(result.default, y = df.test$semimajoraxis, x = df.test[, -1]), df.test[, -1])
 sqrt(mean((preds - df.test$semimajoraxis)^2))
 
 ####################################################
@@ -72,10 +70,10 @@ set.seed(123)
 
 if (use.fbms) {
  result.P50 <- fbms(data = df.train, method = "gmjmcmc", transforms = transforms,
-                    P=50, N.init=1000, N.final=1000, params = params)
+                    P = 50, N.init = 1000, N.final = 1000, params = params)
 } else {
- result.P50 <- gmjmcmc(cbind(1, df.train[, -1]), df.train[, 1], fixed = 1, transforms = transforms,
-                       P=50, N.init=1000, N.final=1000, params = params)
+ result.P50 <- gmjmcmc(df.train[, -1], df.train[, 1], intercept = TRUE, transforms = transforms,
+                       P = 50, N.init = 1000, N.final = 1000, params = params)
 }
 summary(result.P50, labels = names(df.train)[-1])
 
@@ -88,9 +86,9 @@ summary(result.P50, labels = names(df.train)[-1])
 set.seed(123)
 if (use.fbms) {
  result_parallel <- fbms(data = df.train, method = "gmjmcmc.parallel", transforms = transforms,
-                         runs = 40, cores = 10, P=25,params = params)
+                         runs = 40, cores = 10, P = 25,params = params)
 } else {
- result_parallel <- gmjmcmc.parallel(runs = 40, cores = 10, x = cbind(1, df.train[, -1]), y = df.train[, 1], fixed = 1, loglik.pi = gaussian.loglik,
+ result_parallel <- gmjmcmc.parallel(runs = 40, cores = 10, x = df.train[, -1], y = df.train[, 1], intercept = TRUE, loglik.pi = gaussian.loglik,
                                      transforms = transforms, P = 25, params = params)
 }
 summary(result_parallel, tol = 0.01)
@@ -104,7 +102,7 @@ if (use.fbms) {
                                   runs = 40, cores = 10, P=25,params = params)
 } else {
   result_parallel_unitphi <- gmjmcmc.parallel(runs = 40, cores = 10, data = df.train, loglik.pi = gaussian.loglik, 
-                                              transforms = transforms, P=25,params = params)
+                                              transforms = transforms, P = 25, params = params)
 }
 summary(result_parallel_unitphi, tol = 0.01)
 
