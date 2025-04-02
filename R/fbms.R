@@ -47,8 +47,8 @@ fbms <- function (
 ) {
   if (is.list(beta_prior) || is.list(model_prior)) {
     mlpost_params <- model_prior
-    loglik.pi <- select.mlpost.fun(beta_prior$type, model_prior, family)
-    mlpost_params$beta_prior <- gen.mlpost.params(beta_prior$type, model_prior, beta_prior, ncol(data) - 1, nrow(data))
+    loglik.pi <- select.mlpost.fun(beta_prior$type, family)
+    mlpost_params$beta_prior <- gen.mlpost.params(beta_prior$type, beta_prior, ncol(data) - 1, nrow(data))
     mlpost_params$beta_prior$type <- beta_prior$type
   } else {
     if (family == "gaussian")
@@ -139,7 +139,15 @@ fbms <- function (
   return(res)
 }
 
-gen.mlpost.params <- function (beta_prior, model_prior, user_params, p, n) {
+fbms.mlpost.master <- function (y, x, model, complex, params = list(family = "gaussian", beta_prior = list(type = "g-prior"), r = exp(-0.5))) {
+  params_use <- params
+  params_use$beta_prior <- gen.mlpost.params(params$beta_prior$type, params$beta_prior, ncol(x), nrow(x))
+  params_use$beta_prior$type <- params$beta_prior$type
+  loglik.pi <- select.mlpost.fun(params$beta_prior$type, params$family)
+  return(loglik.pi(y, x, model, complex, params_use))
+}
+
+gen.mlpost.params <- function (beta_prior, user_params, p, n) {
   if (beta_prior == "beta.prime") {
     return(BAS::beta.prime(n = n))
   } else if (beta_prior == "CH") {
@@ -215,7 +223,7 @@ check_required_params <- function (required, user_params, beta_prior) {
   return(TRUE)
 }
 
-select.mlpost.fun <- function (beta_prior, model_prior, family) {
+select.mlpost.fun <- function (beta_prior, family) {
   if (!(family %in% c("binomial", "poisson", "gamma", "gaussian"))) {
     stop(paste0(
       "Unsupported family: ", family, ". Supported families are 'binomial', 'poisson', 'gamma', or 'gaussian'."

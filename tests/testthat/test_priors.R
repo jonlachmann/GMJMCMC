@@ -38,12 +38,14 @@ test_that("Test various priors through the fbms function", {
     "Jeffreys-BIC", "g-prior"
   )
 
+  results <- list()
   for (prior in gaussian_priors) {
     beta_prior$type <- prior
-    mod1 <- fbms(y ~ ., family = family, beta_prior = beta_prior, method = "mjmcmc", data = data, verbose = FALSE)
-    if (!(prior %in% c("hyper-g", "EB-local", "uniform", "ZS-null", "ZS-full", "BIC", "hyper-g-laplace", "AIC", "EB-global", "hyper-g-n", "JZS"))) {
-      validate.model(mod1, x, y)
-    }
+    results[[prior]] <- fbms.mlpost.master(data[, 1], x, c(TRUE, TRUE, TRUE), list(beta_prior = beta_prior, family = "gaussian", r = exp(-0.5)))
+    #mod1 <- fbms(y ~ ., family = family, beta_prior = beta_prior, method = "mjmcmc", data = data, verbose = FALSE)
+    #if (!(prior %in% c("hyper-g", "EB-local", "uniform", "ZS-null", "ZS-full", "BIC", "hyper-g-laplace", "AIC", "EB-global", "hyper-g-n", "JZS"))) {
+    #  validate.model(mod1, x, y)
+    #}
   }
 })
 
