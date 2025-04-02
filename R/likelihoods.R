@@ -97,7 +97,7 @@ glm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), 
 lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), beta_prior = list(method = 1))) {
   if (length(params) == 0)
     params <- list(
-      r = 1/dim(x)[1],
+      r = 1 / dim(x)[1],
       beta_prior = list(method = 0, alpha = max(dim(x)[1], sum(model)^2))
     )
 
@@ -119,7 +119,7 @@ lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), b
                      probinit,
                      as.integer(rep(0, ifelse(p == 0,2,1))),
                      incint = as.integer(F),
-                     alpha = ifelse(length(params$beta_prior$alpha) > 0, as.numeric(params$beta_prior$alpha),NULL),
+                     alpha = ifelse(length(params$beta_prior$hyper.parameters$alpha) > 0, as.numeric(params$beta_prior$hyper.parameters$alpha),NULL),
                      method = as.integer(params$beta_prior$method),
                      modelprior = uniform(),
                      Rpivot = TRUE,
@@ -270,14 +270,16 @@ gaussian.loglik.g <- function (y, x, model, complex, params = NULL) {
   RSS <- sum(mod$residuals^2)
   Rsquare <- 1 - (RSS / TSS)
 
-  if (length(params$r) == 0 || length(params$g) == 0)
-  {
-    params$r <- 1/dim(x)[1]
-    params$g <- max(mod$rank^2,length(y))
+  if (length(params$r) == 0 || length(params$g) == 0) {
+    params$r <- 1 / dim(x)[1]
+    if (!is.null(params$beta_prior$g))
+      params$g <- params$beta_prior$g
+    else
+      params$g <- max(mod$rank^2, length(y))
   }
 
   # logarithm of marginal likelihood
-  mloglik <- 0.5*(log(1.0 + params$g) * (dim(x)[1] - mod$rank)  - log(1.0 + params$g * (1.0 - Rsquare)) * (dim(x)[1]  - 1))*(mod$rank!=1)
+  mloglik <- 0.5 * (log(1.0 + params$g) * (dim(x)[1] - mod$rank) - log(1.0 + params$g * (1.0 - Rsquare)) * (dim(x)[1]  - 1)) * (mod$rank != 1)
 
   # logarithm of model prior
    # default value or parameter r

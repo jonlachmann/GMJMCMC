@@ -162,7 +162,9 @@ gen.mlpost.params <- function (beta_prior, user_params, p, n) {
     return(BAS::g.prior(user_params$g))
   } else if (beta_prior == "hyper-g") {
     check_required_params("a", user_params, beta_prior)
-    return(BAS::hyper.g(alpha = user_params$a))
+    params <- BAS::hyper.g(alpha = user_params$a)
+    params$method <- 1
+    return(params)
   } else if (beta_prior == "tCCH") {
     check_required_params(c("a", "b", "s", "rho", "v", "k"), user_params, beta_prior)
     return(BAS::tCCH(
