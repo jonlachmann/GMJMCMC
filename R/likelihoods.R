@@ -760,3 +760,74 @@ fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gauss
   
   return(list(crit = result$crit, coefs = result$coefs))
 }
+
+
+
+
+
+#' Master Log Marginal Likelihood Function
+#'
+#' This function serves as a unified interface to compute the log marginal likelihood
+#' for different regression models and priors by calling specific log likelihood functions.
+#'
+#' @param y A numeric vector containing the dependent variable.
+#' @param x A matrix containing the precalculated features (independent variables).
+#' @param model A logical vector indicating which variables to include in the model.
+#' @param complex A list of complexity measures for the features.
+#' @param params A list of parameters controlling the model family, prior, and tuning parameters.
+#'   Key elements include:
+#'   - family: "binomial", "poisson", "gamma" (all three referred to as GLM below), or "gaussian" (default: "gaussian")
+#'   - prior_beta: Type of prior as a string (default: "g-prior"). Possible values include:
+#'     - "beta.prime": Beta-prime prior (GLM/Gaussian, no additional args)
+#'     - "CH": Compound Hypergeometric prior (GLM/Gaussian, requires `a`, `b`, optionally `s`)
+#'     - "EB-local": Empirical Bayes local prior (GLM/Gaussian, requires `a` for Gaussian)
+#'     - "EB-global": Empirical Bayes local prior (Gaussian, requires `a` for Gaussian)
+#'     - "g-prior": Zellner's g-prior (GLM/Gaussian, requires `g`)
+#'     - "hyper-g": Hyper-g prior (GLM/Gaussian, requires `a`)
+#'     - "hyper-g-n": Hyper-g/n prior (GLM/Gaussian, requires `a`)
+#'     - "tCCH": Truncated Compound Hypergeometric prior (GLM/Gaussian, requires `a`, `b`, `s`, `rho`, `v`, `k`)
+#'     - "intrinsic": Intrinsic prior (GLM/Gaussian, no additional args)
+#'     - "TG": Truncated Gamma prior (GLM/Gamma, requires `a`, `s`)
+#'     - "Jeffreys": Jeffreys prior (GLM/Gaussian, no additional args)
+#'     - "uniform": Uniform prior (GLM/Gaussian, no additional args)
+#'     - "benchmark": Benchmark prior (Gaussian/GLM, no additional args)
+#'     - "ZS-adapted": Zellner-Siow adapted prior (Gaussian TCCH, no additional args)
+#'     - "robust": Robust prior (Gaussian/GLM, no additional args)
+#'     - "Jeffreys-BIC": Jeffreys prior with BIC approximation of marginal likelihood (Gaussian/GLM)
+#'     - "ZS-null": Zellner-Siow null prior (Gaussian, requires `a`)
+#'     - "ZS-full": Zellner-Siow full prior (Gaussian, requires `a`)
+#'     - "hyper-g-laplace": Hyper-g Laplace prior (Gaussian, requires `a`)
+#'     - "AIC": AIC prior from BAS (Gaussian, requires penalty `a`)
+#'     - "BIC": BIC prior from BAS (Gaussian/GLM)
+#'     - "JZS": Jeffreys-Zellner-Siow prior (Gaussian, requires `a`)
+#'   - r: Model complexity penalty (default: 1/n)
+#'   - g: Tuning parameter for g-prior (default: max(n, p^2))
+#'   - a, b, s, v, rho, k: Hyperparameters for various priors
+#'   - n: Sample size for some priors (default: length(y))
+#'   - var: Variance assumption for Gaussian models ("known" or "unknown", default: "unknown")
+#'   - laplace: Logical for Laplace approximation in GLM only (default: FALSE)
+#'
+#' @return A list with elements:
+#'   \item{crit}{Log marginal likelihood combined with the log prior.}
+#'   \item{coefs}{Posterior mode of the coefficients.}
+#'
+#' @examples
+#' fbms.mlik.master2(rnorm(100), matrix(rnorm(100)), TRUE, list(oc = 1), list(family = "gaussian", prior_beta = "g-prior"))
+#'
+#' @importFrom BAS beta.prime bic.prior CCH EB.local g.prior hyper.g hyper.g.n tCCH intrinsic TG Jeffreys uniform
+#' @export
+fbms.mlik.master2 <- function(y, x, model, complex, params = list(family = "gaussian", beta_prior = list(type = "g-prior"), r = exp(-0.5))) {
+  # Extract dimensions
+  n <- length(y)
+  p <- sum(model) - 1  # Number of predictors excluding intercept
+  params_use <- list()
+  params_use$beta_prior <- gen.mlpost.params(params$beta_prior$type, params$beta_prior, p+1, n)
+  params_use$beta_prior$type <- params$beta_prior$type
+  
+  loglik.pi <- select.mlpost.fun(params$beta_prior$type, params$family)
+  
+  result <- loglik.pi(y,x,model,complex,params_use)
+  
+  
+  return(list(crit = result$crit, coefs = result$coefs))
+}
