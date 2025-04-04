@@ -330,7 +330,7 @@ gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r =
   n <- length(y)
 
   # Switch-like structure to assign hyperparameters based on prior
-  hyper <- params$beta_prior$hyper.parameters
+  hyper <- params$beta_prior
   if (params$beta_prior$type == "CH") {
     # CH prior: b and s should be user-specified, with defaults if not provided
     a <- ifelse(!is.null(hyper$a), hyper$a, 1)  # Default to 1 if not specified

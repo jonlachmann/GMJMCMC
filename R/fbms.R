@@ -51,8 +51,10 @@ fbms <- function (
     if(family == "gaussian")
       mlpost_params$beta_prior <- gen.mlpost.params.lm(beta_prior$type, beta_prior, ncol(data) - 1, nrow(data))
     else
+    {
       mlpost_params$beta_prior <- gen.mlpost.params.glm(beta_prior$type, beta_prior, ncol(data) - 1, nrow(data))
-    mlpost_params$beta_prior$type <- beta_prior$type
+      mlpost_params$beta_prior$type <- beta_prior$type
+    }
   } else {
     if (family == "gaussian")
       loglik.pi <- gaussian.loglik
