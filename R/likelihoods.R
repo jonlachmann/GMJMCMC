@@ -21,7 +21,7 @@
 #' @importFrom BAS uniform Jeffreys g.prior
 #' @importFrom stats poisson Gamma glm.control
 #' @export glm.logpost.bas
-glm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), family = "binomial", prior_beta = Jeffreys(), laplace = FALSE)) {
+glm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), family = "binomial", beta_prior = list(type = Jeffreys()), laplace = FALSE)) {
   if (length(params) == 0)
     params <- list(r = 1 / dim(x)[1], family = "binomial", prior_beta = g.prior(max(dim(x)[1], sum(model) - 1)), laplace = FALSE)
   p <- sum(model) - 1 
@@ -821,10 +821,18 @@ fbms.mlik.master2 <- function(y, x, model, complex, params = list(family = "gaus
   n <- length(y)
   p <- sum(model) - 1  # Number of predictors excluding intercept
   params_use <- list()
-  params_use$beta_prior <- gen.mlpost.params(params$beta_prior$type, params$beta_prior, p+1, n)
-  params_use$beta_prior$type <- params$beta_prior$type
+
+  if(params$family == "gaussian")
+    params_use$beta_prior <- gen.mlpost.params.lm(params$beta_prior$type, params$beta_prior, p+1, n)
+  else
+    params_use$beta_prior <- gen.mlpost.params.glm(params$beta_prior$type, params$beta_prior, p+1, n)
+  params_use$beta_prior$type <- beta_prior$type
+  
+  
+  browser()
   
   loglik.pi <- select.mlpost.fun(params$beta_prior$type, params$family)
+  
   
   result <- loglik.pi(y,x,model,complex,params_use)
   

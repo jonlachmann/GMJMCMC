@@ -5,10 +5,14 @@
 \title{Main algorithm for GMJMCMC (Genetically Modified MJMCMC)}
 \usage{
 gmjmcmc(
-  data,
+  x,
+  y,
   loglik.pi = gaussian.loglik,
   loglik.alpha = gaussian.loglik.alpha,
+  mlpost_params = NULL,
   transforms,
+  intercept = FALSE,
+  fixed = 0,
   P = 10,
   N.init = 100,
   N.final = 100,
@@ -19,10 +23,6 @@ gmjmcmc(
 )
 }
 \arguments{
-\item{data}{A matrix containing the data to use in the algorithm,
-first column should be the dependent variable,
-and the rest of the columns should be the independent variables.}
-
 \item{loglik.pi}{The (log) density to explore}
 
 \item{loglik.alpha}{The likelihood function to use for alpha calculation}
@@ -45,6 +45,10 @@ A larger value like $P = 50$ might be more realistic for more complicated exampl
 \item{sub}{An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)}
 
 \item{verbose}{A logical denoting if messages should be printed}
+
+\item{data}{A matrix containing the data to use in the algorithm,
+first column should be the dependent variable,
+and the rest of the columns should be the independent variables.}
 }
 \value{
 A list containing the following elements:

@@ -9,7 +9,7 @@ gaussian_tcch_log_likelihood(
   x,
   model,
   complex,
-  params = list(r = exp(-0.5), prior_beta = "Intrinsic")
+  params = list(r = exp(-0.5), beta_prior = "intrinsic")
 )
 }
 \arguments{

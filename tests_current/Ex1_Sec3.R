@@ -37,7 +37,7 @@ use.fbms = FALSE
 ####################################################
 
 params <- gen.params.gmjmcmc(df.train)
-params$mlpost$var <- "unknown"
+params$mlpost$var <- 1
 
 if (use.fbms) {
  result.default <- fbms(formula = semimajoraxis ~ 1 + . , data = df.train, method = "gmjmcmc", transforms = transforms, params = params)

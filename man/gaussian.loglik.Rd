@@ -25,6 +25,6 @@ Log likelihood function for gaussian regression with a Jeffreys prior and BIC ap
 }
 \examples{
 gaussian.loglik(rnorm(100), matrix(rnorm(100)), TRUE, list(oc = 1), NULL)
-  
+
 
 }

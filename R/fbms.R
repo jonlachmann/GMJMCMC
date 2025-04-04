@@ -48,7 +48,10 @@ fbms <- function (
   if (is.list(beta_prior) || is.list(model_prior)) {
     mlpost_params <- model_prior
     loglik.pi <- select.mlpost.fun(beta_prior$type, family)
-    mlpost_params$beta_prior <- gen.mlpost.params(beta_prior$type, beta_prior, ncol(data) - 1, nrow(data))
+    if(family == "gaussian")
+      mlpost_params$beta_prior <- gen.mlpost.params.lm(beta_prior$type, beta_prior, ncol(data) - 1, nrow(data))
+    else
+      mlpost_params$beta_prior <- gen.mlpost.params.glm(beta_prior$type, beta_prior, ncol(data) - 1, nrow(data))
     mlpost_params$beta_prior$type <- beta_prior$type
   } else {
     if (family == "gaussian")
@@ -147,8 +150,12 @@ fbms.mlpost.master <- function (y, x, model, complex, params = list(family = "ga
   return(loglik.pi(y, x, model, complex, params_use))
 }
 
-gen.mlpost.params <- function (beta_prior, user_params, p, n) {
-  if (beta_prior == "beta.prime") {
+gen.mlpost.params.glm <- function (beta_prior, user_params, p, n) {
+  
+  if(beta_prior == "Jeffreys-BIC")
+  {    
+    return(NULL)
+  } else if(beta_prior == "beta.prime") {
     return(BAS::beta.prime(n = n))
   } else if (beta_prior == "CH") {
     check_required_params(c("a", "b", "s"), user_params, beta_prior)
@@ -195,25 +202,96 @@ gen.mlpost.params <- function (beta_prior, user_params, p, n) {
     return(BAS::hyper.g.n(alpha = user_params$a, n = n))
   } else if (beta_prior == "BIC") {
     return(BAS::bic.prior(n = n))
-  } else if (beta_prior == "ZS-null") {
-    return(list(method = 4))
-  } else if (beta_prior == "ZS-full") {
-    return(list(method = 5))
-  } else if (beta_prior == "hyper-g-laplace") {
-    return(list(method = 6))
-  } else if (beta_prior == "AIC") {
-    return(list(method = 7))
-  } else if (beta_prior == "EB-global") {
-    return(list(method = 2))
-  } else if (beta_prior == "JZS") {
-    return(list(method = 9))
-  } else if (beta_prior == "Jeffreys-BIC") {
-    return(NULL)
-  }
-
+  } 
   stop("Unknown prior, please verify your inputs.")
 }
 
+
+gen.mlpost.params.lm <- function (beta_prior, user_params, p, n) {
+  
+  if (beta_prior == "Jeffreys-BIC") {
+    if(!is.null(user_params$var)) 
+    {  
+      var <- "unknown"
+    }
+    return(var)
+  }else if (beta_prior == "beta.prime") {
+    return(list("beta.prime"))
+  } else if (beta_prior == "CH") {
+    check_required_params(c("a", "b", "s"), user_params, beta_prior)
+    user_params <- list(
+      "CH",
+      a = user_params$a,
+      b = user_params$b,
+      s = user_params$s
+    )
+    return(user_params)
+  } else if (beta_prior == "tCCH") {
+    check_required_params(c("a", "b", "s", "rho", "v", "k"), user_params, beta_prior)
+    user_params <- list(
+      "tCCH",
+      a = user_params$a,
+      b = user_params$b,
+      s = user_params$s,
+      rho = user_params$rho,
+      v = user_params$v,
+      k = user_params$k
+    )
+    return(user_params)
+  } else if (beta_prior == "intrinsic") {
+    return(list("intrinsic"))
+  } else if (beta_prior == "TG") {
+    check_required_params(c("a", "s"), user_params, beta_prior)
+    user_params <- list(
+      "TG",
+      a = user_params$a,
+      s = user_params$s
+    )
+    return(user_params)
+  } else if (beta_prior == "Jeffreys") {
+    return(list("Jeffreys"))
+  } else if (beta_prior == "ZS-adapted") {
+    return(list("ZS-adapted"))
+  } else if (beta_prior == "benchmark") {
+    return(list("benchmark"))
+  } else if (beta_prior == "robust") {
+    return(list("robust"))
+  } else if (beta_prior == "uniform") {
+    return(list("uniform"))
+  } else{
+    if(!is.null(user_params$a)) 
+    {  
+      alpha <- user_params$a 
+    } else 
+      alpha <- -1
+    if (beta_prior == "g-prior") {
+      return(list(method = 0, alpha = alpha))
+    } else if (beta_prior == "hyper-g") {
+      return(list(method = 1, alpha = alpha))
+    } else if (beta_prior == "EB-local") {
+      return(list(method = 2, alpha = alpha))
+    } else if (beta_prior == "BIC") {
+      return(list(method = 3, alpha = alpha))
+    } else if (beta_prior == "ZS-null") {
+      return(list(method = 4, alpha = alpha))
+    } else if (beta_prior == "ZS-full") {
+      return(list(method = 5, alpha = alpha))
+    } else if (beta_prior == "hyper-g-laplace") {
+      return(list(method = 6, alpha = alpha))
+    } else if (beta_prior == "AIC") {
+      return(list(method = 7, alpha = alpha))
+    } else if (beta_prior == "EB-global") {
+      return(list(method = 2, alpha = alpha))
+    } else if (beta_prior == "JZS") {
+      return(list(method = 9, alpha = alpha))
+    } else if (beta_prior == "hyper-g-n") {
+      return(list(method = 8, alpha = alpha))
+    } else {
+      stop("Unrecognized prior_beta for Gaussian GLM: ", beta_prior)
+    }
+  }
+}
+  
 check_required_params <- function (required, user_params, beta_prior) {
   for (req in required) {
     if (is.null(user_params[[req]]) || !is.numeric(user_params[[req]])) {

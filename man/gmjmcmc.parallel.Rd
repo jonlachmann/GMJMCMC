@@ -8,9 +8,11 @@ gmjmcmc.parallel(
   runs = 2,
   cores = getOption("mc.cores", 2L),
   merge.options = list(populations = "best", complex.measure = 2, tol = 1e-07),
-  data,
+  x,
+  y,
   loglik.pi = gaussian.loglik,
   loglik.alpha = gaussian.loglik.alpha,
+  mlpost_params = NULL,
   transforms,
   ...
 )
@@ -21,10 +23,6 @@ gmjmcmc.parallel(
 \item{cores}{The number of cores to run on}
 
 \item{merge.options}{A list of options to pass to the \code{\link[=merge_results]{merge_results()}} function run after the}
-
-\item{data}{A matrix containing the data to use in the algorithm,
-first column should be the dependent variable,
-and the rest of the columns should be the independent variables.}
 
 \item{loglik.pi}{The (log) density to explore}
 

@@ -5,8 +5,12 @@
 \title{Main algorithm for MJMCMC (Genetically Modified MJMCMC)}
 \usage{
 mjmcmc(
-  data,
+  x,
+  y,
   loglik.pi = gaussian.loglik,
+  mlpost_params = NULL,
+  intercept = FALSE,
+  fixed = 0,
   N = 100,
   probs = NULL,
   params = NULL,
@@ -15,10 +19,6 @@ mjmcmc(
 )
 }
 \arguments{
-\item{data}{A matrix containing the data to use in the algorithm,
-first column should be the dependent variable,
-and the rest of the columns should be the independent variables.}
-
 \item{loglik.pi}{The (log) density to explore}
 
 \item{N}{The number of iterations to run for}
@@ -30,6 +30,10 @@ and the rest of the columns should be the independent variables.}
 \item{sub}{An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)}
 
 \item{verbose}{A logical denoting if messages should be printed}
+
+\item{data}{A matrix containing the data to use in the algorithm,
+first column should be the dependent variable,
+and the rest of the columns should be the independent variables.}
 }
 \value{
 A list containing the following elements:

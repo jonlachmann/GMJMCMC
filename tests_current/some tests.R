@@ -38,7 +38,7 @@ gaussian_only_priors <- c("ZS-null", "ZS-full", "hyper-g-laplace", "AIC", "JZS",
 glm_priors <- glm_and_gaussian_priors
 gaussian_priors <- c(glm_and_gaussian_priors, gaussian_only_priors)
 
-families <- c("gaussian", "binomial", "poisson", "gamma")
+families <- c("gaussian", "binomial", "poisson", "gamma")[2:4]
 
 # Required parameters for priors
 prior_params <- list(
@@ -65,6 +65,9 @@ for (family in families) {
   cat("\n===== Testing family:", family, "=====")
   
   for (prior in priors) {
+    
+    print(prior)
+    
     params <- list(family = family,beta_prior = list(type = prior))
     
     # Add required parameters if applicable

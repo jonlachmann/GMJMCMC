@@ -8,6 +8,8 @@ Or Fit a BGLM model using Modified Mode Jumping Markov Chain Monte Carlo (MCMC) 
 fbms(
   formula = NULL,
   family = "gaussian",
+  beta_prior = list(type = "g-prior", g = 5),
+  model_prior = list(r = exp(-0.5)),
   data = NULL,
   impute = FALSE,
   loglik.pi = gaussian.loglik,
