@@ -196,7 +196,7 @@ gen.mlpost.params.glm <- function (beta_prior, user_params, p, n) {
   } else if (beta_prior == "ZS-adapted") {
     return(BAS::tCCH(alpha = 1, beta = 2, s = n + 3, r = 0, v = 1, theta = 1))
   } else if (beta_prior == "robust") {
-    return(BAS::robust(n = n))
+    return(BAS::robust(n = as.numeric(n)))# important to cast to numeric for BAS, do not change.
   } else if (beta_prior == "hyper-g-n") {
     if (is.null(user_params$a)) user_params$a <- 3
     return(BAS::hyper.g.n(alpha = user_params$a, n = n))

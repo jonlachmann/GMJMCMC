@@ -21,9 +21,11 @@
 #' @importFrom BAS uniform Jeffreys g.prior
 #' @importFrom stats poisson Gamma glm.control
 #' @export glm.logpost.bas
-glm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), family = "binomial", beta_prior = list(type = Jeffreys()), laplace = FALSE)) {
+glm.logpost.bas <- function (y, x, model, complex, params = list(r = NULL, family = "binomial", beta_prior = Jeffreys(), laplace = FALSE)) {
   if (length(params) == 0)
-    params <- list(r = 1 / dim(x)[1], family = "binomial", prior_beta = g.prior(max(dim(x)[1], sum(model) - 1)), laplace = FALSE)
+    params <- list(r = 1 / dim(x)[1], family = "binomial", beta_prior = g.prior(max(dim(x)[1], sum(model) - 1)), laplace = FALSE)
+  else if(length(params$r) == 0)
+    params$r = 1 / dim(x)[1]
   p <- sum(model) - 1 
   if (p == 0) {
     probinit <- as.numeric(c(1, 0.99))
@@ -51,7 +53,7 @@ glm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), 
         Rprobinit = probinit,
         Rmodeldim = as.integer(rep(0, ifelse(p == 0,2,1))),
         modelprior = uniform(),
-        betaprior = params$prior_beta,
+        betaprior = params$beta_prior,
         family = family_use,
         Rcontrol = glm.control(),
         Rlaplace =  as.integer(params$laplace)
@@ -99,7 +101,7 @@ lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), b
     params <- list(
       r = 1 / dim(x)[1],
       beta_prior = list(method = 0, alpha = max(dim(x)[1], sum(model)^2))
-    )
+    ) else if(length(params$r) == 0) params$r = 1 / dim(x)[1]
 
   p <- sum(model) - 1
   if (p == 0) {
@@ -165,6 +167,8 @@ lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), b
 logistic.loglik <- function (y, x, model, complex, params = list(r = exp(-0.5))) {
   if (length(params) == 0)
     params <- list(r = 1 / dim(x)[1])
+  else if(length(params$r) == 0)
+    params$r = 1 / dim(x)[1]
   suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = binomial())})
   ret <- (-(mod$deviance + log(length(y)) * (mod$rank - 1) - 2 * log(params$r) * sum(complex$oc))) / 2
   return(list(crit = ret, coefs = mod$coefficients))
@@ -190,6 +194,8 @@ logistic.loglik <- function (y, x, model, complex, params = list(r = exp(-0.5)))
 glm.loglik <- function (y, x, model, complex, params = list(r = exp(-0.5), family = "Gamma")) {
   if (length(params) == 0)
     params <- list(r = 1 / dim(x)[1])
+  else if(length(params$r) == 0)
+    params$r = 1 / dim(x)[1]
 
   if (params$family == "binomial") {
     fam = binomial()
@@ -199,6 +205,7 @@ glm.loglik <- function (y, x, model, complex, params = list(r = exp(-0.5), famil
     fam = Gamma()
   }
 
+  #browser()
   suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = fam)})
   ret <- (-(mod$deviance + log(length(y)) * (mod$rank - 1) - 2 * log(params$r) * sum(complex$oc))) / 2
   return(list(crit = ret, coefs = mod$coefficients))
@@ -826,16 +833,13 @@ fbms.mlik.master2 <- function(y, x, model, complex, params = list(family = "gaus
     params_use$beta_prior <- gen.mlpost.params.lm(params$beta_prior$type, params$beta_prior, p+1, n)
   else
     params_use$beta_prior <- gen.mlpost.params.glm(params$beta_prior$type, params$beta_prior, p+1, n)
-  params_use$beta_prior$type <- beta_prior$type
-  
-  
-  browser()
+  params_use$family <- params$family
   
   loglik.pi <- select.mlpost.fun(params$beta_prior$type, params$family)
   
-  
+  #browser()
   result <- loglik.pi(y,x,model,complex,params_use)
-  
+
   
   return(list(crit = result$crit, coefs = result$coefs))
 }
