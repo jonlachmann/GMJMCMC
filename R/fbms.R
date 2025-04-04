@@ -216,10 +216,10 @@ gen.mlpost.params.lm <- function (beta_prior, user_params, p, n) {
     }
     return(list(var = user_params$var))
   }else if (beta_prior == "beta.prime") {
-    return(list("beta.prime"))
+    return(list(type = "beta.prime"))
   } else if (beta_prior == "CH") {
     check_required_params(c("a", "b", "s"), user_params, beta_prior)
-    user_params <- list(
+    user_params <- list(type =
       "CH",
       a = user_params$a,
       b = user_params$b,
@@ -229,7 +229,7 @@ gen.mlpost.params.lm <- function (beta_prior, user_params, p, n) {
   } else if (beta_prior == "tCCH") {
     check_required_params(c("a", "b", "s", "rho", "v", "k"), user_params, beta_prior)
     user_params <- list(
-      "tCCH",
+      type = "tCCH",
       a = user_params$a,
       b = user_params$b,
       s = user_params$s,
@@ -239,25 +239,25 @@ gen.mlpost.params.lm <- function (beta_prior, user_params, p, n) {
     )
     return(user_params)
   } else if (beta_prior == "intrinsic") {
-    return(list("intrinsic"))
+    return(list(type = "intrinsic"))
   } else if (beta_prior == "TG") {
     check_required_params(c("a", "s"), user_params, beta_prior)
     user_params <- list(
-      "TG",
+      type = "TG",
       a = user_params$a,
       s = user_params$s
     )
     return(user_params)
   } else if (beta_prior == "Jeffreys") {
-    return(list("Jeffreys"))
+    return(list(type = "Jeffreys"))
   } else if (beta_prior == "ZS-adapted") {
-    return(list("ZS-adapted"))
+    return(list(type = "ZS-adapted"))
   } else if (beta_prior == "benchmark") {
-    return(list("benchmark"))
+    return(list(type = "benchmark"))
   } else if (beta_prior == "robust") {
-    return(list("robust"))
+    return(list(type = "robust"))
   } else if (beta_prior == "uniform") {
-    return(list("uniform"))
+    return(list(type = "uniform"))
   } else{
     if(!is.null(user_params$a)) 
     {  

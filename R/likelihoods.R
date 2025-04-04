@@ -412,7 +412,7 @@ gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r =
   } else if (params$beta_prior$type == "tCCH") {
     a <- hyper$a
     b <- hyper$b
-    r <- hyper$r
+    r <- hyper$rho
     s <- hyper$s
     v <- hyper$v
     k <- hyper$k
@@ -838,7 +838,6 @@ fbms.mlik.master2 <- function(y, x, model, complex, params = list(family = "gaus
   }
   loglik.pi <- select.mlpost.fun(params$beta_prior$type, params$family)
   
-  browser()
   result <- loglik.pi(y,x,model,complex,params_use)
 
   
