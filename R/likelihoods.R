@@ -121,7 +121,7 @@ lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), b
                      probinit,
                      as.integer(rep(0, ifelse(p == 0,2,1))),
                      incint = as.integer(F),
-                     alpha = ifelse(length(params$beta_prior$hyper.parameters$alpha) > 0, as.numeric(params$beta_prior$hyper.parameters$alpha),NULL),
+                     alpha = ifelse(length(params$beta_prior$a) > 0, as.numeric(params$beta_prior$a),NULL),
                      method = as.integer(params$beta_prior$method),
                      modelprior = uniform(),
                      Rpivot = TRUE,
@@ -133,7 +133,7 @@ lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), b
     # You can also print a message or log the error if needed
     cat("An error occurred:", conditionMessage(e), "\n")
   })
-
+  #browser()
   if (length(mod) == 0) {
     return(list(crit = -.Machine$double.xmax + log(params$r * sum(complex$oc)), coefs = rep(0, p + 1)))
   }
@@ -234,14 +234,14 @@ gaussian.loglik <- function (y, x, model, complex, params) {
     params <- list()
   if (length(params$r) == 0)
     params$r <- 1/dim(x)[1]
-  if (length(params$var) == 0)
-    params$var <- 1
+  if (length(params$beta_prior$var) == 0)
+    params$beta_prior$var <- 1
   suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())})
 
-  if (params$var == "unknown")
+  if (params$beta_prior$var == "unknown")
     ret <- (-(mod$aic + (log(length(y))-2) * (mod$rank) - 2 * log(params$r) * (sum(complex$oc)))) / 2
   else
-    ret <- (-(mod$deviance/params$var + log(length(y)) * (mod$rank - 1) - 2 * log_prior(params, complex))) / 2
+    ret <- (-(mod$deviance/params$beta_prior$var + log(length(y)) * (mod$rank - 1) - 2 * log_prior(params, complex))) / 2
 
   return(list(crit = ret, coefs = mod$coefficients))
 }
@@ -832,12 +832,13 @@ fbms.mlik.master2 <- function(y, x, model, complex, params = list(family = "gaus
   if(params$family == "gaussian")
     params_use$beta_prior <- gen.mlpost.params.lm(params$beta_prior$type, params$beta_prior, p+1, n)
   else
+  {
     params_use$beta_prior <- gen.mlpost.params.glm(params$beta_prior$type, params$beta_prior, p+1, n)
-  params_use$family <- params$family
-  
+    params_use$family <- params$family
+  }
   loglik.pi <- select.mlpost.fun(params$beta_prior$type, params$family)
   
-  #browser()
+  browser()
   result <- loglik.pi(y,x,model,complex,params_use)
 
   

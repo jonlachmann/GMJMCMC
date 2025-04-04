@@ -210,11 +210,11 @@ gen.mlpost.params.glm <- function (beta_prior, user_params, p, n) {
 gen.mlpost.params.lm <- function (beta_prior, user_params, p, n) {
   
   if (beta_prior == "Jeffreys-BIC") {
-    if(!is.null(user_params$var)) 
+    if(length(user_params$var)==0) 
     {  
-      var <- "unknown"
+      user_params$var <- "unknown"
     }
-    return(var)
+    return(list(var = user_params$var))
   }else if (beta_prior == "beta.prime") {
     return(list("beta.prime"))
   } else if (beta_prior == "CH") {
