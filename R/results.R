@@ -297,15 +297,15 @@ get.mpm.model <- function(result, y, x, labels = F, family = "gaussian", loglik.
   if (family == "binomial")
     loglik.pi <- logistic.loglik
 
-  if (is(result, "mjmcmc.parallel")) {
-    models <- unlist(lapply(result, function (x) x$models), recursive = FALSE)
+  if (is(result, "mjmcmc_parallel")) {
+    models <- unlist(lapply(result$chains, function (x) x$models), recursive = FALSE)
     marg.probs <- marginal.probs.renorm(models)$probs
-    features <- result[[1]]$populations
+    features <- result$chains[[1]]$populations
   } else if (is(result, "gmjmcmc")) {
     best_pop <- which.max(unlist(result$best.margs))
     marg.probs <- result$marg.probs[[best_pop]]
     features <- result$populations[[best_pop]]
-  } else if (is(result, "gmjmcmc.parallel") || is(result, "mjmcmc")) {
+  } else if (is(result, "gmjmcmc_merged") || is(result, "mjmcmc")) {
     marg.probs <- result$marg.probs
     features <- result$features
   }
