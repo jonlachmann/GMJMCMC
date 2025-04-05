@@ -9,7 +9,7 @@ fbms.mlik.master(
   x,
   model,
   complex,
-  params = list(family = "gaussian", prior_beta = "g-prior", r = exp(-0.5))
+  params = list(family = "gaussian", beta_prior = list(type = "g-prior"), r = exp(-0.5))
 )
 }
 \arguments{
