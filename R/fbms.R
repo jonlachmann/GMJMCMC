@@ -265,7 +265,7 @@ gen.mlpost.params.lm <- function (beta_prior, user_params, p, n) {
     {  
       alpha <- user_params$a 
     } else 
-      alpha <- -1
+      alpha <- -1#check how BAS uses the default 
     if (beta_prior == "g-prior") {
       return(list(method = 0, alpha = alpha))
     } else if (beta_prior == "hyper-g") {

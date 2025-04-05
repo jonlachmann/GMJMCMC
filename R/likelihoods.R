@@ -836,6 +836,7 @@ fbms.mlik.master2 <- function(y, x, model, complex, params = list(family = "gaus
     params_use$beta_prior <- gen.mlpost.params.glm(params$beta_prior$type, params$beta_prior, p+1, n)
     params_use$family <- params$family
   }
+  
   loglik.pi <- select.mlpost.fun(params$beta_prior$type, params$family)
   
   result <- loglik.pi(y,x,model,complex,params_use)

@@ -46,7 +46,7 @@ prior_params <- list(
   "hyper-g" = list(a = 3),
   "hyper-g-n" = list(a = 3),
   "ZS-null" = list(a = 3),
-  "ZS-full" = list(a = 3),
+  "ZS-full" = list(a = 500),
   "hyper-g-laplace" = list(a = 3),
   "AIC" = list(a = 3),
   "JZS" = list(a = 3),
@@ -85,7 +85,7 @@ for (family in families) {
       
       
       crit_rounded <- round(result$crit - result.null$crit, 8) 
-      coefs_mean <- round(mean(result$coefs - result.null$coefs), 8)
+      coefs_mean <- round(mean(result$coefs) - mean(result.null$coefs), 8)
       
       cat(sprintf("\nPrior: %-15s -> crit: %8.4f, mean(coefs): %8.4f", prior, crit_rounded, coefs_mean))
       
