@@ -88,7 +88,7 @@ rmclapply <- function(runs, args, fun, mc.cores = NULL) {
 #' @return Merged results from multiple mjmcmc runs
 #'
 #' @examples
-#' result <- mjmcmc.parallel(runs = 1, cores = 1, matrix(rnorm(600), 100), gaussian.loglik)
+#' result <- mjmcmc.parallel(runs = 1, cores = 1, y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100))
 #' summary(result)
 #' plot(result)
 #'
@@ -116,12 +116,9 @@ mjmcmc.parallel <- function(runs = 2, cores = getOption("mc.cores", 2L), ...) {
 #' result <- gmjmcmc.parallel(
 #'   runs = 1,
 #'   cores = 1,
-#'   list(populations = "best", complex.measure = 2, tol = 0.0000001),
-#'   matrix(rnorm(600), 100),
-#'   P = 2,
-#'   gaussian.loglik,
-#'   loglik.alpha = gaussian.loglik.alpha,
-#'   c("p0", "exp_dbl")
+#'   y = matrix(rnorm(100), 100),
+#'   x = matrix(rnorm(600), 100),
+#'   transforms = c("p0", "exp_dbl")
 #' )
 #'
 #' summary(result)

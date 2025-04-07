@@ -51,7 +51,7 @@ Key elements include:
 \item "JZS": Jeffreys-Zellner-Siow prior (Gaussian, requires \code{a})
 }
 \item r: Model complexity penalty (default: 1/n)
-\item g: Tuning parameter for g-prior (default: max(n, p^2))
+\item a: Tuning parameter for g-prior (default: max(n, p^2))
 \item a, b, s, v, rho, k: Hyperparameters for various priors
 \item n: Sample size for some priors (default: length(y))
 \item var: Variance assumption for Gaussian models ("known" or "unknown", default: "unknown")
@@ -68,6 +68,6 @@ This function serves as a unified interface to compute the log marginal likeliho
 for different regression models and priors by calling specific log likelihood functions.
 }
 \examples{
-fbms.mlik.master(rnorm(100), matrix(rnorm(100)), TRUE, list(oc = 1), list(family = "gaussian", prior_beta = "g-prior"))
+fbms.mlik.master(y = rnorm(100), x = matrix(rnorm(100)), c(TRUE,TRUE), list(oc = 1),params = list(family = "gaussian", beta_prior = list(type = "g-prior", a = 2), r = exp(-0.5)))
 
 }

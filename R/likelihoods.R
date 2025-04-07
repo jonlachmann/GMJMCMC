@@ -326,12 +326,12 @@ gaussian.loglik.g <- function (y, x, model, complex, params = NULL) {
 #'   \item{coefs}{Posterior mode of the coefficients.}
 #'
 #' @examples
-#' gaussian_tcch_log_likelihood(rnorm(100), matrix(rnorm(100)), TRUE, list(oc=1))
+#' gaussian_tcch_log_likelihood(rnorm(100), matrix(rnorm(100)), c(TRUE), list(oc=1))
 #'
 #' @importFrom BAS phi1 hypergeometric1F1 hypergeometric2F1
 #' @importFrom tolerance F1
 #' @export
-gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r = exp(-0.5), beta_prior = "intrinsic")) {
+gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r = exp(-0.5), beta_prior = list(type = "intrinsic"))) {
   # Fit the linear model using fastglm
   fitted_model <- fastglm(as.matrix(x[, model]), y, family = gaussian())
   log_likelihood <- -(fitted_model$aic  -2 * (fitted_model$rank))/2
@@ -586,7 +586,7 @@ log_prior <- function (params, complex) {
 #'     - "BIC": BIC prior from BAS (Gaussian/GLM)
 #'     - "JZS": Jeffreys-Zellner-Siow prior (Gaussian, requires `a`)
 #'   - r: Model complexity penalty (default: 1/n)
-#'   - g: Tuning parameter for g-prior (default: max(n, p^2))
+#'   - a: Tuning parameter for g-prior (default: max(n, p^2))
 #'   - a, b, s, v, rho, k: Hyperparameters for various priors
 #'   - n: Sample size for some priors (default: length(y))
 #'   - var: Variance assumption for Gaussian models ("known" or "unknown", default: "unknown")
@@ -597,7 +597,7 @@ log_prior <- function (params, complex) {
 #'   \item{coefs}{Posterior mode of the coefficients.}
 #'
 #' @examples
-#' fbms.mlik.master(rnorm(100), matrix(rnorm(100)), TRUE, list(oc = 1), list(family = "gaussian", prior_beta = "g-prior"))
+#' fbms.mlik.master(y = rnorm(100), x = matrix(rnorm(100)), c(TRUE,TRUE), list(oc = 1),params = list(family = "gaussian", beta_prior = list(type = "g-prior", a = 2), r = exp(-0.5)))
 #'
 #' @importFrom BAS beta.prime bic.prior CCH EB.local g.prior hyper.g hyper.g.n tCCH intrinsic TG Jeffreys uniform
 #' @export

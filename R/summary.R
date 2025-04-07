@@ -14,7 +14,7 @@
 #' \item{marg.probs}{Marginal probabilities corresponding to the ordered feature strings.}
 #'
 #' @examples
-#' result <- gmjmcmc(matrix(rnorm(600), 100), P = 2, gaussian.loglik, NULL, c("p0", "exp_dbl"))
+#' result <- gmjmcmc(y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100), P = 2, gaussian.loglik, NULL, c("p0", "exp_dbl"))
 #' summary(result, pop = "best")
 #'
 #' @export
@@ -94,11 +94,10 @@ summary.gmjmcmc <- function (object, pop = "best", tol = 0.0001, labels = FALSE,
 #'  runs = 1,
 #'  cores = 1,
 #'  list(populations = "best", complex.measure = 2, tol = 0.0000001),
-#'  matrix(rnorm(600), 100),
+#'  y = matrix(rnorm(100), 100),
+#'  x = matrix(rnorm(600), 100),
 #'  P = 2,
-#'  gaussian.loglik,
-#'  loglik.alpha = gaussian.loglik.alpha,
-#'  c("p0", "exp_dbl")
+#'  transforms = c("p0", "exp_dbl")
 #' )
 #' summary(result)
 #'
@@ -150,7 +149,7 @@ summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, effect
 #' \item{marg.probs}{Marginal probabilities corresponding to the ordered feature strings.}
 #'
 #' @examples
-#' result <- mjmcmc(matrix(rnorm(600), 100), gaussian.loglik)
+#' result <- mjmcmc( y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100), gaussian.loglik)
 #' summary(result)
 #'
 #' @export
@@ -178,7 +177,7 @@ summary.mjmcmc <- function (object, tol = 0.0001, labels = FALSE, effects = NULL
 #' \item{marg.probs}{Marginal probabilities corresponding to the ordered feature strings.}
 #'
 #' @examples
-#' result <- mjmcmc.parallel(runs = 1, cores = 1, matrix(rnorm(600), 100), gaussian.loglik)
+#' result <- mjmcmc.parallel(runs = 1, cores = 1,  y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100), gaussian.loglik)
 #' summary(result)
 #'
 #' @export

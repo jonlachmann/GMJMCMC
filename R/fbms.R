@@ -5,7 +5,37 @@
 #' family, data, transforms, and other parameters to customize the model.
 #'
 #' @param formula A formula object specifying the model structure. Default is NULL.
-#' @param family The distribution family of the response variable. Currently supports "gaussian", "binomial" and  "custom". Default is "gaussian".
+#' @param family The distribution family of the response variable. Currently supports "gaussian", "binomial", "poisson", "gamma", and  "custom". Default is "gaussian".
+#' @param beta_prior Type of prior as a string (default: "g-prior" with a = max(n, p^2)). Possible values include:
+#'     - "beta.prime": Beta-prime prior (GLM/Gaussian, no additional args)
+#'     - "CH": Compound Hypergeometric prior (GLM/Gaussian, requires `a`, `b`, optionally `s`)
+#'     - "EB-local": Empirical Bayes local prior (GLM/Gaussian, requires `a` for Gaussian)
+#'     - "EB-global": Empirical Bayes local prior (Gaussian, requires `a` for Gaussian)
+#'     - "g-prior": Zellner's g-prior (GLM/Gaussian, requires `g`)
+#'     - "hyper-g": Hyper-g prior (GLM/Gaussian, requires `a`)
+#'     - "hyper-g-n": Hyper-g/n prior (GLM/Gaussian, requires `a`)
+#'     - "tCCH": Truncated Compound Hypergeometric prior (GLM/Gaussian, requires `a`, `b`, `s`, `rho`, `v`, `k`)
+#'     - "intrinsic": Intrinsic prior (GLM/Gaussian, no additional args)
+#'     - "TG": Truncated Gamma prior (GLM/Gamma, requires `a`, `s`)
+#'     - "Jeffreys": Jeffreys prior (GLM/Gaussian, no additional args)
+#'     - "uniform": Uniform prior (GLM/Gaussian, no additional args)
+#'     - "benchmark": Benchmark prior (Gaussian/GLM, no additional args)
+#'     - "ZS-adapted": Zellner-Siow adapted prior (Gaussian TCCH, no additional args)
+#'     - "robust": Robust prior (Gaussian/GLM, no additional args)
+#'     - "Jeffreys-BIC": Jeffreys prior with BIC approximation of marginal likelihood (Gaussian/GLM)
+#'     - "ZS-null": Zellner-Siow null prior (Gaussian, requires `a`)
+#'     - "ZS-full": Zellner-Siow full prior (Gaussian, requires `a`)
+#'     - "hyper-g-laplace": Hyper-g Laplace prior (Gaussian, requires `a`)
+#'     - "AIC": AIC prior from BAS (Gaussian, requires penalty `a`)
+#'     - "BIC": BIC prior from BAS (Gaussian/GLM)
+#'     - "JZS": Jeffreys-Zellner-Siow prior (Gaussian, requires `a`)
+#'   - r: Model complexity penalty (default: 1/n)
+#'   - g: Tuning parameter for g-prior (default: max(n, p^2))
+#'   - a, b, s, v, rho, k: Hyperparameters for various priors
+#'   - n: Sample size for some priors (default: length(y))
+#'   - var: Variance assumption for Gaussian models ("known" or "unknown", default: "unknown")
+#'   - laplace: Logical for Laplace approximation in GLM only (default: FALSE)
+#' @param model_prior  a list with parameters of model priors, by default r should be provided
 #' @param loglik.pi Custom function to compute the logarithm of the posterior mode based on logarithm of marginal likelihood and logarithm of prior functions (needs specification only used if family = "custom")
 #' @param data A data frame containing the variables in the model. If NULL, the variables are taken from the environment of the formula. Default is NULL.
 #' @param method Which fitting algorithm should be used, currently implemented options include "gmjmcmc", "gmjmcmc.parallel", "mjmcmc" and "mjmcmc.parallel" with "mjmcmc" being the default and 'mjmcmc' means that only linear models will be estimated
@@ -28,7 +58,6 @@
 #'  cores = 1
 #' )
 #' summary(fbms_result)
-#' plot(fbms_result)
 #' 
 #'
 #' @seealso \code{\link{mjmcmc}}, \code{\link{gmjmcmc}}, \code{\link{gmjmcmc.parallel}}
@@ -36,16 +65,22 @@
 fbms <- function (
   formula = NULL,
   family = "gaussian",
-  beta_prior = list(type = "g-prior", g = 5),
-  model_prior = list(r = exp(-0.5)),
+  beta_prior = list(type = "g-prior"),
+  model_prior = NULL,
   data = NULL,
   impute = FALSE,
-  loglik.pi = gaussian.loglik,
+  loglik.pi = NULL,
   method = "mjmcmc",
   verbose = TRUE,
   ...
 ) {
-  if (is.list(beta_prior) || is.list(model_prior)) {
+  
+  if(length(data) == 0)
+    stop("Training data must be provided!")
+
+  if(length(model_prior) == 0)
+    model_prior = list(r = 1/dim(data)[1])
+  if (family != "custom") {
     mlpost_params <- model_prior
     loglik.pi <- select.mlpost.fun(beta_prior$type, family)
     if(family == "gaussian")

@@ -329,7 +329,7 @@ gaussian.loglik2.g <- function (y, x, model, complex, params = NULL)
 #'   \item{coefs}{Posterior mode of the coefficients.}
 #'
 #' @examples
-#' gaussian_tcch_log_likelihood(rnorm(100), matrix(rnorm(100)), TRUE, list(oc=1))
+#' gaussian_tcch_log_likelihood2(rnorm(100), matrix(rnorm(100)), TRUE, list(oc=1))
 #'
 #' @importFrom BAS phi1 hypergeometric1F1 hypergeometric2F1
 #' @importFrom tolerance F1
@@ -609,7 +609,7 @@ log_prior <- function (params, complex) {
 #'   \item{coefs}{Posterior mode of the coefficients.}
 #'
 #' @examples
-#' fbms.mlik.master(rnorm(100), matrix(rnorm(100)), TRUE, list(oc = 1), list(family = "gaussian", prior_beta = "g-prior"))
+#' fbms.mlik.master(rnorm(100), matrix(rnorm(100)), c(TRUE,TRUE), list(oc = 1))
 #'
 #' @importFrom BAS beta.prime bic.prior CCH EB.local g.prior hyper.g hyper.g.n tCCH intrinsic TG Jeffreys uniform
 #' @export

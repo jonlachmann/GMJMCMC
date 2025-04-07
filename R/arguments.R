@@ -191,8 +191,13 @@ gen.params.mjmcmc <- function (data) {
   ### Create a list of parameters for the algorithm
 
   ## Get the dimensions of the data to set parameters based on it
-  ncov <- ncol(data$x) - data$fixed
-
+  if(is.list(data) && length(data$fixed)>0 && length(data$x) > 0)
+    ncov <- ncol(data$x) - data$fixed #This is not ok as for fbms no one knows anything about fixed and $x! 
+  else # I fixed that, but this is somewhat not elegant still
+  {
+    data.dim <- dim(data)
+    ncov <- data.dim[2] - 2
+  }
   ## Local optimization parameters
   sa_kern <- list(probs=c(0.1, 0.05, 0.2, 0.3, 0.2, 0.15),
                   neigh.size=1, neigh.min=1, neigh.max=2)               # Simulated annealing proposal kernel parameters
@@ -316,7 +321,14 @@ gen.params.gmjmcmc <- function (data) {
   # Get mjmcmc params
   params <- gen.params.mjmcmc(data)
 
-  ncov <- ncol(data$x) - data$fixed
+  ## Get the dimensions of the data to set parameters based on it
+  if(is.list(data) && length(data$fixed)>0 && length(data$x) > 0)
+    ncov <- ncol(data$x) - data$fixed #This is not ok as for fbms no one knows anything about fixed and $x! 
+  else # I fixed that, but this is somewhat not elegant still
+  {
+    data.dim <- dim(data)
+    ncov <- data.dim[2] - 2
+  }
 
   feat_params <- list(D = 5, L = 15,                                # Hard limits on feature complexity
                       alpha = "unit",                               # alpha strategy ("unit" = None, "deep" strategy 3 from Hubin et al., "random" fully Bayesian strategy) 

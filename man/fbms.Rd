@@ -8,11 +8,11 @@ Or Fit a BGLM model using Modified Mode Jumping Markov Chain Monte Carlo (MCMC) 
 fbms(
   formula = NULL,
   family = "gaussian",
-  beta_prior = list(type = "g-prior", g = 5),
-  model_prior = list(r = exp(-0.5)),
+  beta_prior = list(type = "g-prior"),
+  model_prior = NULL,
   data = NULL,
   impute = FALSE,
-  loglik.pi = gaussian.loglik,
+  loglik.pi = NULL,
   method = "mjmcmc",
   verbose = TRUE,
   ...
@@ -21,7 +21,41 @@ fbms(
 \arguments{
 \item{formula}{A formula object specifying the model structure. Default is NULL.}
 
-\item{family}{The distribution family of the response variable. Currently supports "gaussian", "binomial" and  "custom". Default is "gaussian".}
+\item{family}{The distribution family of the response variable. Currently supports "gaussian", "binomial", "poisson", "gamma", and  "custom". Default is "gaussian".}
+
+\item{beta_prior}{Type of prior as a string (default: "g-prior" with a = max(n, p^2)). Possible values include:
+- "beta.prime": Beta-prime prior (GLM/Gaussian, no additional args)
+- "CH": Compound Hypergeometric prior (GLM/Gaussian, requires \code{a}, \code{b}, optionally \code{s})
+- "EB-local": Empirical Bayes local prior (GLM/Gaussian, requires \code{a} for Gaussian)
+- "EB-global": Empirical Bayes local prior (Gaussian, requires \code{a} for Gaussian)
+- "g-prior": Zellner's g-prior (GLM/Gaussian, requires \code{g})
+- "hyper-g": Hyper-g prior (GLM/Gaussian, requires \code{a})
+- "hyper-g-n": Hyper-g/n prior (GLM/Gaussian, requires \code{a})
+- "tCCH": Truncated Compound Hypergeometric prior (GLM/Gaussian, requires \code{a}, \code{b}, \code{s}, \code{rho}, \code{v}, \code{k})
+- "intrinsic": Intrinsic prior (GLM/Gaussian, no additional args)
+- "TG": Truncated Gamma prior (GLM/Gamma, requires \code{a}, \code{s})
+- "Jeffreys": Jeffreys prior (GLM/Gaussian, no additional args)
+- "uniform": Uniform prior (GLM/Gaussian, no additional args)
+- "benchmark": Benchmark prior (Gaussian/GLM, no additional args)
+- "ZS-adapted": Zellner-Siow adapted prior (Gaussian TCCH, no additional args)
+- "robust": Robust prior (Gaussian/GLM, no additional args)
+- "Jeffreys-BIC": Jeffreys prior with BIC approximation of marginal likelihood (Gaussian/GLM)
+- "ZS-null": Zellner-Siow null prior (Gaussian, requires \code{a})
+- "ZS-full": Zellner-Siow full prior (Gaussian, requires \code{a})
+- "hyper-g-laplace": Hyper-g Laplace prior (Gaussian, requires \code{a})
+- "AIC": AIC prior from BAS (Gaussian, requires penalty \code{a})
+- "BIC": BIC prior from BAS (Gaussian/GLM)
+- "JZS": Jeffreys-Zellner-Siow prior (Gaussian, requires \code{a})
+\itemize{
+\item r: Model complexity penalty (default: 1/n)
+\item g: Tuning parameter for g-prior (default: max(n, p^2))
+\item a, b, s, v, rho, k: Hyperparameters for various priors
+\item n: Sample size for some priors (default: length(y))
+\item var: Variance assumption for Gaussian models ("known" or "unknown", default: "unknown")
+\item laplace: Logical for Laplace approximation in GLM only (default: FALSE)
+}}
+
+\item{model_prior}{a list with parameters of model priors, by default r should be provided}
 
 \item{data}{A data frame containing the variables in the model. If NULL, the variables are taken from the environment of the formula. Default is NULL.}
 
@@ -55,7 +89,6 @@ fbms_result <- fbms(
  cores = 1
 )
 summary(fbms_result)
-plot(fbms_result)
 
 
 }
