@@ -35,6 +35,7 @@ glm.logpost.bas2 <- function (y, x, model, complex, params = list(r = exp(-0.5),
 
   mod<-NULL
 
+  
   tryCatch({
   if(params$family == "binomial")
     suppressWarnings({

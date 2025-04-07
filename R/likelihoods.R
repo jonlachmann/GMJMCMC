@@ -26,6 +26,8 @@ glm.logpost.bas <- function (y, x, model, complex, params = list(r = NULL, famil
     params <- list(r = 1 / dim(x)[1], family = "binomial", beta_prior = g.prior(max(dim(x)[1], sum(model) - 1)), laplace = FALSE)
   else if(length(params$r) == 0)
     params$r = 1 / dim(x)[1]
+  if(length(params$laplace) == 0)
+    params$laplace = FALSE
   p <- sum(model) - 1 
   if (p == 0) {
     probinit <- as.numeric(c(1, 0.99))
@@ -34,6 +36,7 @@ glm.logpost.bas <- function (y, x, model, complex, params = list(r = NULL, famil
     probinit <- as.numeric(c(1, rep(0.99, p)))
   }
   
+ 
   mod <- NULL
 
   if (params$family == "binomial")
@@ -42,6 +45,7 @@ glm.logpost.bas <- function (y, x, model, complex, params = list(r = NULL, famil
     family_use <- poisson()
   else
     family_use <- Gamma()
+  
   
   tryCatch({ suppressWarnings({
       mod <- .Call(
