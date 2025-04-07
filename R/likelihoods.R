@@ -531,8 +531,6 @@ log_prior <- function (params, complex) {
 }
 
 
-
-
 #' Master Log Marginal Likelihood Function
 #'
 #' This function serves as a unified interface to compute the log marginal likelihood

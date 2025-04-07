@@ -348,8 +348,6 @@ select.mlpost.fun <- function (beta_prior, family) {
       return(gaussian_tcch_log_likelihood)
     } else if (beta_prior == "Jeffreys-BIC") {
       return(gaussian.loglik)
-    } else if (beta_prior == "g-prior") {
-      return(gaussian.loglik.g)
     } else if (beta_prior %in% gaussian_bas) {
       return(lm.logpost.bas)
     }
