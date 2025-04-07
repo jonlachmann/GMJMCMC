@@ -7,8 +7,8 @@ vignette: >
   %\VignetteEncoding{UTF-8}
   %\VignetteDepends{fastglm, FBMS}
 ---
-The `FBMS` package provides functions for Flexible Bayesian Model Selection and Model Averaging.
 
+The `FBMS` package provides functions for Flexible Bayesian Model Selection and Model Averaging.
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -16,47 +16,7 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
+
 # Examples
-Below are provided examples on how to run the algorithm and what the results tell us, we begin by loading the package and a supplied dataset
-```{r setup}
-library(FBMS)
-#library(GenSA)
-#library(fastglm)
-data("breastcancer")
-bc <- breastcancer[,c(ncol(breastcancer),2:(ncol(breastcancer)-1))]
-bc <- cbind(bc[, 1], 1, bc[, -1])
-```
-We need some nonlinear transformations for the algorithm to use, the package offers a selection of these, but you are also able to define your own. Here we create a list of the ones to use, all but one are supplied by the package.
-```{r}
-to3 <- function(x) x^3
 
-transforms <- c("sigmoid","sin_deg","exp_dbl","p0","troot","to3")
-```
-By calling two functions in the package, a list of probabilities for various parts of the algorithm, as well as a list of parameters are created. The list of probabilities needs the list of transformations to be able to create the vector of probabilities for the different transformations
-```{r}
-probs <- gen.probs.gmjmcmc(transforms)
-params <- gen.params.gmjmcmc(bc)
-```
-We can use one of the supplied likelihood functions, but here we demonstrate how to create our own, it takes four arguments, the dependent $y$ variable, the matrix $X$ containing all independent variables, the model as a logical vector specifying the columns of $X$, and a list of complexity measures for the features involved in the model
-```{r}
-loglik.example <- function (y, x, model, complex, params) {
-  r <- 20/223
-  suppressWarnings({mod <- fastglm(as.matrix(x[,model]), y, family=binomial())})
-  ret <- (-(mod$deviance -2*log(r)*sum(complex$width)))/2
-  return(list(crit=ret, coefs=mod$coefficients))
-}
-```
-To be able to calculate the alphas when using for example strategy 3 as per Hubin et al., we need a function for the log likelihood, in this example we will use the function supplied by the package called `logistic.loglik.alpha`. With that function as a starting point, you can also create your own function for this. We also adjust our parameter list to use the third strategy.
-```{r}
-params$feat$alpha <- "random"
-```
-
-We are now ready to run the algorithm, in this vignette we will only run very few iterations for demonstration purposes, but the only thing that needs to be changed are the number or populations to visit `T`, the number of iterations per population `N` and the number of iterations for the final population `N.final`
-```{r}
-set.seed(1234)
-result <- gmjmcmc(bc[, -1], bc[, 1], fixed = 1, loglik.example, logistic.loglik.alpha, transforms, P=3, N=30, N.final=60, probs, params)
-```
-We can then summarize the results using the supplied function and get a plot of the importance of the parameters in the last population of features
-```{r, fig.width=6, fig.height=6}
-plot(result)
-```
+Must be provided based on test_currect folder

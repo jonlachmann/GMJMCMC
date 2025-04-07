@@ -50,12 +50,9 @@ and merge the results together, simplifying by merging equivalent features (havi
 result <- gmjmcmc.parallel(
  runs = 1,
  cores = 1,
- list(populations = "best", complex.measure = 2, tol = 0.0000001),
- matrix(rnorm(600), 100),
+ y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100),
  P = 2,
- gaussian.loglik,
- loglik.alpha = gaussian.loglik.alpha,
- c("p0", "exp_dbl")
+ transforms = c("p0", "exp_dbl")
 )
 
 summary(result)

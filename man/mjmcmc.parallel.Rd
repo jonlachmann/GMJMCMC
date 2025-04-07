@@ -20,7 +20,7 @@ Merged results from multiple mjmcmc runs
 Run multiple mjmcmc runs in parallel, merging the results before returning.
 }
 \examples{
-result <- mjmcmc.parallel(runs = 1, cores = 1, matrix(rnorm(600), 100), gaussian.loglik)
+result <- mjmcmc.parallel(runs = 1, cores = 1, y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100))
 summary(result)
 plot(result)
 

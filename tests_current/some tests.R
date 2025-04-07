@@ -20,7 +20,7 @@ gen_data <- function(family) {
     y <- rpois(n, lambda)
   } else if (family == "gamma") {
     shape <- 2
-    rate <- exp(-x %*% beta + rnorm(n, mean = 0, sd = 1))
+    rate <- exp(-x %*% beta + rnorm(n, mean = 0, sd = 0.5))
     y <- rgamma(n, shape = shape, rate = rate)
   } else {
     stop("Unsupported family")
@@ -42,7 +42,7 @@ families <- c("gaussian", "binomial", "poisson", "gamma")
 
 # Required parameters for priors
 prior_params <- list(
-  "g-prior" = list(g = 50,a = 50),
+  "g-prior" = list(g = 10,a = 10),
   "hyper-g" = list(a = 3),
   "hyper-g-n" = list(a = 3),
   "ZS-null" = list(a = 3),

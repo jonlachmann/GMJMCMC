@@ -37,7 +37,7 @@ The function identifies the best model by selecting the one with the highest \co
 }
 }
 \examples{
-result <- gmjmcmc(matrix(rnorm(600), 100), P = 2, gaussian.loglik, NULL, c("p0", "exp_dbl"))
+result <- gmjmcmc(x = matrix(rnorm(600), 100),y = matrix(rnorm(100), 100), P = 2, transforms = c("p0", "exp_dbl"))
 get.best.model(result)
 
 }

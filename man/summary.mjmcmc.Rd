@@ -35,7 +35,7 @@ A data frame containing the following columns:
 Function to print a quick summary of the results
 }
 \examples{
-result <- mjmcmc(matrix(rnorm(600), 100), gaussian.loglik)
+result <- mjmcmc( y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100), gaussian.loglik)
 summary(result)
 
 }
