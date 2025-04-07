@@ -70,8 +70,8 @@ glm.logpost.bas <- function (y, x, model, complex, params = list(r = NULL, famil
     cat("An error occurred:", conditionMessage(e), "\n")
   })
 
-  if (length(mod) == 0) {
-    return(list(crit = -.Machine$double.xmax + log(params$r * sum(complex$oc)), coefs = rep(0, p + 1)))
+  if (length(mod) == 0 || is.nan(mod$logmarg[2])) {
+    return(list(crit = -.Machine$double.xmax + log_prior(params, complex), coefs = rep(0, p + 1)))
   }
 
   if (p == 0) {
@@ -137,9 +137,9 @@ lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), b
     # You can also print a message or log the error if needed
     cat("An error occurred:", conditionMessage(e), "\n")
   })
-  #browser()
-  if (length(mod) == 0) {
-    return(list(crit = -.Machine$double.xmax + log(params$r * sum(complex$oc)), coefs = rep(0, p + 1)))
+
+  if (length(mod) == 0 || is.nan(mod$logmarg[2])) {
+    return(list(crit = -.Machine$double.xmax + log_prior(params, complex), coefs = rep(0, p + 1)))
   }
 
   if (p == 0) {
@@ -174,6 +174,12 @@ logistic.loglik <- function (y, x, model, complex, params = list(r = exp(-0.5)))
   else if(length(params$r) == 0)
     params$r = 1 / dim(x)[1]
   suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = binomial())})
+  
+  if (length(mod) == 0 || is.nan(mod$deviance)) {
+    return(list(crit = -.Machine$double.xmax + log_prior(params, complex), coefs = rep(0,sum(model))))
+  }
+  
+  
   ret <- (-(mod$deviance + log(length(y)) * (mod$rank - 1) - 2 * log(params$r) * sum(complex$oc))) / 2
   return(list(crit = ret, coefs = mod$coefficients))
 }
@@ -211,6 +217,11 @@ glm.loglik <- function (y, x, model, complex, params = list(r = exp(-0.5), famil
 
   #browser()
   suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = fam)})
+  
+  if (length(mod) == 0 || is.nan(mod$deviance)) {
+    return(list(crit = -.Machine$double.xmax + log_prior(params, complex), coefs = rep(0,sum(model))))
+  }
+  
   ret <- (-(mod$deviance + log(length(y)) * (mod$rank - 1) - 2 * log(params$r) * sum(complex$oc))) / 2
   return(list(crit = ret, coefs = mod$coefficients))
 }
@@ -449,6 +460,10 @@ gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r =
 
   lp <- log_prior(params, complex)
 
+  if (is.nan(marginal_likelihood)) {
+    return(list(crit = -.Machine$double.xmax + lp, coefs = rep(0,sum(model))))
+  }
+  
   return(list(crit = marginal_likelihood + lp, coefs = fitted_model$coefficients))
 }
 

@@ -225,6 +225,11 @@ glm.loglik2 <- function (y, x, model, complex, params = list(r = exp(-0.5),famil
   }
 
   suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = fam)})
+  
+  if (length(mod) == 0 || is.nan(mod$deviance)) {
+    return(list(crit = -.Machine$double.xmax + log_prior(params, complex), coefs = rep(0,sum(model))))
+  }
+  
   ret <- (-(mod$deviance + log(length(y)) * (mod$rank - 1) - 2 * log(params$r) * sum(complex$oc))) / 2
   return(list(crit=ret, coefs=mod$coefficients))
 }
