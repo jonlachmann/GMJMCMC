@@ -11,7 +11,7 @@ gmjmcmc(
   loglik.alpha = gaussian.loglik.alpha,
   mlpost_params = NULL,
   transforms,
-  intercept = FALSE,
+  intercept = TRUE,
   fixed = 0,
   P = 10,
   N.init = 100,
@@ -23,12 +23,22 @@ gmjmcmc(
 )
 }
 \arguments{
+\item{x}{matrix containing the design matrix with data to use in the algorithm,}
+
+\item{y}{response variable}
+
 \item{loglik.pi}{The (log) density to explore}
 
 \item{loglik.alpha}{The likelihood function to use for alpha calculation}
 
+\item{mlpost_params}{parameters for the estimator function loglik.pi}
+
 \item{transforms}{A Character vector including the names of the non-linear functions to be used by the modification
 and the projection operator.}
+
+\item{intercept}{whether intercept should be added to the design matrix (no model selection for intercept)}
+
+\item{fixed}{how many of the first columns of the design matrix will always be included in the models}
 
 \item{P}{The number of generations for GMJMCMC (Genetically Modified MJMCMC).
 The default value is $P = 10$.
@@ -45,10 +55,6 @@ A larger value like $P = 50$ might be more realistic for more complicated exampl
 \item{sub}{An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)}
 
 \item{verbose}{A logical denoting if messages should be printed}
-
-\item{data}{A matrix containing the data to use in the algorithm,
-first column should be the dependent variable,
-and the rest of the columns should be the independent variables.}
 }
 \value{
 A list containing the following elements:

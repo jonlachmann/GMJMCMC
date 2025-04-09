@@ -19,6 +19,8 @@
 
 \item{dataset}{Set the regular covariates as columns in a dataset}
 
+\item{fixed}{How many of the first columns in dataset are fixed and do not contribute to variable selection}
+
 \item{alphas}{Print a "?" instead of actual alphas to prepare the output for alpha estimation}
 
 \item{labels}{Should the covariates be named, or just referred to as their place in the data.frame.}

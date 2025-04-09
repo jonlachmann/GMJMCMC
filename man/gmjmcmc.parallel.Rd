@@ -24,9 +24,15 @@ gmjmcmc.parallel(
 
 \item{merge.options}{A list of options to pass to the \code{\link[=merge_results]{merge_results()}} function run after the}
 
+\item{x}{matrix containing the design matrix with data to use in the algorithm,}
+
+\item{y}{response variable}
+
 \item{loglik.pi}{The (log) density to explore}
 
 \item{loglik.alpha}{The likelihood function to use for alpha calculation}
+
+\item{mlpost_params}{parameters for the estimator function loglik.pi}
 
 \item{transforms}{A Character vector including the names of the non-linear functions to be used by the modification
 and the projection operator.}

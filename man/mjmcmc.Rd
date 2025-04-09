@@ -19,7 +19,17 @@ mjmcmc(
 )
 }
 \arguments{
+\item{x}{matrix containing the design matrix with data to use in the algorithm,}
+
+\item{y}{response variable}
+
 \item{loglik.pi}{The (log) density to explore}
+
+\item{mlpost_params}{parameters for the estimator function loglik.pi}
+
+\item{intercept}{whether intercept should be added to the design matrix (no model selection for intercept)}
+
+\item{fixed}{how many of the first columns of the design matrix will always be included in the models}
 
 \item{N}{The number of iterations to run for}
 
@@ -30,10 +40,6 @@ mjmcmc(
 \item{sub}{An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)}
 
 \item{verbose}{A logical denoting if messages should be printed}
-
-\item{data}{A matrix containing the data to use in the algorithm,
-first column should be the dependent variable,
-and the rest of the columns should be the independent variables.}
 }
 \value{
 A list containing the following elements:

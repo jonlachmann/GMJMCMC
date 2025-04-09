@@ -10,9 +10,11 @@ NULL
 
 #' Main algorithm for GMJMCMC (Genetically Modified MJMCMC)
 #'
-#' @param data A matrix containing the data to use in the algorithm,
-#' first column should be the dependent variable,
-#' and the rest of the columns should be the independent variables.
+#' @param x matrix containing the design matrix with data to use in the algorithm,
+#' @param y response variable 
+#' @param mlpost_params parameters for the estimator function loglik.pi
+#' @param intercept  whether intercept should be added to the design matrix (no model selection for intercept)
+#' @param fixed how many of the first columns of the design matrix will always be included in the models
 #' @param loglik.pi The (log) density to explore
 #' @param loglik.alpha The likelihood function to use for alpha calculation
 #' @param transforms A Character vector including the names of the non-linear functions to be used by the modification 
@@ -55,7 +57,7 @@ gmjmcmc <- function (
   loglik.alpha = gaussian.loglik.alpha,
   mlpost_params = NULL,
   transforms,
-  intercept = FALSE,
+  intercept = TRUE,
   fixed = 0,
   P = 10,
   N.init = 100,

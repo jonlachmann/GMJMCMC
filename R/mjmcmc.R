@@ -5,9 +5,11 @@
 
 #' Main algorithm for MJMCMC (Genetically Modified MJMCMC)
 #'
-#' @param data A matrix containing the data to use in the algorithm,
-#' first column should be the dependent variable, 
-#' and the rest of the columns should be the independent variables.
+#' @param x matrix containing the design matrix with data to use in the algorithm,
+#' @param y response variable 
+#' @param mlpost_params parameters for the estimator function loglik.pi
+#' @param intercept  whether intercept should be added to the design matrix (no model selection for intercept)
+#' @param fixed how many of the first columns of the design matrix will always be included in the models
 #' @param loglik.pi The (log) density to explore
 #' @param N The number of iterations to run for
 #' @param probs A list of the various probability vectors to use

@@ -97,6 +97,7 @@ update.alphas <- function (feature, alphas, recurse=FALSE) {
 #'
 #' @param x An object of class "feature"
 #' @param dataset Set the regular covariates as columns in a dataset
+#' @param fixed How many of the first columns in dataset are fixed and do not contribute to variable selection
 #' @param alphas Print a "?" instead of actual alphas to prepare the output for alpha estimation
 #' @param labels Should the covariates be named, or just referred to as their place in the data.frame.
 #' @param round Should numbers be rounded when printing? Default is FALSE, otherwise it can be set to the number of decimal places.
