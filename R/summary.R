@@ -182,7 +182,11 @@ summary.mjmcmc <- function (object, tol = 0.0001, labels = FALSE, effects = NULL
 #' \item{marg.probs}{Marginal probabilities corresponding to the ordered feature strings.}
 #'
 #' @examples
-#' result <- mjmcmc.parallel(runs = 1, cores = 1,  y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100), gaussian.loglik)
+#' result <- mjmcmc.parallel(runs = 1, 
+#' cores = 1,  
+#' y = matrix(rnorm(100), 100),
+#' x = matrix(rnorm(600), 100), 
+#' gaussian.loglik)
 #' summary(result)
 #'
 #' @export

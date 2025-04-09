@@ -611,7 +611,7 @@ log_prior <- function (params, complex) {
 #' @examples
 #' fbms.mlik.master(rnorm(100), matrix(rnorm(100)), c(TRUE,TRUE), list(oc = 1))
 #'
-#' @importFrom BAS beta.prime bic.prior CCH EB.local g.prior hyper.g hyper.g.n tCCH intrinsic TG Jeffreys uniform
+#' @importFrom BAS robust beta.prime bic.prior CCH EB.local g.prior hyper.g hyper.g.n tCCH intrinsic TG Jeffreys uniform
 #' @export
 fbms.mlik.master_old <- function(y, x, model, complex, params = list(family = "gaussian", prior_beta = "g-prior", r = exp(-0.5))) {
   # Extract dimensions
@@ -658,7 +658,7 @@ fbms.mlik.master_old <- function(y, x, model, complex, params = list(family = "g
     if (params_master$prior_beta %in% gaussian_only_priors) {
       stop(sprintf("Prior '%s' is not supported for GLM family '%s'. Supported GLM priors: %s",
                    params_master$prior_beta, params_master$family,
-                   paste(c(glm_only_priors, glm_and_gaussian_priors), collapse = ", ")))
+                   paste(c(glm_and_gaussian_priors), collapse = ", ")))
     }
 
     params_nested$family <- params_master$family

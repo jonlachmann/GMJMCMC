@@ -607,7 +607,7 @@ log_prior <- function (params, complex) {
 #' params = list(family = "gaussian", beta_prior = list(type = "g-prior", a = 2),
 #'          r = exp(-0.5)))
 #'
-#' @importFrom BAS beta.prime bic.prior CCH EB.local g.prior hyper.g hyper.g.n tCCH intrinsic TG Jeffreys uniform
+#' @importFrom BAS robust beta.prime bic.prior CCH EB.local g.prior hyper.g hyper.g.n tCCH intrinsic TG Jeffreys uniform
 #' @export
 fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gaussian", beta_prior = list(type = "g-prior"), r = exp(-0.5))) {
   # Extract dimensions

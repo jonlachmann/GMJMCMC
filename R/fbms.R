@@ -179,14 +179,6 @@ fbms <- function (
   return(res)
 }
 
-fbms.mlpost.master <- function (y, x, model, complex, params = list(family = "gaussian", beta_prior = list(type = "g-prior"), r = exp(-0.5))) {
-  params_use <- params
-  params_use$beta_prior <- gen.mlpost.params(params$beta_prior$type, params$beta_prior, ncol(x), nrow(x))
-  params_use$beta_prior$type <- params$beta_prior$type
-  loglik.pi <- select.mlpost.fun(params$beta_prior$type, params$family)
-  return(loglik.pi(y, x, model, complex, params_use))
-}
-
 gen.mlpost.params.glm <- function (beta_prior, user_params, p, n) {
   
   if(beta_prior == "Jeffreys-BIC")
