@@ -62,6 +62,7 @@
 #'
 #' @seealso \code{\link{mjmcmc}}, \code{\link{gmjmcmc}}, \code{\link{gmjmcmc.parallel}}
 #' @export
+#' @importFrom stats terms
 fbms <- function (
   formula = NULL,
   family = "gaussian",
