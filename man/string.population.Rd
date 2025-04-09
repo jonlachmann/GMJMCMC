@@ -18,7 +18,10 @@ A matrix of character representations of the features of a model.
 Function to get a character representation of a list of features
 }
 \examples{
-result <- gmjmcmc(y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100), P = 2, transforms = c("p0", "exp_dbl"))
+result <- gmjmcmc(y = matrix(rnorm(100), 100),
+x = matrix(rnorm(600), 100), 
+P = 2, 
+transforms = c("p0", "exp_dbl"))
 string.population(result$populations[[1]])
 
 }

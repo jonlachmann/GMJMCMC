@@ -14,7 +14,10 @@
 #' \item{marg.probs}{Marginal probabilities corresponding to the ordered feature strings.}
 #'
 #' @examples
-#' result <- gmjmcmc(y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100), P = 2, transforms =  c("p0", "exp_dbl"))
+#' result <- gmjmcmc(y = matrix(rnorm(100), 100),
+#' x = matrix(rnorm(600), 100), 
+#' P = 2, 
+#' transforms =  c("p0", "exp_dbl"))
 #' summary(result, pop = "best")
 #'
 #' @export
@@ -149,7 +152,9 @@ summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, effect
 #' \item{marg.probs}{Marginal probabilities corresponding to the ordered feature strings.}
 #'
 #' @examples
-#' result <- mjmcmc( y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100), gaussian.loglik)
+#' result <- mjmcmc(y = matrix(rnorm(100), 100),
+#' x = matrix(rnorm(600), 100), 
+#' gaussian.loglik)
 #' summary(result)
 #'
 #' @export

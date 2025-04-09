@@ -22,7 +22,9 @@ A character representation of a model
 Function to generate a function string for a model consisting of features
 }
 \examples{
-result <- gmjmcmc(y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100), P = 2, transforms =  c("p0", "exp_dbl"))
+result <- gmjmcmc(y = matrix(rnorm(100), 100),
+x = matrix(rnorm(600), 100), 
+P = 2, transforms =  c("p0", "exp_dbl"))
 summary(result)
 plot(result)
 model.string(c(TRUE, FALSE, TRUE, FALSE, TRUE), result$populations[[1]])

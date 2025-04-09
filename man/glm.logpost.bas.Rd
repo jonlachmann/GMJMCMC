@@ -34,6 +34,9 @@ This function is created as an example of how to create an estimator that is use
 to calculate the marginal likelihood of a model.
 }
 \examples{
-glm.logpost.bas(as.integer(rnorm(100) > 0), cbind(1, matrix(rnorm(100))), c(TRUE, TRUE), list(oc = 1))
+glm.logpost.bas(as.integer(rnorm(100) > 0), 
+cbind(1, matrix(rnorm(100))), 
+c(TRUE, TRUE), 
+list(oc = 1))
 
 }

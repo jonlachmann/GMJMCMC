@@ -67,7 +67,10 @@ A list containing the following elements:
 Main algorithm for GMJMCMC (Genetically Modified MJMCMC)
 }
 \examples{
-result <- gmjmcmc(y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100), P = 2, transform = c("p0", "exp_dbl"))
+result <- gmjmcmc(y = matrix(rnorm(100), 100),
+x = matrix(rnorm(600), 100), 
+P = 2, 
+transform = c("p0", "exp_dbl"))
 summary(result)
 plot(result)
 

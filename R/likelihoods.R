@@ -16,7 +16,10 @@
 #' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 #'
 #' @examples
-#' glm.logpost.bas(as.integer(rnorm(100) > 0), cbind(1, matrix(rnorm(100))), c(TRUE, TRUE), list(oc = 1))
+#' glm.logpost.bas(as.integer(rnorm(100) > 0), 
+#' cbind(1, matrix(rnorm(100))), 
+#' c(TRUE, TRUE), 
+#' list(oc = 1))
 #' 
 #' @importFrom BAS uniform Jeffreys g.prior
 #' @importFrom stats poisson Gamma glm.control
@@ -597,7 +600,12 @@ log_prior <- function (params, complex) {
 #'   \item{coefs}{Posterior mode of the coefficients.}
 #'
 #' @examples
-#' fbms.mlik.master(y = rnorm(100), x = matrix(rnorm(100)), c(TRUE,TRUE), list(oc = 1),params = list(family = "gaussian", beta_prior = list(type = "g-prior", a = 2), r = exp(-0.5)))
+#' fbms.mlik.master(y = rnorm(100), 
+#' x = matrix(rnorm(100)), 
+#' c(TRUE,TRUE), 
+#' list(oc = 1),
+#' params = list(family = "gaussian", beta_prior = list(type = "g-prior", a = 2),
+#'          r = exp(-0.5)))
 #'
 #' @importFrom BAS beta.prime bic.prior CCH EB.local g.prior hyper.g hyper.g.n tCCH intrinsic TG Jeffreys uniform
 #' @export

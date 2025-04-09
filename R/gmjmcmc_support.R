@@ -44,7 +44,10 @@ verify.inputs <- function (data, loglik.pi, transforms, T, N, N.final, probs, pa
 #' @return A numeric vector of marginal model probabilities based on relative frequencies of model visits in MCMC.
 #'
 #' @examples
-#' result <- gmjmcmc(x = matrix(rnorm(600), 100),y = matrix(rnorm(100), 100), P = 2, transforms = c("p0", "exp_dbl"))
+#' result <- gmjmcmc(x = matrix(rnorm(600), 100),
+#' y = matrix(rnorm(100), 100), 
+#' P = 2, 
+#' transforms = c("p0", "exp_dbl"))
 #' marginal.probs(result$models[[1]])
 #'
 #' @export

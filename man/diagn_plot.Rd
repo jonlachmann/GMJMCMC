@@ -26,7 +26,10 @@ A list of summary statistics for checking convergence with given confidence inte
 Plot convergence of best/median/mean/other summary log posteriors in time
 }
 \examples{
-result <- gmjmcmc( y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100), P = 2, transforms =  c("p0", "exp_dbl"))
+result <- gmjmcmc( y = matrix(rnorm(100), 100),
+x = matrix(rnorm(600), 100), 
+P = 2, 
+transforms =  c("p0", "exp_dbl"))
 diagnstats <- diagn_plot(result)
 
 }

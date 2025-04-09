@@ -223,7 +223,9 @@ population.weigths <- function (results, pops.use) {
 #' @return A character representation of a model
 #'
 #' @examples
-#' result <- gmjmcmc(y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100), P = 2, transforms =  c("p0", "exp_dbl"))
+#' result <- gmjmcmc(y = matrix(rnorm(100), 100),
+#' x = matrix(rnorm(600), 100), 
+#' P = 2, transforms =  c("p0", "exp_dbl"))
 #' summary(result)
 #' plot(result)
 #' model.string(c(TRUE, FALSE, TRUE, FALSE, TRUE), result$populations[[1]])
@@ -354,7 +356,9 @@ get.mpm.model <- function(result, y, x, labels = F, family = "gaussian", loglik.
 #' }
 #'
 #' @examples
-#' result <- gmjmcmc(x = matrix(rnorm(600), 100),y = matrix(rnorm(100), 100), P = 2, transforms = c("p0", "exp_dbl"))
+#' result <- gmjmcmc(x = matrix(rnorm(600), 100),
+#' y = matrix(rnorm(100), 100), 
+#' P = 2, transforms = c("p0", "exp_dbl"))
 #' get.best.model(result)
 #'
 #' @export
@@ -419,7 +423,10 @@ get.best.model.mjmcmc <- function (result, labels) {
 #' @return A matrix of character representations of the features of a model.
 #'
 #' @examples
-#' result <- gmjmcmc(y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100), P = 2, transforms = c("p0", "exp_dbl"))
+#' result <- gmjmcmc(y = matrix(rnorm(100), 100),
+#' x = matrix(rnorm(600), 100), 
+#' P = 2, 
+#' transforms = c("p0", "exp_dbl"))
 #' string.population(result$populations[[1]])
 #'
 #' @export
@@ -437,7 +444,10 @@ string.population <- function(x, round = 2) {
 #' @return A matrix of character representations of a list of models.
 #'
 #' @examples
-#' result <- gmjmcmc(y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100), P = 2, transforms = c("p0", "exp_dbl"))
+#' result <- gmjmcmc(y = matrix(rnorm(100), 100),
+#' x = matrix(rnorm(600), 100), 
+#' P = 2, 
+#' transforms = c("p0", "exp_dbl"))
 #' string.population.models(result$populations[[2]], result$models[[2]])
 #'
 #' @export
@@ -458,7 +468,10 @@ string.population.models <- function(features, models, round = 2, link = "I") {
 #' @return No return value, just creates a plot
 #'
 #' @examples
-#' result <- gmjmcmc(y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100), P = 2, transforms = c("p0", "exp_dbl"))
+#' result <- gmjmcmc(y = matrix(rnorm(100), 100),
+#' x = matrix(rnorm(600), 100), 
+#' P = 2, 
+#' transforms = c("p0", "exp_dbl"))
 #' plot(result)
 #' 
 #'
@@ -533,7 +546,11 @@ marg.prob.plot <- function (feats.strings, marg.probs, count = "all", ...) {
 #' @return No return value, just creates a plot
 #' 
 #' @examples
-#' result <- mjmcmc.parallel(runs = 1, cores = 1, y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100), gaussian.loglik)
+#' result <- mjmcmc.parallel(runs = 1, 
+#' cores = 1, 
+#' y = matrix(rnorm(100), 100),
+#' x = matrix(rnorm(600), 100), 
+#' gaussian.loglik)
 #' plot(result)
 #' 
 #' @export 
@@ -608,7 +625,11 @@ plot.gmjmcmc_merged <- function (x, count = "all", pop = NULL,tol =  0.0000001, 
 #' @examples
 #'
 #' data <- data.frame(matrix(rnorm(600), 100))
-#' result <- mjmcmc.parallel(runs = 2, cores = 1, y = matrix(rnorm(100), 100),x = data, gaussian.loglik)
+#' result <- mjmcmc.parallel(runs = 2, 
+#' cores = 1, 
+#' y = matrix(rnorm(100), 100),
+#' x = data, 
+#' gaussian.loglik)
 #' compute_effects(result,labels = names(data))
 #'
 #' @seealso \code{\link{predict}}

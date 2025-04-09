@@ -68,6 +68,11 @@ This function serves as a unified interface to compute the log marginal likeliho
 for different regression models and priors by calling specific log likelihood functions.
 }
 \examples{
-fbms.mlik.master(y = rnorm(100), x = matrix(rnorm(100)), c(TRUE,TRUE), list(oc = 1),params = list(family = "gaussian", beta_prior = list(type = "g-prior", a = 2), r = exp(-0.5)))
+fbms.mlik.master(y = rnorm(100), 
+x = matrix(rnorm(100)), 
+c(TRUE,TRUE), 
+list(oc = 1),
+params = list(family = "gaussian", beta_prior = list(type = "g-prior", a = 2),
+         r = exp(-0.5)))
 
 }

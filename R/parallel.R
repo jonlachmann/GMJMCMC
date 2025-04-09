@@ -88,7 +88,10 @@ rmclapply <- function(runs, args, fun, mc.cores = NULL) {
 #' @return Merged results from multiple mjmcmc runs
 #'
 #' @examples
-#' result <- mjmcmc.parallel(runs = 1, cores = 1, y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100))
+#' result <- mjmcmc.parallel(runs = 1, 
+#' cores = 1, 
+#' y = matrix(rnorm(100), 100),
+#' x = matrix(rnorm(600), 100))
 #' summary(result)
 #' plot(result)
 #'
