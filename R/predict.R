@@ -53,11 +53,10 @@ predict.bgnlm_model <- function(object, x, link = function(x) { x }, ... ) {
 #' 
 #' @examples
 #' result <- gmjmcmc(
-#'  matrix(rnorm(600), 100),
+#'  x = matrix(rnorm(600), 100),
+#'  y = matrix(rnorm(100), 100),
 #'  P = 2,
-#'  gaussian.loglik,
-#'  loglik.alpha = gaussian.loglik.alpha,
-#'  c("p0", "exp_dbl")
+#'  transforms = c("p0", "exp_dbl")
 #' )
 #' preds <- predict(result, matrix(rnorm(600), 100))
 #' 
@@ -108,11 +107,10 @@ predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.
 #'  runs = 1,
 #'  cores = 1,
 #'  list(populations = "best", complex.measure = 2, tol = 0.0000001),
-#'  matrix(rnorm(600), 100),
+#'  x = matrix(rnorm(600), 100),
+#'  y = matrix(rnorm(100), 100),
 #'  P = 2,
-#'  gaussian.loglik,
-#'  loglik.alpha = gaussian.loglik.alpha,
-#'  c("p0", "exp_dbl")
+#'  transforms = c("p0", "exp_dbl")
 #' )
 #' preds <- predict(result, matrix(rnorm(600), 100))
 #'
@@ -174,8 +172,8 @@ predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles =
 #' \item{quantiles}{Quantiles of aggregated predictions.}
 #' 
 #' @examples
-#' result <- mjmcmc(matrix(rnorm(600), 100), gaussian.loglik)
-#' preds <- predict(result, matrix(rnorm(500), 100))
+#' result <- mjmcmc(x = matrix(rnorm(600), 100),y = matrix(rnorm(100), 100), gaussian.loglik)
+#' preds <- predict(result, matrix(rnorm(600), 100))
 #' 
 #' @export
 predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
@@ -209,8 +207,8 @@ predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025
 #' \item{quantiles}{Quantiles of aggregated predictions.}
 #' 
 #' @examples
-#' result <- mjmcmc.parallel(runs = 1, cores = 1, matrix(rnorm(600), 100), gaussian.loglik)
-#' preds <- predict(result, matrix(rnorm(500), 100))
+#' result <- mjmcmc.parallel(runs = 1, cores = 1, x = matrix(rnorm(600), 100),y = matrix(rnorm(100), 100), gaussian.loglik)
+#' preds <- predict(result, matrix(rnorm(600), 100))
 #' 
 #' @export
 predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
@@ -246,13 +244,12 @@ predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles 
 #'  runs = 1,
 #'  cores = 1,
 #'  list(populations = "best", complex.measure = 2, tol = 0.0000001),
-#'  matrix(rnorm(600), 100),
+#'  x = matrix(rnorm(600), 100),
+#'  y = matrix(rnorm(100), 100),
 #'  P = 2,
-#'  gaussian.loglik,
-#'  loglik.alpha = gaussian.loglik.alpha,
-#'  c("p0", "exp_dbl")
+#'  transforms = c("p0", "exp_dbl")
 #' )
-#' preds <- predict(result$results, matrix(rnorm(600), 100))
+#' preds <- predict(result, matrix(rnorm(600), 100))
 #' 
 #' @export
 predict.gmjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {

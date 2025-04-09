@@ -39,11 +39,10 @@ Predict using a gmjmcmc result object.
 }
 \examples{
 result <- gmjmcmc(
- matrix(rnorm(600), 100),
+ x = matrix(rnorm(600), 100),
+ y = matrix(rnorm(100), 100),
  P = 2,
- gaussian.loglik,
- loglik.alpha = gaussian.loglik.alpha,
- c("p0", "exp_dbl")
+ transforms = c("p0", "exp_dbl")
 )
 preds <- predict(result, matrix(rnorm(600), 100))
 
