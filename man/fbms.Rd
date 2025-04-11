@@ -8,7 +8,7 @@ Or Fit a BGLM model using Modified Mode Jumping Markov Chain Monte Carlo (MCMC) 
 fbms(
   formula = NULL,
   family = "gaussian",
-  beta_prior = list(type = "g-prior"),
+  beta_prior = list(type = "robust"),
   model_prior = NULL,
   data = NULL,
   impute = FALSE,

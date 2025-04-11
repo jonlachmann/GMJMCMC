@@ -90,6 +90,7 @@ rmclapply <- function(runs, args, fun, mc.cores = NULL) {
 #' @examples
 #' result <- mjmcmc.parallel(runs = 1, 
 #' cores = 1, 
+#' loglik.pi = FBMS::gaussian.loglik,
 #' y = matrix(rnorm(100), 100),
 #' x = matrix(rnorm(600), 100))
 #' summary(result)
@@ -119,6 +120,7 @@ mjmcmc.parallel <- function(runs = 2, cores = getOption("mc.cores", 2L), ...) {
 #' result <- gmjmcmc.parallel(
 #'   runs = 1,
 #'   cores = 1,
+#'   loglik.pi = FBMS::gaussian.loglik,
 #'   y = matrix(rnorm(100), 100),
 #'   x = matrix(rnorm(600), 100),
 #'   transforms = c("p0", "exp_dbl")
