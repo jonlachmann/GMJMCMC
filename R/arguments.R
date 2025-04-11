@@ -322,7 +322,7 @@ gen.params.gmjmcmc <- function (data) {
   params <- gen.params.mjmcmc(data)
 
   ## Get the dimensions of the data to set parameters based on it
-  if(is.list(data) && length(data$fixed)>0 && length(data$x) > 0)
+  if (is.list(data) && length(data$fixed)>0 && length(data$x) > 0)
     ncov <- ncol(data$x) - data$fixed #This is not ok as for fbms no one knows anything about fixed and $x! 
   else # I fixed that, but this is somewhat not elegant still
   {

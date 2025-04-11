@@ -66,7 +66,7 @@
 fbms <- function (
   formula = NULL,
   family = "gaussian",
-  beta_prior = list(type = "g"),
+  beta_prior = list(type = "g-prior"),
   model_prior = NULL,
   data = NULL,
   impute = FALSE,

@@ -50,33 +50,34 @@ test_that("Test (G)MJMCMC", {
   probs$gen <- c(0, 1, 0, 0)
   params$feat$D <- 1
   params$feat$L <- 2
+  mlpost_params = list(family = "gaussian", beta_prior = list(type = "Jeffreys-BIC"))
 
   # No intercept
-  mod1 <- mjmcmc(x, y, gaussian.loglik)
-  mod1p <- mjmcmc.parallel(2, 2, x, y, gaussian.loglik)
+  mod1 <- mjmcmc(x, y, gaussian.loglik, mlpost_params, intercept = FALSE)
+  mod1p <- mjmcmc.parallel(2, 2, x, y, gaussian.loglik, mlpost_params, intercept = FALSE)
   validate.model(mod1, x, y)
   validate.model(mod1p, x, y)
 
-  gmod1 <- gmjmcmc(x, y_sin, gaussian.loglik, transforms = "sin", params = params, probs = probs, P = 20, verbose = FALSE)
-  gmod1p <- gmjmcmc.parallel(2, 2, x = x, y = y_sin, loglik.pi = gaussian.loglik, transforms = "sin", params = params, probs = probs, verbose = FALSE)
+  gmod1 <- gmjmcmc(x, y_sin, gaussian.loglik, mlpost_params = mlpost_params, transforms = "sin", params = params, probs = probs, P = 20, intercept = FALSE, verbose = FALSE)
+  gmod1p <- gmjmcmc.parallel(2, 2, x = x, y = y_sin, loglik.pi = gaussian.loglik, mlpost_params = mlpost_params, transforms = "sin", params = params, probs = probs, intercept = FALSE, verbose = FALSE)
   validate.gmodel(gmod1, x, y_sin)
   validate.gmodel(gmod1p, x, y_sin)
 
   # Model defined intercept
-  mod2 <- mjmcmc(x, y_shift, gaussian.loglik, intercept = TRUE)
+  mod2 <- mjmcmc(x, y_shift, gaussian.loglik, mlpost_params, intercept = TRUE)
   validate.model(mod2, x, y_shift)
 
-  gmod2 <- gmjmcmc(x, y_sin_shift, gaussian.loglik, transforms = "sin", params = params, probs = probs, intercept = TRUE, P = 20, verbose = FALSE)
-  gmod2p <- gmjmcmc.parallel(2, 2, x = x, y = y_sin_shift, loglik.pi = gaussian.loglik, transforms = "sin", params = params, probs = probs, intercept = TRUE, verbose = FALSE)
+  gmod2 <- gmjmcmc(x, y_sin_shift, gaussian.loglik, mlpost_params = mlpost_params, transforms = "sin", params = params, probs = probs, intercept = TRUE, P = 20, verbose = FALSE)
+  gmod2p <- gmjmcmc.parallel(2, 2, x = x, y = y_sin_shift, loglik.pi = gaussian.loglik, mlpost_params = mlpost_params, transforms = "sin", params = params, probs = probs, intercept = TRUE, verbose = FALSE)
   validate.gmodel(gmod2, x, y_sin_shift)
   validate.gmodel(gmod2p, x, y_sin_shift)
 
   # User defined intercept
-  mod3 <- mjmcmc(cbind(1, x), y_shift, gaussian.loglik, fixed = 1)
+  mod3 <- mjmcmc(cbind(1, x), y_shift, gaussian.loglik, mlpost_params, fixed = 1)
   validate.model(mod3, cbind(1, x), y_shift)
 
-  gmod3 <- gmjmcmc(cbind(1, x), y_sin_shift, gaussian.loglik, transforms = "sin", params = params, probs = probs, fixed = 1, P = 20, verbose = FALSE)
-  gmod3p <- gmjmcmc.parallel(2, 2, x = cbind(1, x), y = y_sin_shift, loglik.pi = gaussian.loglik, transforms = "sin", params = params, probs = probs, fixed = 1, verbose = FALSE)
+  gmod3 <- gmjmcmc(cbind(1, x), y_sin_shift, gaussian.loglik, mlpost_params = mlpost_params, transforms = "sin", params = params, probs = probs, fixed = 1, intercept = FALSE, P = 20, verbose = FALSE)
+  gmod3p <- gmjmcmc.parallel(2, 2, x = cbind(1, x), y = y_sin_shift, loglik.pi = gaussian.loglik, mlpost_params = mlpost_params, transforms = "sin", params = params, probs = probs, fixed = 1, intercept = FALSE, verbose = FALSE)
   validate.gmodel(gmod3, cbind(1, x), y_sin_shift)
   validate.gmodel(gmod3p, cbind(1, x), y_sin_shift)
 })
