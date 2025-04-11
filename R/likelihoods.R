@@ -615,6 +615,9 @@ fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gauss
   p <- sum(model) - 1  # Number of predictors excluding intercept
   params_use <- list()
 
+  if(length(params$r) == 0)
+    params$r = 1/length(y)
+  
   if(params$family == "gaussian")
     params_use$beta_prior <- gen.mlpost.params.lm(params$beta_prior$type, params$beta_prior, p+1, n)
   else
@@ -622,6 +625,8 @@ fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gauss
     params_use$beta_prior <- gen.mlpost.params.glm(params$beta_prior$type, params$beta_prior, p+1, n)
     params_use$family <- params$family
   }
+  
+
   
   loglik.pi <- select.mlpost.fun(params$beta_prior$type, params$family)
   
