@@ -35,7 +35,7 @@ df <- as.data.frame(cbind(y, X))
 
 
 transforms <- c("")
-params <- gen.params.gmjmcmc(df)
+params <- gen.params.gmjmcmc(ncol(df) - 1)
 #params$mlpost$var = "unknown" #this will set the variance to unknwon
 probs <- gen.probs.gmjmcmc(transforms)
 probs$gen <- c(1,0,0,1)            #Include interactions and mutations
@@ -51,7 +51,7 @@ if (use.fbms) {
   result <- fbms(data = df, method = "gmjmcmc", transforms = transforms, 
                   probs = probs, params = params, P=40)
 } else {
-  result <- gmjmcmc(df, transforms = transforms, params = params, probs = probs, P=40)
+  result <- gmjmcmc(x = df[, -1], y = df[, 1], transforms = transforms, params = params, probs = probs, P=40)
 }
 summary(result)
 
@@ -61,7 +61,7 @@ if (use.fbms) {
   result2 <- fbms(data = df, method = "gmjmcmc", transforms = transforms, 
                  probs = probs, params = params, P=40)
 } else {
-  result2 <- gmjmcmc(df, transforms = transforms, N.init = 1000, N.final = 5000,
+  result2 <- gmjmcmc(x = df[, -1], y = df[, 1], transforms = transforms, N.init = 1000, N.final = 5000,
                      probs = probs, params = params,  P = 40)
 }
 summary(result2, tol = 0.01)
@@ -81,7 +81,7 @@ if (use.fbms) {
                  runs = 40, cores = 10,
                  probs = probs, params = params, P=25)
 } else {
-  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 10, data = df, 
+  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 10, x = df[, -1], y = df[, 1],
                             transforms = transforms, probs = probs, params = params, P=25)
 }
 
@@ -97,7 +97,7 @@ if (use.fbms) {
                  runs = 40, cores = 10, N.init=1000, N.final=2000,
                  probs = probs, params = params, P=25)
 } else {
-  result_parallel2 =  gmjmcmc.parallel(runs = 40, cores = 10, data = df, 
+  result_parallel2 =  gmjmcmc.parallel(runs = 40, cores = 10, x = df[, -1], y = df[, 1],
                                 transforms = transforms, probs = probs, params = params, P=25, 
                                 N.init=1000, N.final=2000)
 }
@@ -120,7 +120,7 @@ set.seed(123)
 if (use.fbms) {
   result.lin <- fbms(data = df, N = 5000)
 } else {
-  result.lin <- mjmcmc(df, gaussian.loglik, N = 5000)
+  result.lin <- mjmcmc(x = df[, -1], y = dt[, 1], gaussian.loglik, N = 5000)
 }
 
 plot(result.lin)

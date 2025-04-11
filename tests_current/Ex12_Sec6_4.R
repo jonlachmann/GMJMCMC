@@ -36,7 +36,7 @@ n = dim(df)[1]
 
 p = dim(df)[2] - 1   
 
-params <- gen.params.gmjmcmc(data = df)
+params <- gen.params.gmjmcmc(ncol(df) - 1)
 params$mlpost$r = 0.5
 params$mlpost$subs = 0.01
 
@@ -82,14 +82,14 @@ logistic.posterior.bic.irlssgd <- function (y, x, model, complex, params)
 set.seed(100001)
 tic()
 # subsampling analysis
-tmp1 <- gmjmcmc(df, logistic.posterior.bic.irlssgd, transforms = transforms, 
+tmp1 <- gmjmcmc(x = df[, -1], y = df[, 1], logistic.posterior.bic.irlssgd, transforms = transforms,
                 params = params, P = 2, sub  = T)
 time1 = toc() 
 
 set.seed(100002)
 tic()
 # regular analysis
-tmp2 <- gmjmcmc(df, logistic.loglik, transforms = transforms, 
+tmp2 <- gmjmcmc(x = df[, -1], y = df[, 1], logistic.loglik, transforms = transforms,
                 params = params, P = 2)
 time2 = toc() 
 
@@ -107,7 +107,7 @@ c(time1, time2)
 set.seed(100003)
 
 tic()
-result <- gmjmcmc.parallel(runs = 10,cores = 10, data = df,
+result <- gmjmcmc.parallel(runs = 10,cores = 10, x = df[, -1], y = df[, 1],
                            loglik.pi = logistic.posterior.bic.irlssgd, 
                            transforms = transforms, params = params,  P = 3, sub = T)
 time3 = toc() 
@@ -120,7 +120,7 @@ summary(result)
 set.seed(100004)
 
 tic()
-result1a <- gmjmcmc.parallel(runs = 10,cores = 10, data = df,
+result1a <- gmjmcmc.parallel(runs = 10,cores = 10, x = df[, -1], y = df[, 1],
                            loglik.pi = logistic.loglik, 
                            transforms = transforms, params = params,  P = 3)
 time4 = toc() 
@@ -139,7 +139,7 @@ summary(result1a)
 
 set.seed(100005)
 tic()
-result2 <- gmjmcmc.parallel(runs = 40,cores = 40, data = df,
+result2 <- gmjmcmc.parallel(runs = 40,cores = 40, x = df[, -1], y = df[, 1],
                            loglik.pi = logistic.posterior.bic.irlssgd, 
                            transforms = transforms, params = params,  P = 10, sub = T)
 time5 = toc() 
@@ -153,7 +153,7 @@ summary(result2)
 set.seed(100006)
 
 tic()
-result2a <- gmjmcmc.parallel(runs = 40,cores = 40, data = df,
+result2a <- gmjmcmc.parallel(runs = 40,cores = 40, x = df[, -1], y = df[, 1],
                              loglik.pi = logistic.loglik, 
                              transforms = transforms, params = params,  P = 10)
 time6 = toc() 

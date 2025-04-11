@@ -36,7 +36,7 @@ use.fbms = FALSE
 #
 ####################################################
 
-params <- gen.params.gmjmcmc(df.train)
+params <- gen.params.gmjmcmc(ncol(df.train) - 1)
 params$mlpost$var <- 1
 
 if (use.fbms) {
@@ -101,7 +101,7 @@ if (use.fbms) {
   result_parallel_unitphi <- fbms(data = df.train, method = "gmjmcmc.parallel", transforms = transforms,
                                   runs = 40, cores = 10, P=25,params = params)
 } else {
-  result_parallel_unitphi <- gmjmcmc.parallel(runs = 40, cores = 10, data = df.train, loglik.pi = gaussian.loglik, 
+  result_parallel_unitphi <- gmjmcmc.parallel(runs = 40, cores = 10, x = df.train[, -1], y = df.train[, 1], loglik.pi = gaussian.loglik,
                                               transforms = transforms, P = 25, params = params)
 }
 summary(result_parallel_unitphi, tol = 0.01)
@@ -138,10 +138,10 @@ params$mlpost$r <- 1/dim(df.train)[1]
 params$mlpost$alpha <- dim(df.train)[1]
 set.seed(1)
 if (use.fbms) {
-  result_parallel_g <- fbms(data = df.train,family = "custom", method = "gmjmcmc.parallel",loglik.pi = lm.logpost.bas, transforms = transforms,
+  result_parallel_g <- fbms(data = df.train, family = "custom", method = "gmjmcmc.parallel",loglik.pi = lm.logpost.bas, transforms = transforms,
                           runs = 40, cores = 10, P=25,params = params)
 } else {
-  result_parallel_g <- gmjmcmc.parallel(runs = 40, cores = 10, data = df.train, loglik.pi = lm.logpost.bas, 
+  result_parallel_g <- gmjmcmc.parallel(runs = 40, cores = 10, x = df.train[, -1], y = df.train[, 1], loglik.pi = lm.logpost.bas,
                                       transforms = transforms, P=25,params = params)
 }
 summary(result_parallel_g, tol = 0.01)
@@ -298,7 +298,7 @@ for(prior in c("g-prior",
 
 
 #default for N.final = N.init
-params <- gen.params.gmjmcmc(df.train)
+params <- gen.params.gmjmcmc(ncol(df.train) - 1)
 params$mlpost$g <- dim(df.train)[1]
 tic()
 result.default <- fbms(formula = semimajoraxis ~ 1 + . , data = df.train, method = "gmjmcmc.parallel",cores = 10, runs = 10, transforms = transforms, loglik.pi = gaussian.loglik.g, params = params, P = 50)

@@ -32,7 +32,7 @@ probs$gen = c(0,0,0,1)
 # Candidates for the first MJMCMC round based on correlation with response
 c.vec = unlist(mclapply(2:ncol(df), function(x)abs(cor(df[,1],df[,x]))))
 ids = sort(order(c.vec,decreasing=TRUE)[1:50])
-params = gen.params.gmjmcmc(df)
+params = gen.params.gmjmcmc(ncol(df) - 1)
 params$feat$prel.filter <- ids
 
 params$feat$check.col <- T
@@ -87,7 +87,7 @@ if(run.parallel)
                           P=50,N.init=1000,N.final=1000,runs=10,cores=10)
   }else {
     start = Sys.time()
-    result_parallel1=gmjmcmc.parallel(data=df,loglik.pi=gaussian.loglik.g,transforms=transforms,
+    result_parallel1=gmjmcmc.parallel(x = df[, -1], y = df[, 1], loglik.pi=gaussian.loglik.g,transforms=transforms,
                                       probs=probs,params=params,
                                       P=50,N.init=1000,N.final=1000,runs=10,cores=10)
     end = Sys.time()
@@ -103,7 +103,7 @@ if(run.parallel)
                           method="gmjmcmc.parallel",
                           P=50,N.init=1000,N.final=1000,runs=10,cores=10)
   } else {
-    result_parallel2=gmjmcmc.parallel(data=df,loglik.pi=gaussian.loglik.g,transforms=transforms,
+    result_parallel2=gmjmcmc.parallel(x = df[, -1], y = df[, 1], loglik.pi=gaussian.loglik.g,transforms=transforms,
                                      probs=probs,params=params,
                                      P=50,N.init=1000,N.final=1000,runs=10,cores=10)
   }
@@ -117,7 +117,7 @@ if(run.parallel)
                           method="gmjmcmc.parallel",
                           P=50,N.init=1000,N.final=1000,runs=10,cores=10)
   } else {
-    result_parallel3=gmjmcmc.parallel(data=df,loglik.pi=gaussian.loglik.g,transforms=transforms,
+    result_parallel3=gmjmcmc.parallel(x = df[, -1], y = df[, 1], loglik.pi=gaussian.loglik.g,transforms=transforms,
                                      probs=probs,params=params,
                                      P=50,N.init=1000,N.final=1000,runs=10,cores=10)
   }

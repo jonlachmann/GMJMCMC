@@ -32,7 +32,7 @@ ids = sort(order(c.vec,decreasing=TRUE)[1:50])
 #
 ####################################################
 
-params = gen.params.gmjmcmc(df)
+params = gen.params.gmjmcmc(ncol(df) - 1)
 params$feat$check.col <- F
 params$feat$pop.max = 60
 params$prel.select <- ids
@@ -50,7 +50,7 @@ if (use.fbms) {
   result1 <- fbms(data = df, method = "gmjmcmc", transforms = transforms,
                   probs = probs, params = params, P=25)
 } else {
-  result1 =  gmjmcmc(data = df, transforms = transforms,
+  result1 =  gmjmcmc(x = df[, -1], y = df[, 1], transforms = transforms,
                      probs = probs, params = params, P=25)
 }
 show(Sys.time()-start.time)
@@ -64,7 +64,7 @@ if (use.fbms) {
   result2 <- fbms(data = df, method = "gmjmcmc", transforms = transforms,
                   probs = probs, params = params, P=25)
 } else {
-  result2 =  gmjmcmc(data = df, transforms = transforms,
+  result2 =  gmjmcmc(x = df[, -1], y = df[, 1], transforms = transforms,
                      probs = probs, params = params, P=25)
 }
 
@@ -108,7 +108,7 @@ min(cor(X.best))
 ids3 = ids
 
 transforms = c("")
-params = gen.params.gmjmcmc(df[,ids3])
+params = gen.params.gmjmcmc(ncol(df[,ids3]) - 1)
 params$feat$check.col <- F
 params$feat$pop.max = 60
 params$prel.select <- ids3
@@ -123,7 +123,7 @@ if (use.fbms) {
   result3 <- fbms(data = df, method = "gmjmcmc", transforms = transforms,
                   probs = probs, params = params, P=25)
 } else {
-  result3 =  gmjmcmc(data = df, transforms = transforms,
+  result3 =  gmjmcmc(x = df[, -1], y = df[, 1], transforms = transforms,
                      probs = probs, params = params, P=25)
 }
 
@@ -154,7 +154,7 @@ if (use.fbms) {
                                       transforms = transforms, probs = probs, params = params,
                                       P=25, N.init=500, N.final=500)
 } else {
-  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 40,data = df,
+  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 40, x = df[, -1], y = df[, 1],
                                       transforms = transforms, probs = probs, params = params,
                                       P=25, N.init=500, N.final=500)
 }
@@ -187,7 +187,7 @@ if (use.fbms) {
                           transforms = transforms, probs = probs, params = params,
                           P=25, N.init=500, N.final=500)
 } else {
-  result_parallel2 =  gmjmcmc.parallel(runs = 40, cores = 10,data = df,
+  result_parallel2 =  gmjmcmc.parallel(runs = 40, cores = 10, x = df[, -1], y = df[, 1],
                          transforms = transforms, probs = probs, params = params,
                          P=25, N.init=500, N.final=500)
 }

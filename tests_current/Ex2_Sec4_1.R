@@ -84,7 +84,7 @@ set.seed(123)
 
 probs.lin <- gen.probs.mjmcmc()
 
-params.lin <- gen.params.mjmcmc(df)
+params.lin <- gen.params.mjmcmc(ncol(df) - 1)
 params.lin$loglik$r <- 1/dim(df)[1] 
 
 #to set variance to unknown uncomment below

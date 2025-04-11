@@ -38,7 +38,7 @@ transforms <- c("sigmoid","sin_deg","exp_dbl","p0","troot","to3")
 probs <- gen.probs.gmjmcmc(transforms)
 probs$gen <- c(1,1,1,1) 
 
-params <- gen.params.gmjmcmc(df)
+params <- gen.params.gmjmcmc(ncol(df) - 1)
 params$feat$check.col <- F
 ####################################################
 #
@@ -79,7 +79,7 @@ if (use.fbms) {
   result <- fbms(data = df, method = "gmjmcmc", family = "binomial",
                  transforms = transforms, probs = probs, params = params)
 } else {
-  result <- gmjmcmc(df, logistic.loglik, transforms 
+  result <- gmjmcmc(x = df[, -1], y = df[, 1], logistic.loglik, transforms
                   = transforms, probs = probs, params = params)
 }
 # Default tuning parameters for logistic regression:
@@ -125,7 +125,7 @@ if (use.fbms) {
                           runs = 40, cores = 40, transforms = transforms, 
                           probs = probs, params = params, P=25)
 } else {
-  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 40, data = df, 
+  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 40, x = df[, -1], y = df[, 1],
                                       loglik.pi = logistic.loglik, transforms = transforms, 
                                       probs = probs, params = params, P=25)
 }

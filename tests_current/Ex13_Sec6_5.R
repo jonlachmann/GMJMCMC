@@ -43,7 +43,7 @@ df.test <- df[-train,]
 time <- df.train$time
 
 
-params <- gen.params.gmjmcmc(data = df.train[,-1])
+params <- gen.params.gmjmcmc(ncol(df.train) - 1)
 params$mlpost$r = 0.5
 params$mlpost$time = time    #the time variable goes into the params structure
 
@@ -83,7 +83,7 @@ surv.pseudo.loglik = function(y, x, model, complex, params){
 
 #Single chain analysis (just to illustrate that it works)
 set.seed(5)
-result <- gmjmcmc(data = df.train[,-1], loglik.pi = surv.pseudo.loglik, transforms = transforms, params = params,  P = 5)
+result <- gmjmcmc(x = df.train[, -(1:2)], y = df.train[, 2], loglik.pi = surv.pseudo.loglik, transforms = transforms, params = params,  P = 5)
 
 summary(result,tol = 0.01,labels = names(df.train)[-c(1:2)],effects = c(0.025,0.5,0.975))
 summary(result)
@@ -97,7 +97,7 @@ linpreds <- predict(result,df.test[,-(1:2)], link = function(x) x)
 #Parallel version
 set.seed(15)
 probs$gen <- c(1,1,1,1)
-result2 <- gmjmcmc.parallel(runs = 80, cores = 40, data = df.train[,-1], 
+result2 <- gmjmcmc.parallel(runs = 80, cores = 40, x = df.train[, -(1:2)], y = df.train[, 2],
                             loglik.pi = surv.pseudo.loglik, transforms = transforms, 
                             probs = probs, params = params,  P = 25)
 summary(result2,tol = 0.01,labels = names(df.train)[-1],effects = c(0.025,0.5,0.975))
@@ -112,7 +112,7 @@ linpreds2 <- predict(result2,df.test[,-(1:2)], link = function(x) x)
 #Parallel version only linear terms
 set.seed(25)
 probs$gen <- c(0,0,0,1)
-result3 <- gmjmcmc.parallel(runs = 80, cores = 40, data = df.train[,-1], 
+result3 <- gmjmcmc.parallel(runs = 80, cores = 40, x = df.train[, -(1:2)], y = df.train[, 2],
                             loglik.pi = surv.pseudo.loglik, transforms = transforms, 
                             probs = probs, params = params,  P = 25)
 
@@ -126,7 +126,7 @@ linpreds3 <- predict(result3,df.test[,-(1:2)], link = function(x) x)
 #Parallel version only fractional polynomials
 set.seed(35)
 probs$gen <- c(0,1,0,1)
-result4 <- gmjmcmc.parallel(runs = 80, cores = 40, data = df.train[,-1], 
+result4 <- gmjmcmc.parallel(runs = 80, cores = 40, x = df.train[, -(1:2)], y = df.train[, 2],
                             loglik.pi = surv.pseudo.loglik, transforms = transforms, 
                             probs = probs, params = params,  P = 25)
 

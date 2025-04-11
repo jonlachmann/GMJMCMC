@@ -35,7 +35,7 @@ transforms <- c("p0","p2","p3","p05","pm05","pm1","pm2","p0p0","p0p05","p0p1","p
 probs <- gen.probs.gmjmcmc(transforms)
 probs$gen <- c(1,1,0,1) # Only modifications!
 
-params <- gen.params.gmjmcmc(df)
+params <- gen.params.gmjmcmc(ncol(df) - 1)
 params$feat$D <- 2   # Set depth of features to 2 (allow for interactions)
 params$mlpost$r = 1/dim(df)[1]
 
@@ -101,7 +101,7 @@ if (use.fbms) {
   result <- fbms(data = df, family = "custom", loglik.pi = poisson.loglik.inla, method = "gmjmcmc", 
                   transforms = transforms, probs = probs, params = params, P=3)
 } else {
-  result <- gmjmcmc(data = df, loglik.pi = poisson.loglik.inla, transforms = transforms, 
+  result <- gmjmcmc(x = df[, -1], y = df[, 1], , loglik.pi = poisson.loglik.inla, transforms = transforms,
                     probs = probs, params = params, P = 3)
 }
 
@@ -119,7 +119,7 @@ if (use.fbms) {
                   method = "gmjmcmc.parallel", runs = 40, cores = 40, 
                   transforms = transforms, probs = probs, params = params, P=25)
 } else {
-  result2 <- gmjmcmc.parallel(runs = 40, cores = 40, data = df, loglik.pi = poisson.loglik.inla, 
+  result2 <- gmjmcmc.parallel(runs = 40, cores = 40, x = df[, -1], y = df[, 1], , loglik.pi = poisson.loglik.inla,
                               transforms = transforms, probs = probs, params = params, P = 25)
 }
 time.inla = toc()

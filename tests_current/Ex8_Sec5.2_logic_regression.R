@@ -44,7 +44,7 @@ probs <- gen.probs.gmjmcmc(transforms)
 probs$gen <- c(1,1,0,1) #No projections allowed
 
 
-params <- gen.params.gmjmcmc(df.training)
+params <- gen.params.gmjmcmc(ncol(df.training) - 1)
 params$mlpost$p <- 50 #number of leaves
 params$feat$pop.max <- 31
 params$feat$L <- 15
@@ -98,12 +98,12 @@ if (use.fbms) {
 } else {
   #  result <- gmjmcmc(df.training, transforms = transforms, probs = probs)
   
-  result <- gmjmcmc(df.training, loglik.pi = estimate.logic.lm,N.init = 500,N.final = 500, , P = 25,
+  result <- gmjmcmc(x = df.training[, -1], y = df.training[, 1], loglik.pi = estimate.logic.lm,N.init = 500,N.final = 500, , P = 25,
                     transforms = transforms,params = params, probs = probs)
   
 }
 summary(result)
-mpm <- get.mpm.model(result,y = df.training$Y2,x = df.training[,-1],family = "custom", loglik.pi = estimate.logic.lm,params = params$mlpost)
+mpm <- get.mpm.model(result, y = df.training$Y2, x = df.training[,-1], family = "custom", loglik.pi = estimate.logic.lm,params = params$mlpost)
 mbest <- get.best.model(result)
 
 
@@ -147,12 +147,12 @@ if (use.fbms) {
                           method = "gmjmcmc.parallel", runs = 16, cores = 8,
                           transforms = transforms, probs = probs, params = params, P=25)
 } else {
-  result_parallel =  gmjmcmc.parallel(runs = 16, cores = 8, data = df.training, 
+  result_parallel =  gmjmcmc.parallel(runs = 16, cores = 8, x = df.training[, -1], y = df.training[, 1],
                                       loglik.pi = estimate.logic.lm,N.init = 500,N.final = 500,
                                       transforms = transforms, probs = probs, params = params, P=25)
 }
 summary(result_parallel)
-mpm <- get.mpm.model(result_parallel, y = df.training$Y2, x = df.training[,-1],family = "custom", loglik.pi = estimate.logic.lm,params = params$mlpost)
+mpm <- get.mpm.model(result_parallel, y = df.training$Y2, x = df.training[,-1], family = "custom", loglik.pi = estimate.logic.lm,params = params$mlpost)
 mbest <- get.best.model(result_parallel)
 
 
@@ -192,7 +192,7 @@ probs <- gen.probs.gmjmcmc(transforms)
 probs$gen <- c(1,1,0,1) #No projections allowed
 probs$filter <- 0.6
 
-params <- gen.params.gmjmcmc(df.training)
+params <- gen.params.gmjmcmc(ncol(df.training) - 1)
 params$mlpost$p <- 50 #number of leaves
 params$mlpost$n <- n #used in specifying parameter v of the tCCH prior
 params$mlpost$p.a <- 1
@@ -207,7 +207,7 @@ estimate.logic.tcch = function(y, x, model, complex, params)
 {
   
   if (length(params) == 0) 
-    params <- list(r = 1/dim(x)[1]) 
+    params <- list(r = 1 / dim(x)[1])
   suppressWarnings({
     mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())
   })
@@ -248,12 +248,12 @@ if (use.fbms) {
 } else {
   #  result <- gmjmcmc(df.training, transforms = transforms, probs = probs)
   
-  result <- gmjmcmc(df.training, loglik.pi = estimate.logic.tcch,N.init = 500,N.final = 500, P = 25,
+  result <- gmjmcmc(x = df.training[, -1], y = df.training[, 1], loglik.pi = estimate.logic.tcch,N.init = 500,N.final = 500, P = 25,
                     transforms = transforms,params = params, probs = probs)
   
 }
 summary(result)
-mpm <- get.mpm.model(result,y = df.training$Y2,x = df.training[,-1],family = "custom", loglik.pi = estimate.logic.lm,params = params$mlpost)
+mpm <- get.mpm.model(result, y = df.training$Y2, x = df.training[,-1], family = "custom", loglik.pi = estimate.logic.lm,params = params$mlpost)
 mbest <- get.best.model(result)
 
 
@@ -290,7 +290,7 @@ if (use.fbms) {
                           method = "gmjmcmc.parallel", runs = 16, cores = 8,
                           transforms = transforms, probs = probs, params = params, P=25)
 } else {
-  result_parallel =  gmjmcmc.parallel(runs = 16, cores = 8, data = df.training, 
+  result_parallel =  gmjmcmc.parallel(runs = 16, cores = 8, x = df.training[, -1], y = df.training[, 1],
                                       loglik.pi = estimate.logic.tcch,N.init = 500,N.final = 500,
                                       transforms = transforms, probs = probs, params = params, P=25)
 }

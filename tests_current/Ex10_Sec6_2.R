@@ -40,7 +40,7 @@ transforms <- c("p0","p2","p3","p05","pm05","pm1","pm2","p0p0","p0p05","p0p1","p
 probs <- gen.probs.gmjmcmc(transforms)
 probs$gen <- c(1,1,0,1) # Modifications and interactions!
 
-params <- gen.params.gmjmcmc(df)
+params <- gen.params.gmjmcmc(ncol(df) - 1)
 params$feat$D <- 1   # Set depth of features to 1 (still allows for interactions)
 params$mlpost$r = 1/dim(df)[1]
 params$feat$pop.max = 10
@@ -203,7 +203,7 @@ if (use.fbms) {
                   transforms = transforms, N.init = 30, 
                   probs = probs, params = params, P=3)
 } else { 
-  result1a <- gmjmcmc(data = df, loglik.pi = mixed.model.loglik.lme4, 
+  result1a <- gmjmcmc(x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.lme4,
                   transforms = transforms, N.init = 30, 
                   probs = probs, params = params, P = 3)
 }
@@ -219,7 +219,7 @@ if (use.fbms) {
                    transforms = transforms, N.init = 30, 
                    probs = probs, params = params, P=3)
 } else { 
-  result1b <- gmjmcmc(data = df, loglik.pi = mixed.model.loglik.inla, 
+  result1b <- gmjmcmc(x = df[, -1], y = df[, 1], , loglik.pi = mixed.model.loglik.inla,
                     transforms = transforms, N.init = 30, 
                     probs = probs, params = params, P = 3)
 }
@@ -231,7 +231,7 @@ if (use.fbms) {
                    transforms = transforms, N.init = 30, 
                    probs = probs, params = params, P=3)
 } else { 
-  result1c <- gmjmcmc(data = df, loglik.pi = mixed.model.loglik.rtmb, 
+  result1c <- gmjmcmc(x = df[, -1], y = df[, 1], , loglik.pi = mixed.model.loglik.rtmb,
                       transforms = transforms, N.init = 30, 
                       probs = probs, params = params, P = 3)
 }
@@ -249,13 +249,13 @@ c(time.lme4$callback_msg, time.inla$callback_msg, time.rtmb$callback_msg)
 
 set.seed(20062024)
 params$feat$pop.max = 10
-result2a <- gmjmcmc.parallel(runs = 40, cores = 10, data = df, loglik.pi = mixed.model.loglik.lme4, transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
+result2a <- gmjmcmc.parallel(runs = 40, cores = 10, x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.lme4, transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
 
 summary(result2a,tol = 0.05,labels=names(df)[-1])   
 
 
 set.seed(21062024)
-result2b <- gmjmcmc.parallel(runs = 120, cores = 40, data = df, loglik.pi = mixed.model.loglik.lme4, transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
+result2b <- gmjmcmc.parallel(runs = 120, cores = 40, x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.lme4, transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
 
 summary(result2b, labels = names(df)[-1])
 
@@ -267,7 +267,7 @@ plot(result2b)
 
 set.seed(03072024)
 
-result2c <- gmjmcmc.parallel(runs = 200, cores = 40, data = df, loglik.pi = mixed.model.loglik.lme4, transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
+result2c <- gmjmcmc.parallel(runs = 200, cores = 40, x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.lme4, transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
 
 summary(result2c, labels = names(df)[-1])
 summary(result2c, labels = names(df)[-1], pop = "last")
@@ -289,7 +289,7 @@ summary(result2c, labels = names(df)[-1])
 set.seed(22052024)
 
 params$mlpost$INLA.num.threads = 1 # Number of threads used by INLA set to 1
-result2a <- gmjmcmc.parallel(runs = 20, cores = 20, data = df, loglik.pi = mixed.model.loglik.inla, transforms = transforms, N.init=30, probs = probs, params = params, P = 25)
+result2a <- gmjmcmc.parallel(runs = 20, cores = 20, x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.inla, transforms = transforms, N.init=30, probs = probs, params = params, P = 25)
 
 plot(result2a)
 summary(result2a, labels = names(df)[-1])
@@ -301,7 +301,7 @@ params$feat$check.col = F
 
 set.seed(20062024)
 params$mlpost$INLA.num.threads = 1 # Number of threads used by INLA set to 1
-result2b <- gmjmcmc.parallel(runs = 100, cores = 20, data = df, loglik.pi = mixed.model.loglik.inla, transforms = transforms, N.init=16, probs = probs, params = params, P = 15)
+result2b <- gmjmcmc.parallel(runs = 100, cores = 20, x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.inla, transforms = transforms, N.init=16, probs = probs, params = params, P = 15)
 
 summary(result2b, labels = names(df)[-1])
 

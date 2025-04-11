@@ -40,7 +40,7 @@ df$y = rnorm(n =n, mean = mu,sd = 1)
 transforms <- c("p0","p2","p3","p05","pm05","pm1","pm2","p0p0","p0p05","p0p1","p0p2","p0p3","p0p05","p0pm05","p0pm1","p0pm2")
 probs <- gen.probs.gmjmcmc(transforms)
 probs$gen <- c(0,1,0,1) # Only modifications!
-params <- gen.params.gmjmcmc(df)
+params <- gen.params.gmjmcmc(ncol(df) - 1)
 params$feat$D <- 1   # Set depth of features to 1
 
 #to set variance to unknown uncomment below
@@ -58,7 +58,7 @@ if (use.fbms) {
   result <- fbms(data = df, method = "gmjmcmc", transforms = transforms, 
                  probs = probs, params = params)
 } else {
-  result <- gmjmcmc(df, transforms = transforms, probs = probs, params = params)
+  result <- gmjmcmc(x = df[, -1], y = df[, 1], transforms = transforms, probs = probs, params = params)
 }
 summary(result, labels = names(df[-1]))
 #plot.diagn(result,FUN = median)
@@ -77,7 +77,7 @@ if (use.fbms) {
   result_parallel <- fbms(data = df, method = "gmjmcmc.parallel", transforms = transforms, 
                  probs = probs, params = params, P=25)
 } else {
-  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 10, data = df, 
+  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 10, x = df[, -1], y = df[, 1],
                         transforms = transforms, probs = probs, params = params, P=25)
 }
 #summary(result_parallel, labels = names(df[-1]))
@@ -94,7 +94,7 @@ if (use.fbms) {
   result_parallel2 <- fbms(runs = 40, cores = 10,data = df, method = "gmjmcmc.parallel", transforms = transforms, 
                           probs = probs, params = params, P=25, N.init=1000, N.final=2000)
 } else {
-  result_parallel2 =  gmjmcmc.parallel(runs = 40, cores = 10,data = df, 
+  result_parallel2 =  gmjmcmc.parallel(runs = 40, cores = 10, x = df[, -1], y = df[, 1],
                           transforms = transforms, probs = probs, params = params, 
                           P=25, N.init=1000, N.final=2000)
 }
@@ -111,7 +111,7 @@ if (use.fbms) {
   result_parallel3 <- fbms(data = df, method = "gmjmcmc.parallel", transforms = transforms, 
                            probs = probs, params = params, P=50, N.init=2000, N.final=4000)
 } else {
-  result_parallel3 =  gmjmcmc.parallel(runs = 40, cores = 40, data = df, transforms = transforms, 
+  result_parallel3 =  gmjmcmc.parallel(runs = 40, cores = 40, x = df[, -1], y = df[, 1], transforms = transforms,
                                        probs = probs, params = params, P=50, N.init=2000, N.final=4000)
 }
 #summary(result_parallel3, labels = names(df[-1]))

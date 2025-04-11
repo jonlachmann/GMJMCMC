@@ -66,7 +66,7 @@ transforms <- c("sigmoid")
 probs <- gen.probs.gmjmcmc(transforms)
 probs$gen <- c(0,0,1,1) #Only projections!
 
-params <- gen.params.gmjmcmc(df.training)
+params <- gen.params.gmjmcmc(ncol(df.training) - 1)
 params$mlpost$r = 0.2
 
 ##############################################
@@ -116,7 +116,7 @@ if (use.fbms) {
 } else {
 #  result <- gmjmcmc(df.training, transforms = transforms, probs = probs)
 
-  result <- gmjmcmc(df.training, loglik.pi = gaussian.loglik.gap.open.prior, 
+  result <- gmjmcmc(x = df.training[, -1], y = df.training[, 1], loglik.pi = gaussian.loglik.gap.open.prior,
                         transforms = transforms, probs = probs)
   
   }
@@ -147,7 +147,7 @@ if (use.fbms) {
                           method = "gmjmcmc.parallel", runs = 40, cores = 40,
                           transforms = transforms, probs = probs, params = params, P=25)
 } else {
-  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 40, data = df.training, 
+  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 40, x = df.training[, -1], y = df.training[, 1],
                                    loglik.pi = gaussian.loglik.gap.open.prior, 
                                    loglik.alpha = gaussian.loglik.alpha,
                                     transforms = transforms, probs = probs, params = params, P=25)
@@ -182,7 +182,7 @@ if (use.fbms) {
                     method = "gmjmcmc", transforms = transforms, 
                  probs = probs, params = params)
 } else {
-  result.a3 <- gmjmcmc(df.training, transforms = transforms, probs = probs, params = params)
+  result.a3 <- gmjmcmc(x = df.training[, -1], y = df.training[, 1], transforms = transforms, probs = probs, params = params)
 }
 summary(result.a3)
 
@@ -214,7 +214,7 @@ if (use.fbms) {
                              method = "gmjmcmc.parallel", runs = 40, cores = 40,
                           transforms = transforms, probs = probs, params = params, P=25)
 } else {
-  result_parallel.a3 =  gmjmcmc.parallel(runs = 40, cores = 40, data = df.training, 
+  result_parallel.a3 =  gmjmcmc.parallel(runs = 40, cores = 40, x = df.training[, -1], y = df.training[, 1],
                                     loglik.pi = gaussian.loglik.gap.open.prior, 
                                     loglik.alpha = gaussian.loglik.alpha,
                                     transforms = transforms, probs = probs, params = params, P=25)
@@ -252,7 +252,7 @@ if (use.fbms) {
   result.fp <- fbms(data = df.training, method = "gmjmcmc.parallel", runs = 40, cores = 40,
                              transforms = transforms, probs = probs, params = params, P=25)
 } else {
-  result.fp <- gmjmcmc.parallel(runs = 40, cores = 40, data = df.training, 
+  result.fp <- gmjmcmc.parallel(runs = 40, cores = 40, x = df.training[, -1], y = df.training[, 1],
                               loglik.pi =gaussian.loglik,loglik.alpha = gaussian.loglik.alpha, 
                               transforms = transforms, probs = probs, params = params, P=25)
 }
