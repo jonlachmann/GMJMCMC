@@ -289,11 +289,15 @@ gen.mlpost.params.lm <- function (beta_prior, user_params, p, n) {
   } else if (beta_prior == "uniform") {
     return(list(type = "uniform"))
   } else{
-    if(!is.null(user_params$a)) 
-    {  
+    if (!is.null(user_params$a)) {
       alpha <- user_params$a 
-    } else 
-      alpha <- -1#check how BAS uses the default 
+    } else {
+      if (beta_prior == "g-prior") {
+        alpha <- min(p^2, n)
+      } else {
+        alpha <- -1 #check how BAS uses the default
+      }
+    }
     if (beta_prior == "g-prior") {
       return(list(method = 0, alpha = alpha))
     } else if (beta_prior == "hyper-g") {

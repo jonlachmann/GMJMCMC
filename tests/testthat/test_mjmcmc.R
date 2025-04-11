@@ -45,7 +45,7 @@ test_that("Test (G)MJMCMC", {
     mpm_model <- get.mpm.model(model, y, x)
   }
 
-  params <- gen.params.gmjmcmc(list(x = x, y = y_sin))
+  params <- gen.params.gmjmcmc(ncol(x))
   probs <- gen.probs.gmjmcmc("sin")
   probs$gen <- c(0, 1, 0, 0)
   params$feat$D <- 1

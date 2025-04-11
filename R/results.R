@@ -395,6 +395,8 @@ get.best.model.gmjmcmc <- function (result, labels) {
   best.pop.id <- which.max(sapply(result$best.margs,function(x)x))
   best.mod.id <- which.max(sapply(result$models[[best.pop.id]],function(x)x$crit))
   ret <- result$models[[best.pop.id]][[best.mod.id]]
+  ret$intercept <- result$intercept
+  ret$fixed <- result$fixed
   coefnames <- sapply(result$populations[[best.pop.id]], print.feature, labels = labels)[ret$model]
   if (result$intercept) coefnames <- c("Intercept", coefnames)
   names(ret$coefs) <- coefnames

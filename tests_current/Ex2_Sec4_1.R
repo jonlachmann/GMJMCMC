@@ -10,7 +10,7 @@
 
 # Logical to decide whether to perform analysis with fbms function
 # If FALSE then gmjmcmc or gmjmcmc.parallel function is used
-use.fbms <-  FALSE  
+use.fbms <- FALSE
 stronger.singal <- FALSE
 
 library(mvtnorm)
@@ -42,8 +42,9 @@ X<-scale(X)/sqrt(n)
 
 
 df <- as.data.frame(cbind(y, X))
+colnames(df) <- c("Y", paste0("X", seq_len(ncol(df) - 1)))
 
-correct.model + 1
+correct.model
 beta.k
 
 
@@ -52,10 +53,9 @@ transforms <- c("sigmoid","sin_deg","exp_dbl","p0","troot","to3")
 
 set.seed(123)
 if (use.fbms) {
-  result <- result <- fbms(data = df, method = "gmjmcmc", 
-                           transforms = transforms, P = 40)
+  result <- fbms(data = df, method = "gmjmcmc", transforms = transforms, P = 40)
 } else {
-  result <- gmjmcmc(x = df[-1],y=df[,1],   mlpost_params = list(family = "gaussian", beta_prior = list(type = "robust")), transforms =  transforms, P = 40)
+  result <- gmjmcmc(x = df[-1], y = df[,1], mlpost_params = list(family = "gaussian", beta_prior = list(type = "robust")), transforms =  transforms, P = 40)
 }
 summary(result)
 
@@ -93,9 +93,7 @@ params.lin$loglik$r <- 1/dim(df)[1]
 if (use.fbms) {
   result.lin <- fbms(data = df, N = 5000)
 } else {
-  result.lin <- mjmcmc(y = df[,1],x = df[,-1], N = 5000, probs = probs.lin, 
-                       params =  params.lin)
-  
+  result.lin <- mjmcmc(y = df[,1], x = df[,-1], mlpost_params = list(family = "gaussian", beta_prior = list(type = "Jeffreys-BIC")), N = 5000, probs = probs.lin, params = params.lin)
 }
 
 

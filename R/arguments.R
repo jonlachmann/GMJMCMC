@@ -187,17 +187,9 @@ gen.probs.gmjmcmc <- function (transforms) {
 #' 
 #'
 #' @export gen.params.mjmcmc
-gen.params.mjmcmc <- function (data) {
+gen.params.mjmcmc <- function (ncov) {
   ### Create a list of parameters for the algorithm
 
-  ## Get the dimensions of the data to set parameters based on it
-  if(is.list(data) && length(data$fixed)>0 && length(data$x) > 0)
-    ncov <- ncol(data$x) - data$fixed #This is not ok as for fbms no one knows anything about fixed and $x! 
-  else # I fixed that, but this is somewhat not elegant still
-  {
-    data.dim <- dim(data)
-    ncov <- data.dim[2] - 2
-  }
   ## Local optimization parameters
   sa_kern <- list(probs=c(0.1, 0.05, 0.2, 0.3, 0.2, 0.15),
                   neigh.size=1, neigh.min=1, neigh.max=2)               # Simulated annealing proposal kernel parameters
@@ -317,24 +309,15 @@ gen.params.mjmcmc <- function (data) {
 #' @seealso \code{\link{gen.params.mjmcmc}}, \code{\link{gmjmcmc}}
 #' 
 #' @export gen.params.gmjmcmc
-gen.params.gmjmcmc <- function (data) {
+gen.params.gmjmcmc <- function (ncov) {
   # Get mjmcmc params
-  params <- gen.params.mjmcmc(data)
-
-  ## Get the dimensions of the data to set parameters based on it
-  if (is.list(data) && length(data$fixed)>0 && length(data$x) > 0)
-    ncov <- ncol(data$x) - data$fixed #This is not ok as for fbms no one knows anything about fixed and $x! 
-  else # I fixed that, but this is somewhat not elegant still
-  {
-    data.dim <- dim(data)
-    ncov <- data.dim[2] - 2
-  }
+  params <- gen.params.mjmcmc(ncov)
 
   feat_params <- list(D = 5, L = 15,                                # Hard limits on feature complexity
                       alpha = "unit",                               # alpha strategy ("unit" = None, "deep" strategy 3 from Hubin et al., "random" fully Bayesian strategy) 
-                      pop.max = min(100,as.integer(ncov * 1.5)),    # Max features population size
+                      pop.max = min(100, as.integer(ncov * 1.5)),   # Max features population size
                       keep.org = FALSE,                             # Always keep original covariates in every population
-                      prel.filter = 0,                           # Filtration threshold for first population (i.e. filter covariates even if keep.org=TRUE)
+                      prel.filter = 0,                              # Filtration threshold for first population (i.e. filter covariates even if keep.org=TRUE)
                       keep.min = 0.8,                               # Minimum proportion of features to always keep [0,1]
                       eps = 0.05,                                   # Inclusion probability limit for feature generation
                       check.col = TRUE,                             # Whether the colinearity should be checked
@@ -344,9 +327,9 @@ gen.params.gmjmcmc <- function (data) {
   
    # Large jump parameters
   large_params <- list(
-    neigh.size = min(as.integer(params$feat$pop.max * 0.35),as.integer(ncov * 0.35),35),
-    neigh.min = min(as.integer(params$feat$pop.max * 0.35),as.integer(ncov * 0.25),25),
-    neigh.max = min(as.integer(params$feat$pop.max * 0.35),as.integer(ncov * 0.45),45)
+    neigh.size = min(as.integer(params$feat$pop.max * 0.35), as.integer(ncov * 0.35), 35),
+    neigh.min = min(as.integer(params$feat$pop.max * 0.35), as.integer(ncov * 0.25), 25),
+    neigh.max = min(as.integer(params$feat$pop.max * 0.35), as.integer(ncov * 0.45), 45)
   )
   params$large <- large_params
   

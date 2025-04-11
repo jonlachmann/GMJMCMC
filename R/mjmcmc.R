@@ -38,7 +38,7 @@ mjmcmc <- function (
   y,
   loglik.pi = fbms.mlik.master,
   mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior")),
-  intercept = FALSE,
+  intercept = TRUE,
   fixed = 0,
   N = 100,
   probs = NULL,
@@ -51,12 +51,14 @@ mjmcmc <- function (
     x <- cbind(1, x)
     fixed <- fixed + 1
   }
-  labels <- names(x)
   data <- check.data(x, y, fixed, verbose)
+  labels <- names(x)
+  if (fixed != 0)
+    labels <- labels[-seq_len(fixed)]
 
   # Generate default probabilities and parameters if there are none supplied.
   if (is.null(probs)) probs <- gen.probs.mjmcmc()
-  if (is.null(params)) params <- gen.params.mjmcmc(data)
+  if (is.null(params)) params <- gen.params.mjmcmc(ncol(data$x) - data$fixed)
   if (!is.null(mlpost_params)) params$mlpost <- mlpost_params
 
   # Acceptance probability

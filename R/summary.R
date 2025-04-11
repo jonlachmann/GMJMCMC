@@ -192,7 +192,7 @@ summary.mjmcmc <- function (object, tol = 0.0001, labels = FALSE, effects = NULL
 #' @export
 summary.mjmcmc_parallel <- function (object, tol = 0.0001, labels = FALSE, effects = NULL, verbose = TRUE, ...) {
   # Get features as strings for printing
-  if (length(labels) == 1 && labels[1] == FALSE && length(object[[1]]$labels) > 0) {
+  if (length(labels) == 1 && labels[1] == FALSE && length(object$chains[[1]]$labels) > 0) {
     labels = object$chains[[1]]$labels
   }
   feats.strings <- sapply(object$chains[[1]]$populations, FUN = function(x) print.feature(x = x, labels = labels, round = 2))
