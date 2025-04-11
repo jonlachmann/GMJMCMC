@@ -4,10 +4,10 @@
 \alias{gen.params.gmjmcmc}
 \title{Generate a parameter list for GMJMCMC (Genetically Modified MJMCMC)}
 \usage{
-gen.params.gmjmcmc(data)
+gen.params.gmjmcmc(ncov)
 }
 \arguments{
-\item{data}{A data frame containing the dataset with covariates and response variable.}
+\item{ncov}{The number of covariates in the dataset that will be used in the algorithm}
 }
 \value{
 A list of parameters for controlling GMJMCMC behavior:
@@ -101,7 +101,7 @@ This function generates the full list of parameters required for the Generalized
 
 \examples{
 data <- data.frame(y = rnorm(100), x1 = rnorm(100), x2 = rnorm(100))
-params <- gen.params.gmjmcmc(data)
+params <- gen.params.gmjmcmc(ncol(data) - 1)
 str(params)
 
 }

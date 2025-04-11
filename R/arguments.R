@@ -121,7 +121,7 @@ gen.probs.gmjmcmc <- function (transforms) {
 
 #' Generate a parameter list for MJMCMC (Mode Jumping MCMC)
 #'
-#' @param data The dataset that will be used in the algorithm
+#' @param ncov The number of covariates in the dataset that will be used in the algorithm
 #'
 #' @return A list of parameters to use when running the mjmcmc function.
 #' 
@@ -220,7 +220,7 @@ gen.params.mjmcmc <- function (ncov) {
 #'
 #' This function generates the full list of parameters required for the Generalized Mode Jumping Markov Chain Monte Carlo (GMJMCMC) algorithm, building upon the parameters from \code{gen.params.mjmcmc}. The generated parameter list includes feature generation settings, population control parameters, and optimization controls for the search process.
 #'
-#' @param data A data frame containing the dataset with covariates and response variable.
+#' @param ncov The number of covariates in the dataset that will be used in the algorithm
 #' @return A list of parameters for controlling GMJMCMC behavior:
 #'
 #' @section Feature Generation Parameters (\code{feat}):
@@ -303,7 +303,7 @@ gen.params.mjmcmc <- function (ncov) {
 #'
 #' @examples
 #' data <- data.frame(y = rnorm(100), x1 = rnorm(100), x2 = rnorm(100))
-#' params <- gen.params.gmjmcmc(data)
+#' params <- gen.params.gmjmcmc(ncol(data) - 1)
 #' str(params)
 #'
 #' @seealso \code{\link{gen.params.mjmcmc}}, \code{\link{gmjmcmc}}

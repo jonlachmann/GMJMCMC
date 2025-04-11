@@ -4,10 +4,10 @@
 \alias{gen.params.mjmcmc}
 \title{Generate a parameter list for MJMCMC (Mode Jumping MCMC)}
 \usage{
-gen.params.mjmcmc(data)
+gen.params.mjmcmc(ncov)
 }
 \arguments{
-\item{data}{The dataset that will be used in the algorithm}
+\item{ncov}{The number of covariates in the dataset that will be used in the algorithm}
 }
 \value{
 A list of parameters to use when running the mjmcmc function.
