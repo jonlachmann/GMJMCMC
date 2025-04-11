@@ -43,7 +43,7 @@ X<-scale(X)/sqrt(n)
 
 df <- as.data.frame(cbind(y, X))
 
-correct.model
+correct.model + 1
 beta.k
 
 
@@ -55,7 +55,7 @@ if (use.fbms) {
   result <- result <- fbms(data = df, method = "gmjmcmc", 
                            transforms = transforms, P = 40)
 } else {
-  result <- gmjmcmc(df, gaussian.loglik, gaussian.loglik.alpha, transforms, P = 40)
+  result <- gmjmcmc(x = df[-1],y=df[,1],   mlpost_params = list(family = "gaussian", beta_prior = list(type = "robust")), transforms =  transforms, P = 40)
 }
 summary(result)
 
@@ -65,7 +65,7 @@ if (use.fbms) {
   result2 <- result <- fbms(data = df, method = "gmjmcmc", transforms = transforms, 
                            N.init = 1000, N.final = 5000, P = 40)
 } else {
-  result2 <- gmjmcmc(df, transforms = transforms, 
+  result2 <- gmjmcmc(y = df[,1],x = df[-1], transforms = transforms, mlpost_params = list(family = "gaussian", beta_prior = list(type = "robust")),
                      N.init = 1000, N.final = 5000, P = 40)
 }
 summary(result2)
@@ -93,16 +93,18 @@ params.lin$loglik$r <- 1/dim(df)[1]
 if (use.fbms) {
   result.lin <- fbms(data = df, N = 5000)
 } else {
-  result.lin <- mjmcmc(df, N = 5000, probs = probs.lin, 
+  result.lin <- mjmcmc(y = df[,1],x = df[,-1], N = 5000, probs = probs.lin, 
                        params =  params.lin)
   
 }
 
 
 plot(result.lin)
+
+#something is wrong with the names, Jon! 
 summary(result.lin)
 
-correct.model
+correct.model 
 beta.k
 
 
@@ -112,7 +114,7 @@ set.seed(123)
 if (use.fbms) {
   result.lindef <- fbms(data = df)
 } else {
-  result.lindef <- mjmcmc(df)
+  result.lindef <- mjmcmc(x = df[,-1],y = df[,1])
 }
 
 

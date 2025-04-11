@@ -36,8 +36,8 @@
 mjmcmc <- function (
   x,
   y,
-  loglik.pi = gaussian.loglik,
-  mlpost_params = NULL,
+  loglik.pi = fbms.mlik.master,
+  mlpost_params = list(family = "gaussian",beta_prior = list(type = "robust")),
   intercept = FALSE,
   fixed = 0,
   N = 100,
