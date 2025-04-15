@@ -323,7 +323,8 @@ get.mpm.model <- function(result, y, x, labels = F, family = "gaussian", loglik.
     coefs = coefs,
     features = features,
     fixed = result$fixed,
-    intercept = result$intercept
+    intercept = result$intercept,
+    needs.precalc = TRUE
   ), class = "bgnlm_model")
 
   return(model)
@@ -403,6 +404,7 @@ get.best.model.gmjmcmc <- function (result, labels) {
   coefnames <- sapply(result$populations[[best.pop.id]], print.feature, labels = labels)[ret$model]
   if (result$intercept) coefnames <- c("Intercept", coefnames)
   names(ret$coefs) <- coefnames
+  ret$needs.precalc <- FALSE
   class(ret) = "bgnlm_model"
   return(ret)
 }
@@ -416,6 +418,7 @@ get.best.model.mjmcmc <- function (result, labels) {
   coefnames <- sapply(result$populations, print.feature, labels = labels)[ret$model]
   if (result$intercept) coefnames <- c("Intercept", coefnames)
   names(ret$coefs) <- coefnames
+  ret$needs.precalc <- FALSE
   class(ret) = "bgnlm_model"
   return(ret)
 }
