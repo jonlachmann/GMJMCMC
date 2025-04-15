@@ -290,8 +290,12 @@ model.string <- function (model, features, link = "I", round = 2) {
 #'
 #' @export
 get.mpm.model <- function(result, y, x, labels = F, family = "gaussian", loglik.pi = gaussian.loglik, params = NULL) {
-  if (!family %in% c("custom","binomial","gaussian"))
+   
+   transforms.bak <- set.transforms(result$transforms)
+   
+   if (!family %in% c("custom","binomial","gaussian"))
     warning("Unknown family specified. The default gaussian.loglik will be used.")
+ 
   
   if (family == "binomial")
     loglik.pi <- logistic.loglik
@@ -309,12 +313,12 @@ get.mpm.model <- function(result, y, x, labels = F, family = "gaussian", loglik.
     features <- result$features
   }
   features <- features[marg.probs > 0.5]
-
+  
   if (result$intercept) {
     x <- cbind(1, x)
   }
   precalc <- precalc.features(list(x = x, y = y, fixed = result$fixed), features)
-
+  
   coefs <- loglik.pi(y = y, x = precalc$x, model = rep(TRUE, length(features) + result$fixed), complex = list(oc = 0), params = params)$coefs
   
   names(coefs) <- c(names(coefs)[1:result$fixed],sapply(features,print.feature))
@@ -326,7 +330,8 @@ get.mpm.model <- function(result, y, x, labels = F, family = "gaussian", loglik.
     intercept = result$intercept,
     needs.precalc = TRUE
   ), class = "bgnlm_model")
-
+ 
+  set.transforms(transforms.bak)
   return(model)
 }
 
@@ -384,6 +389,7 @@ get.best.model <- function(result, labels = FALSE) {
   }
   
   if (is(result,"gmjmcmc_merged")) {
+   
     if (length(labels) == 1 && labels[1] == FALSE && length(result$results.raw[[1]]$labels) > 0) {
       labels <- result$results.raw[[1]]$labels
     }
@@ -393,9 +399,11 @@ get.best.model <- function(result, labels = FALSE) {
 }
 
 get.best.model.gmjmcmc <- function (result, labels) {
+  transforms.bak <- set.transforms(result$transforms)
   if (length(labels) == 1 && labels[1] == FALSE && length(result$labels) > 0) {
     labels = result$labels
   }
+  
   best.pop.id <- which.max(sapply(result$best.margs,function(x)x))
   best.mod.id <- which.max(sapply(result$models[[best.pop.id]],function(x)x$crit))
   ret <- result$models[[best.pop.id]][[best.mod.id]]
@@ -406,6 +414,7 @@ get.best.model.gmjmcmc <- function (result, labels) {
   names(ret$coefs) <- coefnames
   ret$needs.precalc <- FALSE
   class(ret) = "bgnlm_model"
+  set.transforms(transforms.bak)
   return(ret)
 }
 
