@@ -53,19 +53,19 @@ transforms <- c("sigmoid","sin_deg","exp_dbl","p0","troot","to3")
 
 set.seed(123)
 if (use.fbms) {
-  result <- fbms(data = df, method = "gmjmcmc", transforms = transforms, P = 40)
+  result <- fbms(data = df, beta_prior = list(type = "EB-local"), method = "gmjmcmc", transforms = transforms, P = 40)
 } else {
-  result <- gmjmcmc(x = df[-1], y = df[,1], mlpost_params = list(family = "gaussian", beta_prior = list(type = "robust")), transforms =  transforms, P = 40)
+  result <- gmjmcmc(x = df[-1], y = df[,1], transforms =  transforms,mlpost_params = list(family = "gaussian", beta_prior = list(type = "EB-local")), P = 40)
 }
 summary(result)
 
 
 set.seed(123)
 if (use.fbms) {
-  result2 <- result <- fbms(data = df, method = "gmjmcmc", transforms = transforms, 
+  result2 <- result <- fbms(data = df, beta_prior = list(type = "EB-local"), method = "gmjmcmc", transforms = transforms, 
                            N.init = 1000, N.final = 5000, P = 40)
 } else {
-  result2 <- gmjmcmc(y = df[,1],x = df[-1], transforms = transforms, mlpost_params = list(family = "gaussian", beta_prior = list(type = "robust")),
+  result2 <- gmjmcmc(y = df[,1],x = df[-1], transforms = transforms, mlpost_params = list(family = "gaussian", beta_prior = list(type = "EB-local")),
                      N.init = 1000, N.final = 5000, P = 40)
 }
 summary(result2)
@@ -85,15 +85,11 @@ set.seed(123)
 probs.lin <- gen.probs.mjmcmc()
 
 params.lin <- gen.params.mjmcmc(ncol(df) - 1)
-params.lin$loglik$r <- 1/dim(df)[1] 
-
-#to set variance to unknown uncomment below
-#params.lin$loglik$var <- "unknown"
 
 if (use.fbms) {
-  result.lin <- fbms(data = df, N = 5000)
+  result.lin <- fbms(data = df,beta_prior = list(type = "EB-local"), N = 5000)
 } else {
-  result.lin <- mjmcmc(y = df[,1], x = df[,-1], mlpost_params = list(family = "gaussian", beta_prior = list(type = "Jeffreys-BIC")), N = 5000, probs = probs.lin, params = params.lin)
+  result.lin <- mjmcmc(y = df[,1], x = df[,-1], mlpost_params = list(family = "gaussian", beta_prior = list(type = "EB-local")), N = 5000, probs = probs.lin, params = params.lin)
 }
 
 
@@ -110,11 +106,10 @@ beta.k
 set.seed(123)
 
 if (use.fbms) {
-  result.lindef <- fbms(data = df)
+  result.lindef <- fbms(data = df,beta_prior = list(type = "EB-local"))
 } else {
-  result.lindef <- mjmcmc(x = df[,-1],y = df[,1])
+  result.lindef <- mjmcmc(x = df[,-1],y = df[,1], mlpost_params = list(family = "gaussian", beta_prior = list(type = "EB-local")))
 }
-
 
 plot(result.lindef)
 summary(result.lindef)
