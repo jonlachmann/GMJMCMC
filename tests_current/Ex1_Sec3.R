@@ -11,11 +11,10 @@
 #install.packages("FBMS")
 #install.packages("devtools")
 #library(devtools)
-#devtools::install_github("jonlachmann/GMJMCMC@FBMS", force=T, build_vignettes=F)
+#devtools::install_github("jonlachmann/GMJMCMC@data-inputs", force=T, build_vignettes=F)
 library(FBMS)
 
-data <- read.csv("https://raw.githubusercontent.com/OpenExoplanetCatalogue/oec_tables/master/comma_separated/open_exoplanet_catalogue.txt")
-data <- na.omit(data[, c("semimajoraxis", "mass", "radius", "period", "eccentricity", "hoststar_mass", "hoststar_radius", "hoststar_metallicity", "hoststar_temperature", "binaryflag")])
+data <- FBMS::exoplanet
 summary(data)
 
 
