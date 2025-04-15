@@ -104,7 +104,7 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
     accept.tot <- results[[i]]$accept.tot
     best <- results[[i]]$best
     for (item in names(results[[i]])) {
-      if (!(item %in% (c("accept.tot", "best", "transforms", "fixed", "intercept")))) {
+      if (!(item %in% (c("accept.tot", "best", "transforms", "fixed", "intercept", "ncov")))) {
         results[[i]][[item]] <- results[[i]][[item]][pops.use[[i]]]
       }
     }
@@ -125,7 +125,7 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
 
   ## Detect equivalent features
   # Generate mock data to compare features with
-  if (is.null(data)) mock.data <- list(x = matrix(runif((feat.count)^2, -100, 100), ncol = feat.count))
+  if (is.null(data)) mock.data <- list(x = matrix(runif((results[[1]]$ncov)^2, -100, 100), ncol = results[[1]]$ncov))
   else mock.data <- data
   mock.data$fixed = results[[1]]$fixed
   if (results[[1]]$intercept) mock.data$x <- cbind(1, mock.data$x)
@@ -321,7 +321,7 @@ get.mpm.model <- function(result, y, x, labels = F, family = "gaussian", loglik.
   
   coefs <- loglik.pi(y = y, x = precalc$x, model = rep(TRUE, length(features) + result$fixed), complex = list(oc = 0), params = params)$coefs
   
-  names(coefs) <- c(names(coefs)[1:result$fixed],sapply(features,print.feature))
+  names(coefs) <- c(names(coefs)[seq_len(result$fixed)], sapply(features, print.feature))
   
   model <- structure(list(
     coefs = coefs,

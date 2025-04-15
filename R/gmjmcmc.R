@@ -175,6 +175,7 @@ gmjmcmc <- function (
   results$labels <- labels
   results$fixed <- fixed
   results$intercept <- intercept
+  results$ncov <- ncol(data$x) - data$fixed
   attr(results, "class") <- "gmjmcmc"
   return(results)
 }
