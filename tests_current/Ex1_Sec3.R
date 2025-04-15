@@ -84,9 +84,9 @@ summary(result.P50, labels = names(df.train)[-1])
 set.seed(123)
 if (use.fbms) {
  result_parallel <- fbms(data = df.train, method = "gmjmcmc.parallel", transforms = transforms,
-                         runs = 40, cores = 10, P = 25,params = params)
+                         runs = 50, cores = 10, P = 25,params = params)
 } else {
- result_parallel <- gmjmcmc.parallel(runs = 40, cores = 10, x = df.train[, -1], y = df.train[, 1], intercept = TRUE, loglik.pi = gaussian.loglik,
+ result_parallel <- gmjmcmc.parallel(runs = 50, cores = 10, x = df.train[, -1], y = df.train[, 1], intercept = TRUE, loglik.pi = gaussian.loglik,
                                      transforms = transforms, P = 25, params = params)
 }
 summary(result_parallel, tol = 0.01)
@@ -133,7 +133,7 @@ plot(result_parallel)
 dev.off()
 
 plot(result_parallel)
-plot(result_parallel, 12)
+plot(result_parallel)
 
 ######################
 # Prediction
