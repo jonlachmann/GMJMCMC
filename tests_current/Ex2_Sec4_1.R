@@ -95,7 +95,6 @@ if (use.fbms) {
 
 plot(result.lin)
 
-#something is wrong with the names, Jon! 
 summary(result.lin)
 
 correct.model 
