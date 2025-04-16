@@ -253,7 +253,7 @@ gaussian.loglik <- function (y, x, model, complex, params) {
   if (length(params$r) == 0)
     params$r <- 1/dim(x)[1]
   if (length(params$beta_prior$var) == 0)
-    params$beta_prior$var <- 1
+    params$beta_prior$var <- "unknown"
   suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())})
 
   if (params$beta_prior$var == "unknown")

@@ -43,8 +43,6 @@ probs$gen <- c(0,1,0,1) # Only modifications!
 params <- gen.params.gmjmcmc(ncol(df) - 1)
 params$feat$D <- 1   # Set depth of features to 1
 
-#to set variance to unknown uncomment below
-#params$mlpost$var <- "unknown"
 
 ####################################################
 #
@@ -58,7 +56,7 @@ if (use.fbms) {
   result <- fbms(data = df, method = "gmjmcmc", transforms = transforms, 
                  probs = probs, params = params)
 } else {
-  result <- gmjmcmc(x = df[, -1], y = df[, 1], transforms = transforms, probs = probs, params = params)
+  result <- gmjmcmc(x = df[, -1], y = df[, 1],mlpost_params = list(family = "gaussian", beta_prior = list(type = "Jeffreys-BIC")), transforms = transforms, probs = probs, params = params)
 }
 summary(result, labels = names(df[-1]))
 #plot.diagn(result,FUN = median)
@@ -77,10 +75,10 @@ if (use.fbms) {
   result_parallel <- fbms(data = df, method = "gmjmcmc.parallel", transforms = transforms, 
                  probs = probs, params = params, P=25)
 } else {
-  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 10, x = df[, -1], y = df[, 1],
+  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 10, x = df[, -1], y = df[, 1], mlpost_params = list(family = "gaussian", beta_prior = list(type = "JZS", a = 1)),
                         transforms = transforms, probs = probs, params = params, P=25)
 }
-#summary(result_parallel, labels = names(df[-1]))
+
 summary(result_parallel, labels = names(df[-1]), tol = 0.01)
 
 diagn_plot(result_parallel, FUN = median)
@@ -94,7 +92,7 @@ if (use.fbms) {
   result_parallel2 <- fbms(runs = 40, cores = 10,data = df, method = "gmjmcmc.parallel", transforms = transforms, 
                           probs = probs, params = params, P=25, N.init=1000, N.final=2000)
 } else {
-  result_parallel2 =  gmjmcmc.parallel(runs = 40, cores = 10, x = df[, -1], y = df[, 1],
+  result_parallel2 =  gmjmcmc.parallel(runs = 40, cores = 10, x = df[, -1], y = df[, 1], mlpost_params = list(family = "gaussian", beta_prior = list(type = "JZS", a = 1)),
                           transforms = transforms, probs = probs, params = params, 
                           P=25, N.init=1000, N.final=2000)
 }
