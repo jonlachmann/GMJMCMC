@@ -10,7 +10,7 @@
 
 # Logical to decide whether to perform analysis with fbms function
 # If FALSE then gmjmcmc or gmjmcmc.parallel function is used
-use.fbms <- FALSE
+use.fbms <- TRUE  
 stronger.singal <- FALSE
 
 library(mvtnorm)

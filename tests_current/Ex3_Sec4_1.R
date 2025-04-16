@@ -15,7 +15,7 @@
 
 library(FBMS)
 library(xtable)
-use.fbms = FALSE
+use.fbms <- TRUE  
 run.parallel <- T
 
 data(SangerData2)
@@ -40,41 +40,9 @@ params$feat$pop.max <- 50
 
 ####################################################
 #
-# Here begin the changes to use Zellers g-prior
+# Here we shall use Zellners g-prior with g = max(n,p^2)
 #
 ####################################################
-n = dim(df)[1]; p=dim(df)[2]
-params$mlpost$g <- max(n,p^2)   # Using recommendation from Fernandez et al (2001)
-
-#this will be added to the package
-log_prior <- function(params,complex){
-
-  pl <-  log(params$r) * (sum(complex$oc))
-  return(pl)
-}
-
-gaussian.loglik.g <- function (y, x, model, complex, params)
-{
-
-  suppressWarnings({
-    mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())
-  })
-
-  # Calculate R-squared
-  y_mean <- mean(y)
-  TSS <- sum((y - y_mean)^2)
-  RSS <- sum(mod$residuals^2)
-  Rsquare <- 1 - (RSS / TSS)
-
-  # logarithm of marginal likelihood
-  mloglik <- 0.5*(log(1.0 + params$g) * (dim(x)[1] - mod$rank)  - log(1.0 + params$g * (1.0 - Rsquare)) * (dim(x)[1]  - 1))*(mod$rank!=1)
-
-  # logarithm of model prior
-  if (length(params$r) == 0)  params$r <- 1/dim(x)[1]  # default value or parameter r
-  lp <- log_prior(params, complex)
-
-  return(list(crit = mloglik + lp, coefs = mod$coefficients))
-}
 
 ##Parallel runs
 if(run.parallel)

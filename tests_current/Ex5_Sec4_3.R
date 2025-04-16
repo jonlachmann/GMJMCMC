@@ -10,7 +10,7 @@
 
 
 library(FBMS)
-use.fbms = FALSE  
+use.fbms <- TRUE  
 
 
 df = read.csv2(file = "/Users/aliaksandrhome/GMJMCMC/tests/art.csv",sep = ",",dec = ".")[,c(16,1:3,5:8,10:14)]
@@ -53,7 +53,7 @@ params$feat$D <- 1   # Set depth of features to 1
 set.seed(123)
 
 if (use.fbms) {
-  result <- fbms(data = df, method = "gmjmcmc", transforms = transforms, 
+  result <- fbms(data = df, method = "gmjmcmc", transforms = transforms,beta_prior = list(type = "Jeffreys-BIC"), 
                  probs = probs, params = params)
 } else {
   result <- gmjmcmc(x = df[, -1], y = df[, 1],mlpost_params = list(family = "gaussian", beta_prior = list(type = "Jeffreys-BIC")), transforms = transforms, probs = probs, params = params)
@@ -72,10 +72,10 @@ summary(result, labels = names(df[-1]))
 set.seed(101)
 
 if (use.fbms) {
-  result_parallel <- fbms(data = df, method = "gmjmcmc.parallel", transforms = transforms, 
+  result_parallel <- fbms(data = df, method = "gmjmcmc.parallel", transforms = transforms, beta_prior = list(type = "Jeffreys-BIC"), 
                  probs = probs, params = params, P=25)
 } else {
-  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 10, x = df[, -1], y = df[, 1], mlpost_params = list(family = "gaussian", beta_prior = list(type = "JZS", a = 1)),
+  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 10, x = df[, -1], y = df[, 1],mlpost_params = list(family = "gaussian", beta_prior = list(type = "Jeffreys-BIC")),
                         transforms = transforms, probs = probs, params = params, P=25)
 }
 
@@ -89,10 +89,10 @@ diagn_plot(result_parallel, FUN = median)
 set.seed(102)
 
 if (use.fbms) {
-  result_parallel2 <- fbms(runs = 40, cores = 10,data = df, method = "gmjmcmc.parallel", transforms = transforms, 
+  result_parallel2 <- fbms(runs = 40, cores = 10,data = df, method = "gmjmcmc.parallel", transforms = transforms, beta_prior = list(type = "Jeffreys-BIC"), 
                           probs = probs, params = params, P=25, N.init=1000, N.final=2000)
 } else {
-  result_parallel2 =  gmjmcmc.parallel(runs = 40, cores = 10, x = df[, -1], y = df[, 1], mlpost_params = list(family = "gaussian", beta_prior = list(type = "JZS", a = 1)),
+  result_parallel2 =  gmjmcmc.parallel(runs = 40, cores = 10, x = df[, -1], y = df[, 1],mlpost_params = list(family = "gaussian", beta_prior = list(type = "Jeffreys-BIC")),
                           transforms = transforms, probs = probs, params = params, 
                           P=25, N.init=1000, N.final=2000)
 }
@@ -106,10 +106,10 @@ diagn_plot(result_parallel2,FUN = median)
 set.seed(104)
 
 if (use.fbms) {
-  result_parallel3 <- fbms(data = df, method = "gmjmcmc.parallel", transforms = transforms, 
+  result_parallel3 <- fbms(data = df, method = "gmjmcmc.parallel", transforms = transforms, beta_prior = list(type = "Jeffreys-BIC"), 
                            probs = probs, params = params, P=50, N.init=2000, N.final=4000)
 } else {
-  result_parallel3 =  gmjmcmc.parallel(runs = 40, cores = 40, x = df[, -1], y = df[, 1], transforms = transforms,
+  result_parallel3 =  gmjmcmc.parallel(runs = 40, cores = 40, x = df[, -1], y = df[, 1], transforms = transforms, mlpost_params = list(family = "gaussian", beta_prior = list(type = "Jeffreys-BIC")),
                                        probs = probs, params = params, P=50, N.init=2000, N.final=4000)
 }
 #summary(result_parallel3, labels = names(df[-1]))

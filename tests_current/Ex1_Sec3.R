@@ -28,7 +28,7 @@ transforms <- c("sigmoid","sin_deg","exp_dbl","p0","troot","to3")
 
 # Logical to decide whether to perform analysis with fbms function
 # If FALSE then gmjmcmc or gmjmcmc.parallel function is used
-use.fbms = FALSE  
+use.fbms <- TRUE  
 
 ####################################################
 #

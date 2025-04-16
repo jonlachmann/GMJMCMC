@@ -17,7 +17,7 @@
 
 
 library(FBMS)
-use.fbms = FALSE  
+use.fbms <- TRUE  
 
 
 data("abalone")
@@ -80,10 +80,10 @@ set.seed(5001)
 
 
 if (use.fbms) {
-  result <- fbms(data = df.training, method = "gmjmcmc", transforms = transforms, 
+  result <- fbms(data = df.training, method = "gmjmcmc", transforms = transforms, beta_prior = list(type = "g-prior", g = 20),
                  probs = probs, params = params)
 } else {
-  result <- gmjmcmc(x = df.training[, -1], y = df.training[, 1], transforms = transforms, probs = probs,params = params)
+  result <- gmjmcmc(x = df.training[, -1], y = df.training[, 1], transforms = transforms, probs = probs, mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior", g = 20)), params = params)
 }
 summary(result)
 
@@ -107,12 +107,12 @@ plot(pred$aggr$mean, df.test$Rings)
 set.seed(5003)
 
 if (use.fbms) {
-  result_parallel <- fbms(data = df.training, method = "gmjmcmc.parallel", runs = 4, cores = 4,
+  result_parallel <- fbms(data = df.training, method = "gmjmcmc.parallel", runs = 10, cores = 10, beta_prior = list(type = "g-prior",g = 20),
                           transforms = transforms, probs = probs, params = params, P=25)
 } else {
-  result_parallel =  gmjmcmc.parallel(runs = 4, cores = 4, x = df.training[, -1], y = df.training[, 1],
+  result_parallel =  gmjmcmc.parallel(runs = 10, cores = 10, x = df.training[, -1], y = df.training[, 1],
                                     loglik.pi =gaussian.loglik,loglik.alpha = gaussian.loglik.alpha, 
-                                    transforms = transforms, probs = probs, params = params, P=25)
+                                    transforms = transforms, probs = probs,mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior", g = 20)), params = params, P=25)
 }
 summary(result_parallel)
 
@@ -140,10 +140,10 @@ set.seed(5003)
 
 
 if (use.fbms) {
-  result.a3 <- fbms(data = df.training, method = "gmjmcmc", transforms = transforms, 
+  result.a3 <- fbms(data = df.training, method = "gmjmcmc", transforms = transforms, beta_prior = list(type = "g-prior",g = 20), 
                  probs = probs, params = params)
 } else {
-  result.a3 <- gmjmcmc(x = df.training[, -1], y = df.training[, 1], transforms = transforms, probs = probs, params = params)
+  result.a3 <- gmjmcmc(x = df.training[, -1], y = df.training[, 1], transforms = transforms, probs = probs, mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior", g = 20)), params = params)
 }
 summary(result.a3)
 
@@ -170,16 +170,13 @@ params$feat$alpha = "random"
 set.seed(5004)
 
 if (use.fbms) {
-  result_parallel.a3 <- fbms(data = df.training, method = "gmjmcmc.parallel", runs = 40, cores = 40,
+  result_parallel.a3 <- fbms(data = df.training, method = "gmjmcmc.parallel", beta_prior = list(type = "g-prior",g = 20), runs = 10, cores = 10,
                           transforms = transforms, probs = probs, params = params, P=25)
 } else {
-  result_parallel.a3 =  gmjmcmc.parallel(runs = 40, cores = 40, x = df.training[, -1], y = df.training[, 1],
-                                    loglik.pi =gaussian.loglik,loglik.alpha = gaussian.loglik.alpha, 
-                                    transforms = transforms, probs = probs, params = params, P=25)
+  result_parallel.a3 =  gmjmcmc.parallel(runs = 10, cores = 10, x = df.training[, -1], y = df.training[, 1], mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior", g = 20)),
+                                                                transforms = transforms, probs = probs, params = params, P=25)
 }
 summary(result_parallel.a3)
-
-
 
 
 
@@ -189,10 +186,6 @@ pred.RMSE[4] = sqrt(mean((pred_parallel.a3$aggr$mean - df.test$Rings)^2))
 
 plot(pred_parallel.a3$aggr$mean, df.test$Rings)
 abline(0,1)
-
-
-
-
 
 
 
@@ -209,12 +202,12 @@ probs$gen <- c(0,1,0,1) #Only modifications!
 set.seed(50005)
 
 if (use.fbms) {
-  result.fp <- fbms(data = df.training, method = "gmjmcmc.parallel", runs = 40, cores = 40,
+  result.fp <- fbms(data = df.training, method = "gmjmcmc.parallel", runs = 10, cores = 10, beta_prior = list(type = "g-prior", g = 20),
                              transforms = transforms, probs = probs, params = params, P=25)
 } else {
-  result.fp <- gmjmcmc.parallel(runs = 40, cores = 40, x = df.training[, -1], y = df.training[, 1],
-                              loglik.pi =gaussian.loglik,loglik.alpha = gaussian.loglik.alpha, 
-                              transforms = transforms, probs = probs, params = params, P=25)
+  result.fp <- gmjmcmc.parallel(runs = 40, cores = 40, x = df.training[, -1], y = df.training[, 1], 
+                                mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior", g = 20)),
+                                transforms = transforms, probs = probs, params = params, P=25)
 }
 summary(result.fp)
 
@@ -226,3 +219,5 @@ pred.RMSE[5] = sqrt(mean((pred_fp$aggr$mean - df.test$Rings)^2))
 
 plot(pred_fp$aggr$mean, df.test$Rings)
 
+
+print(pred.RMSE)

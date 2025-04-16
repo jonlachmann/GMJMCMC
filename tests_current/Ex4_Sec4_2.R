@@ -10,7 +10,7 @@
 
 library(mvtnorm)
 library(FBMS)
-use.fbms <- FALSE  
+use.fbms <- TRUE  
 stronger.singal <- FALSE
 
 n <- 100*ifelse(stronger.singal,10,1)  # sample size
