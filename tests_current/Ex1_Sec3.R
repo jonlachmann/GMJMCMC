@@ -53,8 +53,8 @@ get.best.model(result = result.default)
 preds <- predict(get.best.model(result.default), df.test[, -1])
 sqrt(mean((preds - df.test$semimajoraxis)^2))
 
-get.mpm.model(result = result.default, y = df.test$semimajoraxis, x = df.test[, -1])
-preds <- predict(get.mpm.model(result.default, y = df.test$semimajoraxis, x = df.test[, -1]), df.test[, -1])
+get.mpm.model(result = result.default, y = df.train$semimajoraxis, x = df.train[, -1])
+preds <- predict(get.mpm.model(result.default, y = df.train$semimajoraxis, x = df.train[, -1]), df.test[, -1])
 sqrt(mean((preds - df.test$semimajoraxis)^2))
 
 ####################################################
