@@ -1,6 +1,6 @@
 #######################################################
 #
-# Example 9 (Section 6.1):
+# Example 8 (Section 6.1):
 #
 # Logistic Regression
 #

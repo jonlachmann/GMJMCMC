@@ -1,6 +1,6 @@
 #######################################################
 #
-# Example 10 (Section 6.2): Zambia data set from the cAIC4 package
+# Example 9 (Section 6.2): Zambia data set from the cAIC4 package
 #
 # Linear Mixed Model with Fractional Polynomials 
 #

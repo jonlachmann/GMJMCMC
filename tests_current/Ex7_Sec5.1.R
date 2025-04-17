@@ -1,6 +1,6 @@
 #######################################################
 #
-# Example 8 (Section 5.2):
+# Example 7 (Section 5.2):
 #
 # Logic regression with a different model prior
 #
