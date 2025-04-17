@@ -16,7 +16,7 @@ library(devtools)
 devtools::install_github("jonlachmann/GMJMCMC@FBMS", force=T, build_vignettes=F)
 
 library(FBMS)
-use.fbms = FALSE  
+use.fbms <- FALSE  
 
 
 
@@ -42,11 +42,7 @@ probs$gen <- c(1,1,0,1) # Modifications and interactions!
 
 params <- gen.params.gmjmcmc(ncol(df) - 1)
 params$feat$D <- 1   # Set depth of features to 1 (still allows for interactions)
-params$mlpost$r = 1/dim(df)[1]
 params$feat$pop.max = 10
-
-#specify indices for a random effect
-params$mlpost$dr = droplevels(Zambia$dr) # district ids for repeated measurements
 
 
 #estimator function with lme4
@@ -87,8 +83,6 @@ mixed.model.loglik.lme4 <- function (y, x, model, complex, params)
 
 #estimator function with INLA
 
-params$mlpost$INLA.num.threads = 10 # Number of threads used by INLA
-#params$feat$keep.min = 0.2
 
 
 mixed.model.loglik.inla <- function (y, x, model, complex, params) 
@@ -134,8 +128,6 @@ mixed.model.loglik.inla <- function (y, x, model, complex, params)
 
 
 #estimator function with RTMB
-
-params$mlpost$nr_dr =  sum((table(Zambia$dr))>0)   #number of districts (that is number of different random intercepts)
 
 mixed.model.loglik.rtmb <- function (y, x, model, complex, params) 
 {
@@ -193,17 +185,16 @@ mixed.model.loglik.rtmb <- function (y, x, model, complex, params)
 
 set.seed(03052024)
 
-#result <- gmjmcmc(data = df, loglik.pi = mixed.model.loglik.inla, transforms = transforms, probs = probs, params = params, P = 3)
-
-#params$feat$pop.max = 10
 
 tic()
 if (use.fbms) {
-  result1a <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.lme4, method = "gmjmcmc", 
+  result1a <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.lme4,
+                  model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10), method = "gmjmcmc", 
                   transforms = transforms, N.init = 30, 
                   probs = probs, params = params, P=3)
 } else { 
   result1a <- gmjmcmc(x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.lme4,
+                  mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10),
                   transforms = transforms, N.init = 30, 
                   probs = probs, params = params, P = 3)
 }
@@ -215,11 +206,13 @@ summary(result1a, labels = names(df)[-1])
 
 tic()
 if (use.fbms) {
-  result1b <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.inla, method = "gmjmcmc", 
+  result1b <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.inla,
+                   model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10), method = "gmjmcmc", 
                    transforms = transforms, N.init = 30, 
                    probs = probs, params = params, P=3)
 } else { 
-  result1b <- gmjmcmc(x = df[, -1], y = df[, 1], , loglik.pi = mixed.model.loglik.inla,
+  result1b <- gmjmcmc(x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.inla,
+                      mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10),
                     transforms = transforms, N.init = 30, 
                     probs = probs, params = params, P = 3)
 }
@@ -228,10 +221,12 @@ time.inla = toc()
 tic()
 if (use.fbms) {
   result1c <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.rtmb, method = "gmjmcmc", 
+                   model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10),
                    transforms = transforms, N.init = 30, 
                    probs = probs, params = params, P=3)
 } else { 
   result1c <- gmjmcmc(x = df[, -1], y = df[, 1], , loglik.pi = mixed.model.loglik.rtmb,
+                      mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10),
                       transforms = transforms, N.init = 30, 
                       probs = probs, params = params, P = 3)
 }
@@ -249,13 +244,13 @@ c(time.lme4$callback_msg, time.inla$callback_msg, time.rtmb$callback_msg)
 
 set.seed(20062024)
 params$feat$pop.max = 10
-result2a <- gmjmcmc.parallel(runs = 40, cores = 10, x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.lme4, transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
+result2a <- gmjmcmc.parallel(runs = 40, cores = 40, x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.lme4,mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10),  transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
 
 summary(result2a,tol = 0.05,labels=names(df)[-1])   
 
 
 set.seed(21062024)
-result2b <- gmjmcmc.parallel(runs = 120, cores = 40, x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.lme4, transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
+result2b <- gmjmcmc.parallel(runs = 120, cores = 40, x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.lme4, mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10), transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
 
 summary(result2b, labels = names(df)[-1])
 
@@ -267,7 +262,7 @@ plot(result2b)
 
 set.seed(03072024)
 
-result2c <- gmjmcmc.parallel(runs = 200, cores = 40, x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.lme4, transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
+result2c <- gmjmcmc.parallel(runs = 200, cores = 40, x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.lme4,mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10), transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
 
 summary(result2c, labels = names(df)[-1])
 summary(result2c, labels = names(df)[-1], pop = "last")
@@ -289,7 +284,7 @@ summary(result2c, labels = names(df)[-1])
 set.seed(22052024)
 
 params$mlpost$INLA.num.threads = 1 # Number of threads used by INLA set to 1
-result2a <- gmjmcmc.parallel(runs = 20, cores = 20, x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.inla, transforms = transforms, N.init=30, probs = probs, params = params, P = 25)
+result2a <- gmjmcmc.parallel(runs = 20, cores = 20, x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.inla,mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10), transforms = transforms, N.init=30, probs = probs, params = params, P = 25)
 
 plot(result2a)
 summary(result2a, labels = names(df)[-1])
@@ -301,7 +296,7 @@ params$feat$check.col = F
 
 set.seed(20062024)
 params$mlpost$INLA.num.threads = 1 # Number of threads used by INLA set to 1
-result2b <- gmjmcmc.parallel(runs = 100, cores = 20, x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.inla, transforms = transforms, N.init=16, probs = probs, params = params, P = 15)
+result2b <- gmjmcmc.parallel(runs = 100, cores = 20, x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.inla,mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10), transforms = transforms, N.init=16, probs = probs, params = params, P = 15)
 
 summary(result2b, labels = names(df)[-1])
 
