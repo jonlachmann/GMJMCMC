@@ -10,18 +10,13 @@
 #
 #######################################################
 
-#install.packages("tictoc")
 library(tictoc)
-
-library(devtools)
-devtools::install_github("jonlachmann/GMJMCMC@FBMS", force=T, build_vignettes=F)
-#install.packages("FBMS")
 library(FBMS)
 #library(devtools)
 #devtools::install_github("jonlachmann/irls.sgd", force=T, build_vignettes=F)
 library(irls.sgd)
 
-
+use.fbms <- T
 
 df <- read.csv2(file = "/Users/aliaksandrhome/GMJMCMC/tests/heart_disease_health_indicators_BRFSS2015.csv",sep = ",",dec = ".")
 
@@ -77,17 +72,34 @@ logistic.posterior.bic.irlssgd <- function (y, x, model, complex, params)
 
 set.seed(100001)
 tic()
-# subsampling analysis
-tmp1 <- gmjmcmc(x = df[, -1], y = df[, 1], loglik.pi = logistic.posterior.bic.irlssgd,mlpost_params = list(r = 0.5, subs = 0.01), transforms = transforms,
-                params = params, P = 2, sub  = T)
-time1 = toc() 
+if (use.fbms) {
+  result1 <- fbms(data = df, family = "custom", loglik.pi = logistic.posterior.bic.irlssgd, method = "gmjmcmc", 
+                   model_prior = list(r = 0.5, subs = 0.01), transforms = transforms,
+                   params = params, P = 2, sub  = T)
+} else { 
+  result1 <- gmjmcmc(x = df[, -1], y = df[, 1], loglik.pi = logistic.posterior.bic.irlssgd,
+                  mlpost_params = list(r = 0.5, subs = 0.01), transforms = transforms,
+                  params = params, P = 2, sub  = T) 
+}
+time1 <- toc() 
 
 set.seed(100002)
 tic()
 # regular analysis
-tmp2 <- gmjmcmc(x = df[, -1], y = df[, 1], logistic.loglik, transforms = transforms,
-                mlpost_params = list(r = 0.5, subs = 0.01), params = params, P = 2)
-time2 = toc() 
+
+if (use.fbms) {
+  result2 <- fbms(data = df, family = "binomial", method = "gmjmcmc", 
+               model_prior = list(r = 0.5, subs = 0.01), 
+               beta_prior = list(type = "Jeffreys-BIC"),
+               transforms = transforms, params = params, P = 2, sub  = T)
+} else { 
+  result2 <- gmjmcmc(x = df[, -1], y = df[, 1],
+               mlpost_params = list(r = 0.5, family = "binomial", 
+               beta_prior = list(type = "Jeffreys-BIC")), 
+               params = params, P = 2)
+}
+
+time2 <- toc() 
 
 c(time1, time2)
 
@@ -103,12 +115,20 @@ c(time1, time2)
 set.seed(100003)
 
 tic()
-result <- gmjmcmc.parallel(runs = 10,cores = 10, x = df[, -1], y = df[, 1],
-                           loglik.pi = logistic.posterior.bic.irlssgd, 
-                           transforms = transforms, params = params,  P = 3, sub = T)
-time3 = toc() 
+if (use.fbms) {
+  result_parallel_1 <- fbms(data = df, family = "custom", loglik.pi = logistic.posterior.bic.irlssgd, 
+              method = "gmjmcmc.parallel", runs = 10, cores = 10,
+              model_prior = list(r = 0.5, subs = 0.01), transforms = transforms,
+              params = params, P = 2, sub  = T)
+} else { 
+  result_parallel_1 <- gmjmcmc.parallel(runs = 10, cores = 10, x = df[, -1], y = df[, 1],
+              loglik.pi = logistic.posterior.bic.irlssgd,
+              mlpost_params = list(r = 0.5, subs = 0.01), 
+              transforms = transforms, params = params,  P = 2, sub = T)
+}
+time3 <- toc() 
 
-summary(result)
+summary(result_parallel_1)
 
 # without subsampling
 
@@ -116,12 +136,22 @@ summary(result)
 set.seed(100004)
 
 tic()
-result1a <- gmjmcmc.parallel(runs = 10,cores = 10, x = df[, -1], y = df[, 1],
-                           loglik.pi = logistic.loglik, 
-                           transforms = transforms, params = params,  P = 3)
-time4 = toc() 
+if (use.fbms) {
+  result_parallel_2 <- fbms(data = df, family = "binomial", loglik.pi = logistic.posterior.bic.irlssgd, 
+                            method = "gmjmcmc.parallel", runs = 10, cores = 10,
+                            model_prior = list(r = 0.5),
+                            beta_prior = list(type = "Jeffreys-BIC"), 
+                            transforms = transforms,
+                            params = params, P = 2, sub  = T)
+} else { 
+  result_parallel_2 <- gmjmcmc.parallel(runs = 10,cores = 10, x = df[, -1], y = df[, 1],
+                            mlpost_params = list(r = 0.5, family = "binomial", 
+                            beta_prior = list(type = "Jeffreys-BIC")), 
+                            transforms = transforms, params = params,  P = 2)
+}
+time4 <- toc() 
 
-summary(result1a)
+summary(result_parallel_2)
 
 
 
@@ -135,10 +165,19 @@ summary(result1a)
 
 set.seed(100005)
 tic()
-result2 <- gmjmcmc.parallel(runs = 40,cores = 40, x = df[, -1], y = df[, 1],
-                           loglik.pi = logistic.posterior.bic.irlssgd, 
-                           transforms = transforms, params = params,  P = 10, sub = T)
-time5 = toc() 
+if (use.fbms) {
+  result_parallel_long_1 <- fbms(data = df, family = "custom", loglik.pi = logistic.posterior.bic.irlssgd, 
+                            method = "gmjmcmc.parallel", runs = 40, cores = 40,
+                            model_prior = list(r = 0.5, subs = 0.01), transforms = transforms,
+                            params = params, P = 10, sub  = T)
+} else { 
+  result_parallel_long_1 <- gmjmcmc.parallel(runs = 40, cores = 40, x = df[, -1], y = df[, 1],
+                                        loglik.pi = logistic.posterior.bic.irlssgd,
+                                        mlpost_params = list(r = 0.5, subs = 0.01), 
+                                        transforms = transforms, params = params,  P = 10, sub = T)
+}
+
+time5 <- toc() 
 summary(result2)
 
 
@@ -149,14 +188,23 @@ summary(result2)
 set.seed(100006)
 
 tic()
-result2a <- gmjmcmc.parallel(runs = 40,cores = 40, x = df[, -1], y = df[, 1],
-                             loglik.pi = logistic.loglik, 
-                             transforms = transforms, params = params,  P = 10)
-time6 = toc() 
+if (use.fbms) {
+  result_parallel_long_2 <- fbms(data = df, family = "binomial", loglik.pi = logistic.posterior.bic.irlssgd, 
+                            method = "gmjmcmc.parallel", runs = 40, cores = 40,
+                            model_prior = list(r = 0.5),
+                            beta_prior = list(type = "Jeffreys-BIC"), 
+                            transforms = transforms,
+                            params = params, P = 10, sub  = T)
+} else { 
+  result_parallel_long_2 <- gmjmcmc.parallel(runs = 40,cores = 40, x = df[, -1], y = df[, 1],
+                                        mlpost_params = list(r = 0.5, family = "binomial", 
+                                                             beta_prior = list(type = "Jeffreys-BIC")), 
+                                        transforms = transforms, params = params,  P = 10)
+}
+time6 <- toc() 
 
 
-summary(result2a)
-
+summary(result_parallel_long_2)
 
 
 ############################################################################

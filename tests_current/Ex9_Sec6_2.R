@@ -321,6 +321,22 @@ summary(result2c, labels = names(df)[-1])
 set.seed(22052024)
 
 params$mlpost$INLA.num.threads = 1 # Number of threads used by INLA set to 1
+
+
+if (use.fbms) {
+  result2a <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.rtmb, method = "gmjmcmc.parallel", 
+                   model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10),
+                   transforms = transforms, N.init = 100,runs = 40, cores = 40, 
+                   probs = probs, params = params, P=25)
+} else { 
+  result2a <- gmjmcmc.parallel(runs = 40, cores = 40, 
+                               x = df[, -1], y = df[, 1], 
+                               loglik.pi = mixed.model.loglik.lme4,
+                               mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10),  
+                               transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
+  
+}
+
 result2a <- gmjmcmc.parallel(runs = 20, cores = 20, x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.inla,mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10), transforms = transforms, N.init=30, probs = probs, params = params, P = 25)
 
 plot(result2a)
