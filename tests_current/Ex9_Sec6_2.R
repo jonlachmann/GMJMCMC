@@ -16,7 +16,7 @@ library(devtools)
 devtools::install_github("jonlachmann/GMJMCMC@FBMS", force=T, build_vignettes=F)
 
 library(FBMS)
-use.fbms <- FALSE  
+use.fbms <- TRUE
 
 
 
@@ -244,14 +244,39 @@ c(time.lme4$callback_msg, time.inla$callback_msg, time.rtmb$callback_msg)
 
 set.seed(20062024)
 params$feat$pop.max = 10
-result2a <- gmjmcmc.parallel(runs = 40, cores = 40, x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.lme4,mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10),  transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
+
+if (use.fbms) {
+  result2a <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.rtmb, method = "gmjmcmc.parallel", 
+                   model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10),
+                   transforms = transforms, N.init = 100,runs = 40, cores = 40, 
+                   probs = probs, params = params, P=25)
+} else { 
+  result2a <- gmjmcmc.parallel(runs = 40, cores = 40, 
+                               x = df[, -1], y = df[, 1], 
+                               loglik.pi = mixed.model.loglik.lme4,
+                               mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10),  
+                               transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
+  
+}
 
 summary(result2a,tol = 0.05,labels=names(df)[-1])   
 
 
 set.seed(21062024)
-result2b <- gmjmcmc.parallel(runs = 120, cores = 40, x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.lme4, mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10), transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
 
+if (use.fbms) {
+  result2b <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.rtmb, method = "gmjmcmc.parallel", 
+                   model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10),
+                   transforms = transforms, N.init = 100,runs = 120, cores = 40, 
+                   probs = probs, params = params, P=25)
+} else { 
+  result2b <- gmjmcmc.parallel(runs = 120, cores = 40, 
+                               x = df[, -1], y = df[, 1], 
+                               loglik.pi = mixed.model.loglik.lme4,
+                               mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10),  
+                               transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
+  
+}
 summary(result2b, labels = names(df)[-1])
 
 summary(result2b, labels = names(df)[-1], pop = "all")
@@ -262,8 +287,20 @@ plot(result2b)
 
 set.seed(03072024)
 
-result2c <- gmjmcmc.parallel(runs = 200, cores = 40, x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.lme4,mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10), transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
 
+if (use.fbms) {
+  result2c <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.rtmb, method = "gmjmcmc.parallel", 
+                   model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10),
+                   transforms = transforms, N.init = 100,runs = 200, cores = 40, 
+                   probs = probs, params = params, P=25)
+} else { 
+  result2c <- gmjmcmc.parallel(runs = 200, cores = 40, 
+                               x = df[, -1], y = df[, 1], 
+                               loglik.pi = mixed.model.loglik.lme4,
+                               mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10),  
+                               transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
+  
+}
 summary(result2c, labels = names(df)[-1])
 summary(result2c, labels = names(df)[-1], pop = "last")
 summary(result2c, labels = names(df)[-1], pop = "all")

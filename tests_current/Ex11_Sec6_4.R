@@ -1,6 +1,6 @@
 #######################################################
 #
-# Example 12 (Section 6.4):
+# Example 11 (Section 6.4):
 #
 # Subsampling
 #
@@ -23,24 +23,20 @@ library(irls.sgd)
 
 
 
-df = read.csv2(file = "/Users/aliaksandrhome/GMJMCMC/tests/heart_disease_health_indicators_BRFSS2015.csv",sep = ",",dec = ".")
+df <- read.csv2(file = "/Users/aliaksandrhome/GMJMCMC/tests/heart_disease_health_indicators_BRFSS2015.csv",sep = ",",dec = ".")
 
 summary(df)
 dim(df)
 
 #number of observations in the data
 
-n = dim(df)[1] 
+n <- dim(df)[1] 
 
 #number of covariates
 
-p = dim(df)[2] - 1   
+p <- dim(df)[2] - 1   
 
 params <- gen.params.gmjmcmc(ncol(df) - 1)
-params$mlpost$r = 0.5
-params$mlpost$subs = 0.01
-
-
 transforms <- c("sigmoid","pm1","p0","p05","p2","p3")
 probs <- gen.probs.gmjmcmc(transforms)
 
@@ -82,7 +78,7 @@ logistic.posterior.bic.irlssgd <- function (y, x, model, complex, params)
 set.seed(100001)
 tic()
 # subsampling analysis
-tmp1 <- gmjmcmc(x = df[, -1], y = df[, 1], logistic.posterior.bic.irlssgd, transforms = transforms,
+tmp1 <- gmjmcmc(x = df[, -1], y = df[, 1], loglik.pi = logistic.posterior.bic.irlssgd,mlpost_params = list(r = 0.5, subs = 0.01), transforms = transforms,
                 params = params, P = 2, sub  = T)
 time1 = toc() 
 
@@ -90,7 +86,7 @@ set.seed(100002)
 tic()
 # regular analysis
 tmp2 <- gmjmcmc(x = df[, -1], y = df[, 1], logistic.loglik, transforms = transforms,
-                params = params, P = 2)
+                mlpost_params = list(r = 0.5, subs = 0.01), params = params, P = 2)
 time2 = toc() 
 
 c(time1, time2)
