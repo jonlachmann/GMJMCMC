@@ -34,7 +34,7 @@
 #' }
 #'
 #' @export
-predict.bgnlm_model <- function(object, x, link = function(x) { x }, ... ) {
+predict.bgnlm_model <- function(object, x, link = function(x) {x }, ... ) {
 
   if(object$needs.precalc)
   {
@@ -42,6 +42,12 @@ predict.bgnlm_model <- function(object, x, link = function(x) { x }, ... ) {
       x <- cbind(1, x)
     }
     precalc <- precalc.features(list(x = x, y = NULL, fixed = object$fixed), object$features)
+    
+    if(dim(precalc$x)[2]>length(object$coefs[object$coefs!=0]))
+    {
+      precalc$x <- precalc$x[,-1]
+    }
+    
     yhat <- link(precalc$x %*% object$coefs[object$coefs != 0])
   }else
   {
@@ -53,6 +59,10 @@ predict.bgnlm_model <- function(object, x, link = function(x) { x }, ... ) {
     if(dim(x.precalc)[2]<length(object$coefs[object$coefs!=0]))
     {
       x.precalc <- cbind(1,x.precalc)
+    }
+    else if(dim(x.precalc)[2]>length(object$coefs[object$coefs!=0]))
+    {
+      x.precalc <- x.precalc[,-1]
     }
     yhat <- link(x.precalc %*% object$coefs[object$coefs!=0])
   }

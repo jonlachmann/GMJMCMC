@@ -137,7 +137,7 @@ set.seed(100004)
 
 tic()
 if (use.fbms) {
-  result_parallel_2 <- fbms(data = df, family = "binomial", loglik.pi = logistic.posterior.bic.irlssgd, 
+  result_parallel_2 <- fbms(data = df, family = "binomial", 
                             method = "gmjmcmc.parallel", runs = 10, cores = 10,
                             model_prior = list(r = 0.5),
                             beta_prior = list(type = "Jeffreys-BIC"), 
@@ -189,7 +189,7 @@ set.seed(100006)
 
 tic()
 if (use.fbms) {
-  result_parallel_long_2 <- fbms(data = df, family = "binomial", loglik.pi = logistic.posterior.bic.irlssgd, 
+  result_parallel_long_2 <- fbms(data = df, family = "binomial", 
                             method = "gmjmcmc.parallel", runs = 40, cores = 40,
                             model_prior = list(r = 0.5),
                             beta_prior = list(type = "Jeffreys-BIC"), 
