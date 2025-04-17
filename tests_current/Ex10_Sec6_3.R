@@ -8,28 +8,22 @@
 #
 #######################################################
 
-
-
-library(devtools)
-devtools::install_github("jonlachmann/GMJMCMC@FBMS", force=T, build_vignettes=F)
-
-
 library(FBMS)
 library(INLA)
 library(tictoc)
-use.fbms = FALSE  
+use.fbms <- FALSE  
 
-data = INLA::Epil
-data = data[,-c(5,6)]
+data <- INLA::Epil
+data <- data[,-c(5,6)]
 
-df = data[1:5]
-df$V2 = rep(c(0,1,0,0),59)
-df$V3 = rep(c(0,0,1,0),59)
-df$V4 = rep(c(0,0,0,1),59)
+df <- data[1:5]
+df$V2 <- rep(c(0,1,0,0),59)
+df$V3 <- rep(c(0,0,1,0),59)
+df$V4 <- rep(c(0,0,0,1),59)
 
 
-#df$Trt.Base = df$Trt * df$Base
-#df$Trt.Age = df$Trt * df$Age
+#df$Trt.Base <- df$Trt * df$Base
+#df$Trt.Age <- df$Trt * df$Age
 
 transforms <- c("p0","p2","p3","p05","pm05","pm1","pm2","p0p0","p0p05","p0p1","p0p2","p0p3","p0p05","p0pm05","p0pm1","p0pm2")
 probs <- gen.probs.gmjmcmc(transforms)
@@ -37,34 +31,24 @@ probs$gen <- c(1,1,0,1) # Only modifications!
 
 params <- gen.params.gmjmcmc(ncol(df) - 1)
 params$feat$D <- 2   # Set depth of features to 2 (allow for interactions)
-params$mlpost$r = 1/dim(df)[1]
-
-#specify indices for a random effect
-params$mlpost$PID = data$Ind # patient ids for repeated measurements
-params$mlpost$INLA.num.threads = 10 # Number of threads used by INLA
-
-params$feat$keep.min = 0.2
-
-params$greedy$steps = 2
-params$greedy$tries = 1
-params$sa$t.min = 0.1
-params$sa$dt = 10
-
-
+params$feat$keep.min <- 0.2
+params$greedy$steps <- 2
+params$greedy$tries <- 1
+params$sa$t.min <- 0.1
+params$sa$dt <- 10
 
 #estimator function
-
 poisson.loglik.inla <- function (y, x, model, complex, params) 
 {
 
   if(sum(model)>1)
   {
-    data1 = data.frame(y, as.matrix(x[,model]), params$PID)
-    formula1 = as.formula(paste0(names(data1)[1],"~",paste0(names(data1)[3:(dim(data1)[2]-1)],collapse = "+"),"+ f(params.PID,model = \"iid\")"))
+    data1 <- data.frame(y, as.matrix(x[,model]), params$PID)
+    formula1 <- as.formula(paste0(names(data1)[1],"~",paste0(names(data1)[3:(dim(data1)[2]-1)],collapse = "+"),"+ f(params.PID,model = \"iid\")"))
   } else
   {
-    data1 = data.frame(y, params$PID)
-    formula1 = as.formula(paste0(names(data1)[1],"~","1 + f(params.PID,model = \"iid\")"))
+    data1 <- data.frame(y, params$PID)
+    formula1 <- as.formula(paste0(names(data1)[1],"~","1 + f(params.PID,model = \"iid\")"))
   }
   
   #to make sure inla is not stuck
@@ -96,33 +80,40 @@ poisson.loglik.inla <- function (y, x, model, complex, params)
 }
 
 set.seed(03052024)
+#specify indices for a random effect
 
 if (use.fbms) {
-  result <- fbms(data = df, family = "custom", loglik.pi = poisson.loglik.inla, method = "gmjmcmc", 
-                  transforms = transforms, probs = probs, params = params, P=3)
+  result <- fbms(data = df, family = "custom", loglik.pi = poisson.loglik.inla,
+                 model_prior = list(r = 1/dim(df)[1],PID = data$Ind, INLA.num.threads = 10),
+                 method = "gmjmcmc", 
+                 transforms = transforms, probs = probs, params = params, P=3)
 } else {
-  result <- gmjmcmc(x = df[, -1], y = df[, 1], , loglik.pi = poisson.loglik.inla, transforms = transforms,
-                    probs = probs, params = params, P = 3)
+  result <- gmjmcmc(x = df[, -1], y = df[, 1], loglik.pi = poisson.loglik.inla, 
+                 mlpost_params = list(r = 1/dim(df)[1],PID = data$Ind, INLA.num.threads = 10),
+                 transforms = transforms,
+                 probs = probs, params = params, P = 3)
 }
 
 plot(result)
 summary(result)
 
 
-
 set.seed(23052024)
 
 tic()
-params$mlpost$INLA.num.threads = 1 # Number of threads used by INLA set to 1
+# Number of threads used by INLA set to 1 to avoid conflicts between two layers of parallelization
 if (use.fbms) {
-  result2 <- fbms(data = df, family = "custom", loglik.pi = poisson.loglik.inla, 
+  result2 <- fbms(data = df, family = "custom", loglik.pi = poisson.loglik.inla,
+                  model_prior = list(r = 1/dim(df)[1],PID = data$Ind, INLA.num.threads = 1),
                   method = "gmjmcmc.parallel", runs = 40, cores = 40, 
                   transforms = transforms, probs = probs, params = params, P=25)
 } else {
-  result2 <- gmjmcmc.parallel(runs = 40, cores = 40, x = df[, -1], y = df[, 1], , loglik.pi = poisson.loglik.inla,
+  result2 <- gmjmcmc.parallel(runs = 40, cores = 40, x = df[, -1], y = df[, 1], 
+                              loglik.pi = poisson.loglik.inla,
+                              mlpost_params = list(r = 1/dim(df)[1],PID = data$Ind, INLA.num.threads = 1),
                               transforms = transforms, probs = probs, params = params, P = 25)
 }
-time.inla = toc()
+time.inla <- toc()
 
 plot(result2)
 summary(result2, labels = names(df)[-1], tol = 0.01)
