@@ -52,7 +52,7 @@ mjmcmc <- function (
     fixed <- fixed + 1
   }
   data <- check.data(x, y, fixed, verbose)
-  labels <- names(x)
+  labels <- colnames(x)
   if (fixed != 0)
     labels <- labels[-seq_len(fixed)]
 

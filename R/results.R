@@ -308,9 +308,13 @@ get.mpm.model <- function(result, y, x, labels = F, family = "gaussian", loglik.
     best_pop <- which.max(unlist(result$best.margs))
     marg.probs <- result$marg.probs[[best_pop]]
     features <- result$populations[[best_pop]]
-  } else if (is(result, "gmjmcmc_merged") || is(result, "mjmcmc")) {
+  } else if (is(result, "gmjmcmc_merged")) {
     marg.probs <- result$marg.probs
     features <- result$features
+  }else
+  {
+    marg.probs <- result$marg.probs
+    features <- result$populations
   }
   features <- features[marg.probs > 0.5]
   

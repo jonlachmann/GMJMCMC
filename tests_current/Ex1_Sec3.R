@@ -40,10 +40,9 @@ params <- gen.params.gmjmcmc(ncol(df.train) - 1)
 if (use.fbms) {
  result.default <- fbms(formula = semimajoraxis ~ 1 + . , data = df.train, method = "gmjmcmc", transforms = transforms, params = params)
 } else {
- result.default <- gmjmcmc(df.train[, -1], df.train[, 1], intercept = TRUE, transforms = transforms, params = params)
+ result.default <- gmjmcmc(df.train[, -1], df.train[, 1], transforms = transforms, params = params)
 }
 summary(result.default)
-
 
 preds <- predict(result.default, df.test[,-1], link = function(x) x)
 sqrt(mean((preds$aggr$mean - df.test$semimajoraxis)^2))

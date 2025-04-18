@@ -207,12 +207,15 @@ predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles =
 #' @export
 predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
   # Select the models and features to predict from at this iteration
+  #browser()
   x <- impute_x(object, x)
 
 
   if (object$intercept) {
     x <- cbind(1, x)
   }
+  
+ 
   
   models <- c(object$models, object$lo.models)[object$model.probs.idx]
 
