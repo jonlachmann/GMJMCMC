@@ -143,12 +143,12 @@ predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.
 #' @export
 predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = NULL, tol = 0.0000001, ...) {
   
+  
   x <- impute_x(object, x)
   if (object$intercept) {
     x <- cbind(1, x)
   }
   
-  x <- as.matrix(x)
   
   transforms.bak <- set.transforms(object$transforms)
   if (!is.null(pop))
@@ -209,11 +209,10 @@ predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025
   # Select the models and features to predict from at this iteration
   x <- impute_x(object, x)
 
+
   if (object$intercept) {
     x <- cbind(1, x)
   }
-  
-  x <- as.matrix(x)
   
   models <- c(object$models, object$lo.models)[object$model.probs.idx]
 
@@ -249,8 +248,6 @@ predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025
 predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
   x <- impute_x(object, x)
 
-  x <- as.matrix(x)
-  
   max.crits <- sapply(object$chains, function (x) x$best.crit)
   max.crit <- max(max.crits)
   result.weights <- exp(max.crits - max.crit) / sum(exp(max.crits - max.crit))
@@ -292,7 +289,6 @@ predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles 
 predict.gmjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
   transforms.bak <- set.transforms(object$transforms)
   x <- impute_x(object, x)
-  x <- as.matrix(x)
   merged <- merge_results(object,data = cbind(1, x), ...)
   results <- predict.gmjmcmc_merged(merged, x, link, quantiles)
   set.transforms(transforms.bak)
@@ -330,5 +326,5 @@ impute_x <- function (object, x) {
     }
     return(as.matrix(data.frame(df,na.matr)))
   }
-  return(x)
+  return(as.matrix(x))
 }
