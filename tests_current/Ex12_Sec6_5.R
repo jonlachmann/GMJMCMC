@@ -101,6 +101,7 @@ linpreds <- predict(result,df.test[,-(1:2)], link = function(x) x)
 linpreds.train.mpm <- predict(get.mpm.model(result, y = df.train$cens, x = df.train[, -c(1,2)],family = "custom",
                                loglik.pi = surv.pseudo.loglik,params = list(r = 0.5, time = time)),
                                df.train[,-(1:2)], link = function(x) x)
+
 linpreds.mpm <- predict(get.mpm.model(result, y = df.train$cens, x = df.train[, -c(1,2)],family = "custom",
                                       loglik.pi = surv.pseudo.loglik,params = list(r = 0.5, time = time)),df.test[,-(1:2)], link = function(x) x)
 
@@ -259,17 +260,17 @@ cindex6 <- cindex(mod6, mod6$formula, data = as.data.frame(df.test), cens.model 
 
 round(unlist(c(cindex1, cindex2, cindex3, cindex4, cindex5, cindex6)),3)
 
-# MPM
+# best
 
-df.train$average.lin.pred1 <- linpreds.train$aggr$mean
-df.train$average.lin.pred2 <- linpreds2.train$aggr$mean
-df.train$average.lin.pred3 <- linpreds3.train$aggr$mean
-df.train$average.lin.pred4 <- linpreds4.train$aggr$mean
+df.train$average.lin.pred1 <- linpreds.train.best
+df.train$average.lin.pred2 <- linpreds2.train.best
+df.train$average.lin.pred3 <- linpreds3.train.best
+df.train$average.lin.pred4 <- linpreds4.train.best
 
-df.test$average.lin.pred1 <- linpreds$aggr$mean
-df.test$average.lin.pred2 <- linpreds2$aggr$mean
-df.test$average.lin.pred3 <- linpreds3$aggr$mean
-df.test$average.lin.pred4 <- linpreds4$aggr$mean
+df.test$average.lin.pred1 <- linpreds.best
+df.test$average.lin.pred2 <- linpreds2.best
+df.test$average.lin.pred3 <- linpreds3.best
+df.test$average.lin.pred4 <- linpreds4.best
 
 mod1 <- coxph(Surv(time, cens) ~ average.lin.pred1, data = as.data.frame(df.train), x = TRUE)
 cindex1 <- cindex(mod1, mod1$formula, data = as.data.frame(df.test), cens.model = 'cox')$AppCindex
@@ -294,17 +295,17 @@ cindex6 <- cindex(mod6, mod6$formula, data = as.data.frame(df.test), cens.model 
 
 round(unlist(c(cindex1, cindex2, cindex3, cindex4, cindex5, cindex6)),3)
 
-# best 
+# mpm
 
-df.train$average.lin.pred1 <- linpreds.train$aggr$mean
-df.train$average.lin.pred2 <- linpreds2.train$aggr$mean
-df.train$average.lin.pred3 <- linpreds3.train$aggr$mean
-df.train$average.lin.pred4 <- linpreds4.train$aggr$mean
+df.train$average.lin.pred1 <- linpreds.train.mpm
+df.train$average.lin.pred2 <- linpreds2.train.mpm
+df.train$average.lin.pred3 <- linpreds3.train.mpm
+df.train$average.lin.pred4 <- linpreds4.train.mpm
 
-df.test$average.lin.pred1 <- linpreds$aggr$mean
-df.test$average.lin.pred2 <- linpreds2$aggr$mean
-df.test$average.lin.pred3 <- linpreds3$aggr$mean
-df.test$average.lin.pred4 <- linpreds4$aggr$mean
+df.test$average.lin.pred1 <- linpreds.mpm
+df.test$average.lin.pred2 <- linpreds2.mpm
+df.test$average.lin.pred3 <- linpreds3.mpm
+df.test$average.lin.pred4 <- linpreds4.mpm
 
 mod1 <- coxph(Surv(time, cens) ~ average.lin.pred1, data = as.data.frame(df.train), x = TRUE)
 cindex1 <- cindex(mod1, mod1$formula, data = as.data.frame(df.test), cens.model = 'cox')$AppCindex
