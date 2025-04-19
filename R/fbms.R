@@ -102,7 +102,7 @@ fbms <- function (
     if (missing(data)) {
       data <- environment(formula)
     }
-    
+
     na.opt <- getOption("na.action")
     if (impute)
       options(na.action = 'na.pass')
@@ -130,6 +130,7 @@ fbms <- function (
     imputed <- NULL
     if (impute && mis.X > 0) {
       print("Imputing missing values!")
+      X <- data.frame(X)
       na.matr <- data.frame(1 * (is.na(X)))
       names(na.matr) <- paste0("mis_", names(na.matr))
       cm <- colMeans(na.matr)
@@ -139,7 +140,7 @@ fbms <- function (
       }
       imputed <- names(X)[cm != 0]
       X <- data.frame(X, na.matr)
-      
+      #browser()
       rm(na.matr)
       rm(cm)
       print("Continue to sampling!")
