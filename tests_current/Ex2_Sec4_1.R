@@ -95,7 +95,7 @@ if (use.fbms) {
 
 plot(result.lin)
 
-summary(result.lin)
+summary(result.lin,tol = 0.5,effects = c(0.5, 0.025,0.0975))
 
 correct.model 
 beta.k
