@@ -325,7 +325,7 @@ get.mpm.model <- function(result, y, x, labels = F, family = "gaussian", loglik.
   
   coefs <- loglik.pi(y = y, x = precalc$x, model = rep(TRUE, length(features) + result$fixed), complex = list(oc = 0), params = params)$coefs
   
-  names(coefs) <- c(names(coefs)[seq_len(result$fixed)], sapply(features, print.feature))
+  names(coefs) <- c(names(coefs)[seq_len(result$fixed)], sapply(features, print.feature,labels = labels))
   
   model <- structure(list(
     coefs = coefs,
