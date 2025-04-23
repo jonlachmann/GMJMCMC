@@ -4,7 +4,14 @@
 \alias{predict.mjmcmc}
 \title{Predict using a mjmcmc result object.}
 \usage{
-\method{predict}{mjmcmc}(object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...)
+\method{predict}{mjmcmc}(
+  object,
+  x,
+  link = function(x) x,
+  quantiles = c(0.025, 0.5, 0.975),
+  x_train = NULL,
+  ...
+)
 }
 \arguments{
 \item{object}{The model to use.}
@@ -14,6 +21,8 @@
 \item{link}{The link function to use}
 
 \item{quantiles}{The quantiles to calculate credible intervals for the posterior modes (in model space).}
+
+\item{x_train}{Training design matrix to be provided when imputations are to be made from them}
 
 \item{...}{Not used.}
 }

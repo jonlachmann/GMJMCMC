@@ -11,6 +11,7 @@
   quantiles = c(0.025, 0.5, 0.975),
   pop = NULL,
   tol = 1e-07,
+  x_train = NULL,
   ...
 )
 }
@@ -26,6 +27,8 @@
 \item{pop}{The population to plot, defaults to last}
 
 \item{tol}{The tolerance to use for the correlation when finding equivalent features, default is 0.0000001}
+
+\item{x_train}{Training design matrix to be provided when imputations are to be made from them}
 
 \item{...}{Not used.}
 }

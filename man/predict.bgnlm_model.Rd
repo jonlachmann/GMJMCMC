@@ -10,6 +10,7 @@
   link = function(x) {
      x
  },
+  x_train = NULL,
   ...
 )
 }
@@ -23,6 +24,8 @@ The variables in \code{x} must match the features used in the model.}
 \item{link}{A link function to apply to the linear predictor.
 By default, it is the identity function \code{function(x)\{x\}},
 but it can be any function such as \code{plogis} for logistic regression models.}
+
+\item{x_train}{Training design matrix to be provided when imputations are to be made from them}
 
 \item{...}{Additional arguments to pass to prediction function.}
 }
