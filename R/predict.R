@@ -364,7 +364,13 @@ impute_x_pred <- function (object, x_test, x_train) {
     na.matr <- na.matr[, attr(object, which = "imputed")]
     names(na.matr) <- paste0("mis_", names(na.matr))
     for (i in which(cm != 0)){
-      df[[i]][is.na(df[[i]])] <- median(x_train[[i]], na.rm = TRUE)
+      med <- median(x_train[[i]], na.rm = TRUE)
+      if(is.na(med))
+      {
+        warning("One or more missing in test columns do not have any data in x_train, test set will be used for imputations!")
+        med <-  median(df[[i]], na.rm = TRUE)
+      }
+      df[[i]][is.na(df[[i]])] <- med
     }
     return(as.matrix(data.frame(df,na.matr)))
   }
