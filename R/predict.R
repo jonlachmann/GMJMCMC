@@ -88,9 +88,12 @@ predict.bgnlm_model <- function(object, x, link = function(x) {x }, ... ) {
 #' 
 #' 
 #' @export
-predict.gmjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975),  pop = NULL,tol =  0.0000001, ...) {
+predict.gmjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975),  pop = NULL,tol =  0.0000001, x_train = NULL, ...) {
   transforms.bak <- set.transforms(object$transforms)
-  x <- impute_x(object, x)
+  if(is.null(x_train))
+    x <- impute_x(object, x)
+  else
+    x <- impute_x_pred(object, x, x_train)
   
   merged <- merge_results(list(object), data = list(x = x, object$fixed), populations = pop, tol = tol)
   set.transforms(transforms.bak)
@@ -102,9 +105,12 @@ predict.gmjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.02
 #' @inheritParams predict.gmjmcmc_merged
 #' @param pop The population to use.
 #' @noRd
-predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = 1, ...) {
+predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = 1, x_train = NULL, ...) {
   transforms.bak <- set.transforms(object$transforms)
-  x <- impute_x(object, x)
+  if(is.null(x_train))
+    x <- impute_x(object, x)
+  else
+    x <- impute_x_pred(object, x, x_train)
   
   mmodel <- lapply(object[1:8], function (x) x[[pop]])
 
@@ -122,6 +128,7 @@ predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.
 #' @param quantiles The quantiles to calculate credible intervals for the posterior modes (in model space).
 #' @param pop The population to plot, defaults to last
 #' @param tol The tolerance to use for the correlation when finding equivalent features, default is 0.0000001
+#' @param x_train Training design matrix to be provided when imputations are to be made from them
 #' 
 #' @param ... Not used.
 #' @return A list containing aggregated predictions and per model predictions.
@@ -141,10 +148,12 @@ predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.
 #' preds <- predict(result, matrix(rnorm(600), 100))
 #'
 #' @export
-predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = NULL, tol = 0.0000001, ...) {
+predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = NULL, tol = 0.0000001, x_train = NULL, ...) {
   
-  
-  x <- impute_x(object, x)
+  if(is.null(x_train))
+    x <- impute_x(object, x)
+  else
+    x <- impute_x_pred(object, x, x_train)
   if (object$intercept) {
     x <- cbind(1, x)
   }
@@ -205,10 +214,13 @@ predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles =
 #' preds <- predict(result, matrix(rnorm(600), 100))
 #' 
 #' @export
-predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
+predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), x_train = NULL, ...) {
   # Select the models and features to predict from at this iteration
   #browser()
-  x <- impute_x(object, x)
+  if(is.null(x_train))
+    x <- impute_x(object, x)
+  else
+    x <- impute_x_pred(object, x, x_train)
 
 
   if (object$intercept) {
@@ -248,8 +260,11 @@ predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025
 #' preds <- predict(result, matrix(rnorm(600), 100))
 #' 
 #' @export
-predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
-  x <- impute_x(object, x)
+predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), x_train = NULL, ...) {
+  if(is.null(x_train))
+    x <- impute_x(object, x)
+  else
+    x <- impute_x_pred(object, x, x_train)
 
   max.crits <- sapply(object$chains, function (x) x$best.crit)
   max.crit <- max(max.crits)
@@ -289,9 +304,12 @@ predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles 
 #' preds <- predict(result, matrix(rnorm(600), 100))
 #' 
 #' @export
-predict.gmjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...) {
+predict.gmjmcmc_parallel <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), x_train = NULL, ...) {
   transforms.bak <- set.transforms(object$transforms)
-  x <- impute_x(object, x)
+  if(is.null(x_train))
+    x <- impute_x(object, x)
+  else
+    x <- impute_x_pred(object, x, x_train)
   merged <- merge_results(object,data = cbind(1, x), ...)
   results <- predict.gmjmcmc_merged(merged, x, link, quantiles)
   set.transforms(transforms.bak)
@@ -325,7 +343,28 @@ impute_x <- function (object, x) {
     na.matr <- na.matr[, attr(object, which = "imputed")]
     names(na.matr) <- paste0("mis_", names(na.matr))
     for (i in which(cm != 0)){
-      df[[i]][is.na(df[[i]])] <- median(df[[i]], na.rm = TRUE)
+      med <- median(df[[i]], na.rm = TRUE)
+      if(is.na(med))
+        stop("No data for imputation in test set, provide x_train in predict!")
+      df[[i]][is.na(df[[i]])] <- med
+    }
+    return(as.matrix(data.frame(df,na.matr)))
+  }
+  return(as.matrix(x))
+}
+
+
+impute_x_pred <- function (object, x_test, x_train) {
+  if (!is.null(attr(object, which = "imputed"))) {
+    df <- data.frame(x_test)
+    x_train <- data.frame(x_train)
+    to.impute <- attr(result_parallel, "imputed")
+    na.matr <- data.frame(1 * (is.na(df)))
+    cm <- colMeans(na.matr)
+    na.matr <- na.matr[, attr(object, which = "imputed")]
+    names(na.matr) <- paste0("mis_", names(na.matr))
+    for (i in which(cm != 0)){
+      df[[i]][is.na(df[[i]])] <- median(x_train[[i]], na.rm = TRUE)
     }
     return(as.matrix(data.frame(df,na.matr)))
   }
