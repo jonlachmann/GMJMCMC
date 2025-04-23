@@ -102,6 +102,7 @@ mjmcmc.parallel <- function(runs = 2, cores = getOption("mc.cores", 2L), ...) {
   results$chains <- rmclapply(seq_len(runs), args = list(...), mc.cores = cores, fun = mjmcmc)
   results$fixed <- results$chains[[1]]$fixed
   results$intercept <- results$chains[[1]]$intercept
+  results$labels <- results$chains[[1]]$labels
   class(results) <- "mjmcmc_parallel"
   gc()
   return(results)
@@ -147,6 +148,7 @@ gmjmcmc.parallel <- function(
   results <- rmclapply(seq_len(runs), args = list(x = x, y = y, loglik.pi = loglik.pi, loglik.alpha = loglik.alpha, mlpost_params = mlpost_params, transforms = transforms, ...), mc.cores = cores, fun = gmjmcmc)
   class(results) <- "gmjmcmc_parallel"
   merged <- merge_results(results, merge.options$populations, merge.options$complex.measure, merge.options$tol, data = list(x = x, y = y))
+  merged$labels <- merged$results.raw[[1]]$labels
   gc()
   return(merged)
 }

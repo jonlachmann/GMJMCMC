@@ -296,6 +296,11 @@ get.mpm.model <- function(result, y, x, labels = F, family = "gaussian", loglik.
    if (!family %in% c("custom","binomial","gaussian"))
     warning("Unknown family specified. The default gaussian.loglik will be used.")
  
+  if(!labels & length(result$labels)>0)
+    labels <- result$labels
+   
+  if (!is.null(attr(result, which = "imputed")))
+    x <- impute_x(result,x)
   
   if (family == "binomial")
     loglik.pi <- logistic.loglik
@@ -336,6 +341,9 @@ get.mpm.model <- function(result, y, x, labels = F, family = "gaussian", loglik.
   ), class = "bgnlm_model")
  
   set.transforms(transforms.bak)
+  
+  attr(model, which = "imputed") <- attr(result, which = "imputed")
+  
   return(model)
 }
 
