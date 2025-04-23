@@ -9,6 +9,7 @@
 #' @param link A link function to apply to the linear predictor. 
 #'             By default, it is the identity function \code{function(x)\{x\}}, 
 #'             but it can be any function such as \code{plogis} for logistic regression models.
+#' @param x_train Training design matrix to be provided when imputations are to be made from them
 #' @param ...  Additional arguments to pass to prediction function.
 #'
 #' @return A numeric vector of predicted values for the given data \code{x}. 
@@ -34,8 +35,12 @@
 #' }
 #'
 #' @export
-predict.bgnlm_model <- function(object, x, link = function(x) {x }, ... ) {
-
+predict.bgnlm_model <- function(object, x, link = function(x) {x}, x_train = NULL, ... ) {
+  if(is.null(x_train))
+    x <- impute_x(object, x)
+  else
+    x <- impute_x_pred(object, x_test = x, x_train = x_train)
+  x <- data.frame(x)
   if(object$needs.precalc)
   {
     if (object$intercept) {
@@ -359,7 +364,6 @@ impute_x_pred <- function (object, x_test, x_train) {
   if (!is.null(attr(object, which = "imputed"))) {
     df <- data.frame(x_test)
     x_train <- data.frame(x_train)
-    to.impute <- attr(result_parallel, "imputed")
     na.matr <- data.frame(1 * (is.na(df)))
     cm <- colMeans(na.matr)
     na.matr <- na.matr[, attr(object, which = "imputed")]
@@ -375,5 +379,5 @@ impute_x_pred <- function (object, x_test, x_train) {
     }
     return(as.matrix(data.frame(df,na.matr)))
   }
-  return(as.matrix(x))
+  return(as.matrix(x_test))
 }

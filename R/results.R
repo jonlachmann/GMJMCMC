@@ -377,7 +377,9 @@ get.mpm.model <- function(result, y, x, labels = F, family = "gaussian", loglik.
 #' @export
 get.best.model <- function(result, labels = FALSE) {
   if (is(result,"mjmcmc")) {
-    return(get.best.model.mjmcmc(result, labels))
+    mod <- get.best.model.mjmcmc(result, labels)
+    attr(mod, which = "imputed") <- attr(result, which = "imputed")
+    return(mod)
   }
   
   if (is(result,"mjmcmc_parallel")) {
@@ -385,11 +387,15 @@ get.best.model <- function(result, labels = FALSE) {
       labels <- result[[1]]$labels
     }
     best.chain <- which.max(sapply(result$chains, function (x) x$best.crit))
-    return(get.best.model.mjmcmc(result$chains[[best.chain]], labels))
+    mod <- get.best.model.mjmcmc(result$chains[[best.chain]], labels)
+    attr(mod, which = "imputed") <- attr(result, which = "imputed")
+    return(mod)
   }
   
   if (is(result,"gmjmcmc")) {
-    return(get.best.model.gmjmcmc(result, labels))
+    mod <- get.best.model.gmjmcmc(result, labels)
+    attr(mod, which = "imputed") <- attr(result, which = "imputed")
+    return(mod)
   }
   
   if (is(result,"gmjmcmc_merged")) {
@@ -398,7 +404,9 @@ get.best.model <- function(result, labels = FALSE) {
       labels <- result$results.raw[[1]]$labels
     }
     best.chain <- which.max(sapply(result$results, function(x) x$best))
-    return(get.best.model.gmjmcmc(result$results.raw[[best.chain]], labels))
+    mod <- get.best.model.gmjmcmc(result$results.raw[[best.chain]], labels)
+    attr(mod, which = "imputed") <- attr(result, which = "imputed")
+    return(mod)
   }
 }
 
@@ -419,6 +427,7 @@ get.best.model.gmjmcmc <- function (result, labels) {
   ret$needs.precalc <- FALSE
   class(ret) = "bgnlm_model"
   set.transforms(transforms.bak)
+  attr(ret, which = "imputed") <- attr(result, which = "imputed")
   return(ret)
 }
 
