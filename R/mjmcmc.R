@@ -37,7 +37,7 @@ mjmcmc <- function (
   x,
   y,
   loglik.pi = fbms.mlik.master,
-  mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior",temp = 1)),
+  mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior")),
   intercept = TRUE,
   fixed = 0,
   N = 100,
@@ -159,7 +159,7 @@ mjmcmc.loop <- function (data, complex, loglik.pi, model.cur, N, probs, params, 
   }
 
   # Calculate and store the marginal inclusion probabilities and the model probabilities
-  marg.probs <- marginal.probs.renorm(c(models, lo.models), type = "both",temp = params$mlpost$temp)
+  marg.probs <- marginal.probs.renorm(c(models, lo.models), type = "both")
   
   return(list(
     models = models,
