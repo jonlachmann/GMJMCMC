@@ -96,6 +96,7 @@ fbms <- function (
       loglik.pi <- loglik.pi
       mlpost_params <- c(model_prior,beta_prior)
   }
+  
 
 
   if (!is.null(formula)) {

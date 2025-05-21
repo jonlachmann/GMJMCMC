@@ -78,7 +78,6 @@ gmjmcmc <- function (
   if (is.null(probs)) probs <- gen.probs.gmjmcmc(transforms)
   if (is.null(params)) params <- gen.params.gmjmcmc(ncol(data$x) - data$fixed)
   if (!is.null(mlpost_params)) params$mlpost <- mlpost_params
-
   # Extract labels from column names in dataframe
   labels <- get.labels(data, verbose)
   # Set the transformations option

@@ -609,29 +609,30 @@ log_prior <- function (params, complex) {
 #'
 #' @importFrom BAS robust beta.prime bic.prior CCH EB.local g.prior hyper.g hyper.g.n tCCH intrinsic TG Jeffreys uniform
 #' @export
-fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gaussian", beta_prior = list(type = "g-prior"), r = exp(-0.5))) {
+fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gaussian", beta_prior = list(type = "g-prior"), r = NULL)) {
   # Extract dimensions
   n <- length(y)
-  p <- sum(model) - 1  # Number of predictors excluding intercept
+  p <- length(model) - 1  # Number of predictors excluding intercept
   params_use <- list()
 
   if(length(params$r) == 0)
-    params$r = 1/length(y)
+    params$r <-  1/length(y)
   
   if(params$family == "gaussian")
-    params_use$beta_prior <- gen.mlpost.params.lm(params$beta_prior$type, params$beta_prior, p+1, n)
+    params_use$beta_prior <- gen.mlpost.params.lm(params$beta_prior$type, params$beta_prior, p, n)
   else
   {
-    params_use$beta_prior <- gen.mlpost.params.glm(params$beta_prior$type, params$beta_prior, p+1, n)
+    params_use$beta_prior <- gen.mlpost.params.glm(params$beta_prior$type, params$beta_prior, p, n)
     params_use$family <- params$family
   }
   
-
+  params_use$r <- params$r
+  
   
   loglik.pi <- select.mlpost.fun(params$beta_prior$type, params$family)
   
+  
   result <- loglik.pi(y,x,model,complex,params_use)
 
-  
   return(list(crit = result$crit, coefs = result$coefs))
 }
