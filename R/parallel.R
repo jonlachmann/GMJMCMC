@@ -110,6 +110,8 @@ mjmcmc.parallel <- function(runs = 2, cores = getOption("mc.cores", 2L), ...) {
 
 
 #' Run multiple gmjmcmc (Genetically Modified MJMCMC) runs in parallel returning a list of all results.
+#' @param y response variable 
+#' @param x matrix containing the design matrix with data to use in the algorithm,
 #' @param runs The number of runs to run
 #' @param cores The number of cores to run on
 #' @param merge.options A list of options to pass to the [merge_results()] function run after the
@@ -133,11 +135,11 @@ mjmcmc.parallel <- function(runs = 2, cores = getOption("mc.cores", 2L), ...) {
 #'
 #' @export
 gmjmcmc.parallel <- function(
+  y,
+  x,
   runs = 2,
   cores = getOption("mc.cores", 2L),
   merge.options = list(populations = "best", complex.measure = 2, tol = 0.0000001),
-  x,
-  y,
   loglik.pi = gaussian.loglik,
   loglik.alpha = gaussian.loglik.alpha,
   mlpost_params = NULL,
