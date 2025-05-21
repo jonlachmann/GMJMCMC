@@ -38,7 +38,6 @@ Predict using a gmjmcmc result object from a parallel run.
 result <- gmjmcmc.parallel(
  runs = 1,
  cores = 1,
- list(populations = "best", complex.measure = 2, tol = 0.0000001),
  x = matrix(rnorm(600), 100),
  y = matrix(rnorm(100), 100),
  P = 2,

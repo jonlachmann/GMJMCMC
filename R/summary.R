@@ -96,7 +96,6 @@ summary.gmjmcmc <- function (object, pop = "best", tol = 0.0001, labels = FALSE,
 #' result <- gmjmcmc.parallel(
 #'  runs = 1,
 #'  cores = 1,
-#'  list(populations = "best", complex.measure = 2, tol = 0.0000001),
 #'  y = matrix(rnorm(100), 100),
 #'  x = matrix(rnorm(600), 100),
 #'  P = 2,
