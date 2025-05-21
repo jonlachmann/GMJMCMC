@@ -140,8 +140,8 @@ mjmcmc.parallel <- function(runs = 2, cores = getOption("mc.cores", 2L), ...) {
 gmjmcmc.parallel <- function(
   x,
   y,
-  loglik.pi = gaussian.loglik,
-  mlpost_params = NULL,
+  loglik.pi = fbms.mlik.master,
+  mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior")),
   loglik.alpha = gaussian.loglik.alpha,
   transforms,
   runs = 2,
