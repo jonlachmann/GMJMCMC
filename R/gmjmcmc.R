@@ -10,8 +10,8 @@ NULL
 
 #' Main algorithm for GMJMCMC (Genetically Modified MJMCMC)
 #'
+#' @param x matrix containing the design matrix with data to use in the algorithm
 #' @param y response variable 
-#' @param x matrix containing the design matrix with data to use in the algorithm,
 #' @param intercept  whether intercept should be added to the design matrix (no model selection for intercept)
 #' @param fixed how many of the first columns of the design matrix will always be included in the models
 #' @param loglik.pi The (log) density to explore
@@ -51,8 +51,8 @@ NULL
 #'
 #' @export gmjmcmc
 gmjmcmc <- function (
-  y,
   x,
+  y,
   loglik.pi = fbms.mlik.master,
   loglik.alpha = gaussian.loglik.alpha,
   mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior")),

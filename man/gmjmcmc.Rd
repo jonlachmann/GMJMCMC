@@ -5,8 +5,8 @@
 \title{Main algorithm for GMJMCMC (Genetically Modified MJMCMC)}
 \usage{
 gmjmcmc(
-  y,
   x,
+  y,
   loglik.pi = fbms.mlik.master,
   loglik.alpha = gaussian.loglik.alpha,
   mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior")),
@@ -23,9 +23,9 @@ gmjmcmc(
 )
 }
 \arguments{
-\item{y}{response variable}
+\item{x}{matrix containing the design matrix with data to use in the algorithm}
 
-\item{x}{matrix containing the design matrix with data to use in the algorithm,}
+\item{y}{response variable}
 
 \item{loglik.pi}{The (log) density to explore}
 

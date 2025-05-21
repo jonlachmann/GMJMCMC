@@ -5,8 +5,8 @@
 \title{Run multiple gmjmcmc (Genetically Modified MJMCMC) runs in parallel returning a list of all results.}
 \usage{
 gmjmcmc.parallel(
-  y,
   x,
+  y,
   loglik.pi = gaussian.loglik,
   mlpost_params = NULL,
   loglik.alpha = gaussian.loglik.alpha,
@@ -18,9 +18,9 @@ gmjmcmc.parallel(
 )
 }
 \arguments{
-\item{y}{response variable}
+\item{x}{matrix containing the design matrix with data to use in the algorithm}
 
-\item{x}{matrix containing the design matrix with data to use in the algorithm,}
+\item{y}{response variable}
 
 \item{loglik.pi}{The (log) density to explore}
 

@@ -110,8 +110,8 @@ mjmcmc.parallel <- function(runs = 2, cores = getOption("mc.cores", 2L), ...) {
 
 
 #' Run multiple gmjmcmc (Genetically Modified MJMCMC) runs in parallel returning a list of all results.
+#' @param x matrix containing the design matrix with data to use in the algorithm
 #' @param y response variable 
-#' @param x matrix containing the design matrix with data to use in the algorithm,
 #' @param loglik.pi The (log) density to explore
 #' @param mlpost_params parameters for the estimator function loglik.pi
 #' @param loglik.alpha The likelihood function to use for alpha calculation
@@ -138,8 +138,8 @@ mjmcmc.parallel <- function(runs = 2, cores = getOption("mc.cores", 2L), ...) {
 #'
 #' @export
 gmjmcmc.parallel <- function(
-  y,
   x,
+  y,
   loglik.pi = gaussian.loglik,
   mlpost_params = NULL,
   loglik.alpha = gaussian.loglik.alpha,

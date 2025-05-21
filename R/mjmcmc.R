@@ -5,8 +5,8 @@
 
 #' Main algorithm for MJMCMC (Genetically Modified MJMCMC)
 #'
-#' @param y response variable 
 #' @param x matrix containing the design matrix with data to use in the algorithm,
+#' @param y response variable 
 #' @param mlpost_params parameters for the estimator function loglik.pi
 #' @param intercept  whether intercept should be added to the design matrix (no model selection for intercept)
 #' @param fixed how many of the first columns of the design matrix will always be included in the models
@@ -34,8 +34,8 @@
 #'
 #' @export mjmcmc
 mjmcmc <- function (
-  y,
   x,
+  y,
   loglik.pi = fbms.mlik.master,
   mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior",temp = 1)),
   intercept = TRUE,
