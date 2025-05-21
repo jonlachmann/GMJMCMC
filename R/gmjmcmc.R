@@ -12,10 +12,10 @@ NULL
 #'
 #' @param y response variable 
 #' @param x matrix containing the design matrix with data to use in the algorithm,
-#' @param mlpost_params parameters for the estimator function loglik.pi
 #' @param intercept  whether intercept should be added to the design matrix (no model selection for intercept)
 #' @param fixed how many of the first columns of the design matrix will always be included in the models
 #' @param loglik.pi The (log) density to explore
+#' @param mlpost_params parameters for the estimator function loglik.pi
 #' @param loglik.alpha The likelihood function to use for alpha calculation
 #' @param transforms A Character vector including the names of the non-linear functions to be used by the modification 
 #' and the projection operator. 

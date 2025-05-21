@@ -5,37 +5,36 @@
 \title{Run multiple gmjmcmc (Genetically Modified MJMCMC) runs in parallel returning a list of all results.}
 \usage{
 gmjmcmc.parallel(
+  y,
+  x,
+  loglik.pi = gaussian.loglik,
+  mlpost_params = NULL,
+  loglik.alpha = gaussian.loglik.alpha,
+  transforms,
   runs = 2,
   cores = getOption("mc.cores", 2L),
   merge.options = list(populations = "best", complex.measure = 2, tol = 1e-07),
-  x,
-  y,
-  loglik.pi = gaussian.loglik,
-  loglik.alpha = gaussian.loglik.alpha,
-  mlpost_params = NULL,
-  transforms,
   ...
 )
 }
 \arguments{
+\item{y}{response variable}
+
+\item{x}{matrix containing the design matrix with data to use in the algorithm,}
+
+\item{loglik.pi}{The (log) density to explore}
+
+\item{mlpost_params}{parameters for the estimator function loglik.pi}
+
+\item{loglik.alpha}{The likelihood function to use for alpha calculation}
+
+\item{transforms}{A Character vector including the names of the non-linear functions to be used by the modification}
+
 \item{runs}{The number of runs to run}
 
 \item{cores}{The number of cores to run on}
 
-\item{merge.options}{A list of options to pass to the \code{\link[=merge_results]{merge_results()}} function run after the}
-
-\item{x}{matrix containing the design matrix with data to use in the algorithm,}
-
-\item{y}{response variable}
-
-\item{loglik.pi}{The (log) density to explore}
-
-\item{loglik.alpha}{The likelihood function to use for alpha calculation}
-
-\item{mlpost_params}{parameters for the estimator function loglik.pi}
-
-\item{transforms}{A Character vector including the names of the non-linear functions to be used by the modification
-and the projection operator.}
+\item{merge.options}{A list of options to pass to the \code{\link[=merge_results]{merge_results()}} function run after the run}
 
 \item{...}{Further parameters passed to mjmcmc.}
 }

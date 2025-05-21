@@ -112,10 +112,13 @@ mjmcmc.parallel <- function(runs = 2, cores = getOption("mc.cores", 2L), ...) {
 #' Run multiple gmjmcmc (Genetically Modified MJMCMC) runs in parallel returning a list of all results.
 #' @param y response variable 
 #' @param x matrix containing the design matrix with data to use in the algorithm,
+#' @param loglik.pi The (log) density to explore
+#' @param mlpost_params parameters for the estimator function loglik.pi
+#' @param loglik.alpha The likelihood function to use for alpha calculation
+#' @param transforms A Character vector including the names of the non-linear functions to be used by the modification 
 #' @param runs The number of runs to run
 #' @param cores The number of cores to run on
-#' @param merge.options A list of options to pass to the [merge_results()] function run after the
-#' @inheritParams gmjmcmc
+#' @param merge.options A list of options to pass to the [merge_results()] function run after the run
 #' @param ... Further parameters passed to mjmcmc.
 #' @return Results from multiple gmjmcmc runs
 #'
@@ -137,13 +140,13 @@ mjmcmc.parallel <- function(runs = 2, cores = getOption("mc.cores", 2L), ...) {
 gmjmcmc.parallel <- function(
   y,
   x,
+  loglik.pi = gaussian.loglik,
+  mlpost_params = NULL,
+  loglik.alpha = gaussian.loglik.alpha,
+  transforms,
   runs = 2,
   cores = getOption("mc.cores", 2L),
   merge.options = list(populations = "best", complex.measure = 2, tol = 0.0000001),
-  loglik.pi = gaussian.loglik,
-  loglik.alpha = gaussian.loglik.alpha,
-  mlpost_params = NULL,
-  transforms,
   ...
 ) {
   options("gmjmcmc-transformations" = transforms)
