@@ -7,7 +7,7 @@
 gmjmcmc.parallel(
   x,
   y,
-  loglik.pi = fbms.mlik.master,
+  loglik.pi = NULL,
   mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior")),
   loglik.alpha = gaussian.loglik.alpha,
   transforms,
