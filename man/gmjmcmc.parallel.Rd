@@ -48,7 +48,7 @@ Run multiple gmjmcmc (Genetically Modified MJMCMC) runs in parallel returning a 
 result <- gmjmcmc.parallel(
   runs = 1,
   cores = 1,
-  loglik.pi = FBMS::gaussian.loglik,
+  loglik.pi = NULL,
   y = matrix(rnorm(100), 100),
   x = matrix(rnorm(600), 100),
   transforms = c("p0", "exp_dbl")
