@@ -53,7 +53,7 @@ NULL
 gmjmcmc <- function (
   x,
   y,
-  loglik.pi = fbms.mlik.master,
+  loglik.pi = NULL,
   loglik.alpha = gaussian.loglik.alpha,
   mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior")),
   transforms,
@@ -74,6 +74,22 @@ gmjmcmc <- function (
   }
   data <- check.data(x, y, fixed, verbose)
 
+  if(is.null(loglik.pi))
+  {
+    if(is.null(mlpost_params$beta_prior$type) || is.null(mlpost_params$family))
+      stop("mlpost_params$beta_prior and mlpost_params$family must be specified")
+    loglik.pi <- select.mlpost.fun(mlpost_params$beta_prior$type, mlpost_params$family)
+    if(mlpost_params$family == "gaussian")
+      mlpost_params$beta_prior <- gen.mlpost.params.lm(mlpost_params$beta_prior$type, mlpost_params$beta_prior, ncol(data$x) - 1, nrow(data$x))
+    else
+    {
+      mlpost_params$beta_prior <- gen.mlpost.params.glm(mlpost_params$beta_prior$type, mlpost_params$beta_prior, ncol(data$x) - 1, nrow(data$x))
+      mlpost_params$beta_prior$type <- mlpost_params$beta_prior$type
+    }
+    
+    
+  }
+  
   # Generate default probabilities and parameters if there are none supplied.
   if (is.null(probs)) probs <- gen.probs.gmjmcmc(transforms)
   if (is.null(params)) params <- gen.params.gmjmcmc(ncol(data$x) - data$fixed)
