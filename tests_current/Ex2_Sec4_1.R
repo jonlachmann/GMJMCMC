@@ -80,12 +80,12 @@ summary(result2)
 #
 
 
-set.seed(123)
+
 
 probs.lin <- gen.probs.mjmcmc()
-
 params.lin <- gen.params.mjmcmc(ncol(df) - 1)
 
+set.seed(123)
 if (use.fbms) {
   result.lin <- fbms(data = df,beta_prior = list(type = "EB-local"), N = 5000)
 } else {

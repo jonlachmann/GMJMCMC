@@ -87,7 +87,6 @@ gmjmcmc <- function (
       mlpost_params$beta_prior$type <- mlpost_params$beta_prior$type
     }
     
-    
   }
   
   # Generate default probabilities and parameters if there are none supplied.
