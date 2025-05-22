@@ -132,7 +132,6 @@ plot(result_parallel)
 dev.off()
 
 plot(result_parallel)
-plot(result_parallel)
 
 ######################
 # Prediction
