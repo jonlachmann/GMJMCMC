@@ -74,15 +74,13 @@ gmjmcmc <- function (
   }
   data <- check.data(x, y, fixed, verbose)
 
-  if(is.null(loglik.pi))
-  {
-    if(is.null(mlpost_params$beta_prior$type) || is.null(mlpost_params$family))
+  if (is.null(loglik.pi)) {
+    if (is.null(mlpost_params$beta_prior$type) || is.null(mlpost_params$family))
       stop("mlpost_params$beta_prior and mlpost_params$family must be specified")
     loglik.pi <- select.mlpost.fun(mlpost_params$beta_prior$type, mlpost_params$family)
-    if(mlpost_params$family == "gaussian")
+    if (mlpost_params$family == "gaussian")
       mlpost_params$beta_prior <- gen.mlpost.params.lm(mlpost_params$beta_prior$type, mlpost_params$beta_prior, ncol(data$x) - 1, nrow(data$x))
-    else
-    {
+    else {
       mlpost_params$beta_prior <- gen.mlpost.params.glm(mlpost_params$beta_prior$type, mlpost_params$beta_prior, ncol(data$x) - 1, nrow(data$x))
       mlpost_params$beta_prior$type <- mlpost_params$beta_prior$type
     }

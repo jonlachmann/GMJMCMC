@@ -77,12 +77,12 @@ check.collinearity <- function (proposal, features, F.0.size, data, mock) {
   # Generate mock data to test with (avoiding too costly computations)
   n <- F.0.size * 2
   if (mock) {
-    mock.data <- list(x = matrix(runif(n * (F.0.size), -100, 100), n, F.0.size),
+    mock.data <- list(x = matrix(runif(n * (F.0.size + data$fixed), -100, 100), n, F.0.size + data$fixed),
                       y = matrix(runif(n * (ncol(data$y)), -100, 100), n, ncol(data$y)),
                       fixed = data$fixed)
   } else {
     obs_idx <- seq_len(min(n, nrow(data$x)))
-    mock.data <- check.data(data$x[obs_idx, ], data$y[obs_idx, ], data$fixed, FALSE)
+    mock.data <- list(x = data$x[obs_idx, ], y = data$y[obs_idx, ], fixed = data$fixed)
   }
   # Use the mock data to precalc the features
   mock.data.precalc <- precalc.features(mock.data, features)
