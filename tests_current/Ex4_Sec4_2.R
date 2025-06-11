@@ -61,7 +61,7 @@ if (use.fbms) {
   result2 <- fbms(data = df, method = "gmjmcmc", transforms = transforms, beta_prior = list(type = "EB-local"),
                  probs = probs, params = params, P=40)
 } else {
-  result2 <- gmjmcmc(x = df[, -1], y = df[, 1], mlpost_params = list(family = "gaussian", beta_prior = list(type = "EB-local")), transforms = transforms, N.init = 1000, N.final = 5000,
+  result2 <- gmjmcmc(x = df[, -1], y = df[, 1], mlpost_params = list(family = "gaussian", beta_prior = list(type = "EB-local")), transforms = transforms, N = 1000, N.final = 5000,
                      probs = probs, params = params,  P = 40)
 }
 summary(result2, tol = 0.01)
@@ -94,12 +94,12 @@ set.seed(123)
 
 if (use.fbms) {
   result_parallel2 <- fbms(data = df, method = "gmjmcmc.parallel", transforms = transforms,beta_prior = list(type = "EB-local"),
-                 runs = 40, cores = 10, N.init=1000, N.final=2000,
+                 runs = 40, cores = 10, N=1000, N.final=2000,
                  probs = probs, params = params, P=25)
 } else {
   result_parallel2 =  gmjmcmc.parallel(runs = 40, cores = 10, x = df[, -1], y = df[, 1],
                                 transforms = transforms,mlpost_params = list(family = "gaussian", beta_prior = list(type = "EB-local")), probs = probs, params = params, P=25, 
-                                N.init=1000, N.final=2000)
+                                N=1000, N.final=2000)
 }
 summary(result_parallel2, tol = 0.01)
 

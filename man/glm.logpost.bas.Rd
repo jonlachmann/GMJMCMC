@@ -11,7 +11,8 @@ glm.logpost.bas(
   x,
   model,
   complex,
-  params = list(r = NULL, family = "binomial", beta_prior = Jeffreys(), laplace = FALSE)
+  mlpost_params = list(r = NULL, family = "binomial", beta_prior = Jeffreys(), laplace =
+    FALSE)
 )
 }
 \arguments{
@@ -23,7 +24,7 @@ glm.logpost.bas(
 
 \item{complex}{A list of complexity measures for the features}
 
-\item{params}{A list of parameters for the log likelihood, supplied by the user, important to specify the tuning parameters of beta priors and family that BAS uses in glm models}
+\item{mlpost_params}{A list of parameters for the log likelihood, supplied by the user, important to specify the tuning parameters of beta priors and family that BAS uses in glm models}
 }
 \value{
 A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).

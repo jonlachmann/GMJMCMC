@@ -68,6 +68,7 @@ fbms <- function (
   family = "gaussian",
   beta_prior = list(type = "g-prior"),
   model_prior = NULL,
+  extra_params = NULL,
   data = NULL,
   impute = FALSE,
   loglik.pi = NULL,
@@ -76,28 +77,25 @@ fbms <- function (
   ...
 ) {
   
-  if(length(data) == 0)
+  if (length(data) == 0)
     stop("Training data must be provided!")
 
-  if(length(model_prior) == 0)
-    model_prior = list(r = 1/dim(data)[1])
+  if (length(model_prior) == 0)
+    model_prior = list(r = 1 / dim(data)[1])
   if (family != "custom") {
     mlpost_params <- model_prior
     loglik.pi <- select.mlpost.fun(beta_prior$type, family)
-    if(family == "gaussian")
+    if (family == "gaussian") {
       mlpost_params$beta_prior <- gen.mlpost.params.lm(beta_prior$type, beta_prior, ncol(data) - 1, nrow(data))
-    else
-    {
+    } else {
       mlpost_params$beta_prior <- gen.mlpost.params.glm(beta_prior$type, beta_prior, ncol(data) - 1, nrow(data))
       mlpost_params$beta_prior$type <- beta_prior$type
       mlpost_params$family <- family
     }
-  } else if (family == "custom"){
-      loglik.pi <- loglik.pi
-      mlpost_params <- c(model_prior,beta_prior)
+  } else {
+    loglik.pi <- loglik.pi
+    mlpost_params <- c(model_prior, beta_prior, extra_params)
   }
-  
-
 
   if (!is.null(formula)) {
     if (missing(data)) {
@@ -141,7 +139,6 @@ fbms <- function (
       }
       imputed <- names(X)[cm != 0]
       X <- data.frame(X, na.matr)
-      #browser()
       rm(na.matr)
       rm(cm)
       print("Continue to sampling!")

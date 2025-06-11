@@ -11,7 +11,7 @@
 #' @param x The matrix containing the precalculated features
 #' @param model The model to estimate as a logical vector
 #' @param complex A list of complexity measures for the features
-#' @param params A list of parameters for the log likelihood, supplied by the user, important to specify the tuning parameters of beta priors and family that BAS uses in glm models
+#' @param mlpost_params A list of parameters for the log likelihood, supplied by the user, important to specify the tuning parameters of beta priors and family that BAS uses in glm models
 #'
 #' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 #'
@@ -24,13 +24,13 @@
 #' @importFrom BAS uniform Jeffreys g.prior
 #' @importFrom stats poisson Gamma glm.control
 #' @export glm.logpost.bas
-glm.logpost.bas <- function (y, x, model, complex, params = list(r = NULL, family = "binomial", beta_prior = Jeffreys(), laplace = FALSE)) {
-  if (length(params) == 0)
-    params <- list(r = 1 / dim(x)[1], family = "binomial", beta_prior = g.prior(max(dim(x)[1], sum(model) - 1)), laplace = FALSE)
-  else if(length(params$r) == 0)
-    params$r = 1 / dim(x)[1]
-  if(length(params$laplace) == 0)
-    params$laplace = FALSE
+glm.logpost.bas <- function (y, x, model, complex, mlpost_params = list(r = NULL, family = "binomial", beta_prior = Jeffreys(), laplace = FALSE)) {
+  if (length(mlpost_params) == 0)
+    mlpost_params <- list(r = 1 / dim(x)[1], family = "binomial", beta_prior = g.prior(max(dim(x)[1], sum(model) - 1)), laplace = FALSE)
+  else if(length(mlpost_params$r) == 0)
+    mlpost_params$r = 1 / dim(x)[1]
+  if(length(mlpost_params$laplace) == 0)
+    mlpost_params$laplace = FALSE
   p <- sum(model) - 1 
   if (p == 0) {
     probinit <- as.numeric(c(1, 0.99))
@@ -42,9 +42,9 @@ glm.logpost.bas <- function (y, x, model, complex, params = list(r = NULL, famil
  
   mod <- NULL
 
-  if (params$family == "binomial")
+  if (mlpost_params$family == "binomial")
     family_use <- binomial()
-  else if (params$family == "poisson")
+  else if (mlpost_params$family == "poisson")
     family_use <- poisson()
   else
     family_use <- Gamma()
@@ -60,10 +60,10 @@ glm.logpost.bas <- function (y, x, model, complex, params = list(r = NULL, famil
         Rprobinit = probinit,
         Rmodeldim = as.integer(rep(0, ifelse(p == 0,2,1))),
         modelprior = uniform(),
-        betaprior = params$beta_prior,
+        betaprior = mlpost_params$beta_prior,
         family = family_use,
         Rcontrol = glm.control(),
-        Rlaplace =  as.integer(params$laplace)
+        Rlaplace =  as.integer(mlpost_params$laplace)
       )
     })
   }, error = function(e) {
@@ -74,14 +74,14 @@ glm.logpost.bas <- function (y, x, model, complex, params = list(r = NULL, famil
   })
 
   if (length(mod) == 0 || is.nan(mod$logmarg[2])) {
-    return(list(crit = -.Machine$double.xmax + log_prior(params, complex), coefs = rep(0, p + 1)))
+    return(list(crit = -.Machine$double.xmax + log_prior(mlpost_params, complex), coefs = rep(0, p + 1)))
   }
 
   if (p == 0) {
-    ret <- mod$logmarg[2] + log(params$r) * sum(complex$oc)
+    ret <- mod$logmarg[2] + log(mlpost_params$r) * sum(complex$oc)
     return(list(crit = ret, coefs = mod$mle[[2]]))
   }
-  ret <- mod$logmarg + log(params$r) * sum(complex$oc)
+  ret <- mod$logmarg + log(mlpost_params$r) * sum(complex$oc)
   return(list(crit = ret, coefs = mod$mle[[1]]))
 }
 
@@ -94,7 +94,7 @@ glm.logpost.bas <- function (y, x, model, complex, params = list(r = NULL, famil
 #' @param x The matrix containing the precalculated features
 #' @param model The model to estimate as a logical vector
 #' @param complex A list of complexity measures for the features
-#' @param params A list of parameters for the log likelihood, supplied by the user, important to specify the tuning parameters of beta priors where the corresponding integers as prior_beta must be provided "g-prior" = 0, "hyper-g" = 1, "EB-local" = 2, "BIC" = 3, "ZS-null" = 4, "ZS-full" = 5, "hyper-g-laplace" = 6, "AIC" = 7, "EB-global" = 2, "hyper-g-n" = 8, "JZS" = 9 and in Gaussian models
+#' @param mlpost_params A list of parameters for the log likelihood, supplied by the user, important to specify the tuning parameters of beta priors where the corresponding integers as prior_beta must be provided "g-prior" = 0, "hyper-g" = 1, "EB-local" = 2, "BIC" = 3, "ZS-null" = 4, "ZS-full" = 5, "hyper-g-laplace" = 6, "AIC" = 7, "EB-global" = 2, "hyper-g-n" = 8, "JZS" = 9 and in Gaussian models
 #'
 #' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 #'
@@ -103,12 +103,12 @@ glm.logpost.bas <- function (y, x, model, complex, params = list(r = NULL, famil
 #'
 #'
 #' @export lm.logpost.bas
-lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), beta_prior = list(method = 1))) {
-  if (length(params) == 0)
-    params <- list(
+lm.logpost.bas <- function (y, x, model, complex, mlpost_params = list(r = exp(-0.5), beta_prior = list(method = 1))) {
+  if (length(mlpost_params) == 0)
+    mlpost_params <- list(
       r = 1 / dim(x)[1],
       beta_prior = list(method = 0, alpha = max(dim(x)[1], sum(model)^2))
-    ) else if(length(params$r) == 0) params$r = 1 / dim(x)[1]
+    ) else if(length(mlpost_params$r) == 0) mlpost_params$r = 1 / dim(x)[1]
 
   p <- sum(model) - 1
   if (p == 0) {
@@ -128,8 +128,8 @@ lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), b
                      probinit,
                      as.integer(rep(0, ifelse(p == 0,2,1))),
                      incint = as.integer(F),
-                     alpha = ifelse(length(params$beta_prior$a) > 0, as.numeric(params$beta_prior$a),NULL),
-                     method = as.integer(params$beta_prior$method),
+                     alpha = ifelse(length(mlpost_params$beta_prior$a) > 0, as.numeric(mlpost_params$beta_prior$a), NULL),
+                     method = as.integer(mlpost_params$beta_prior$method),
                      modelprior = uniform(),
                      Rpivot = TRUE,
                      Rtol = 1e-7)
@@ -142,14 +142,14 @@ lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), b
   })
 
   if (length(mod) == 0 || is.nan(mod$logmarg[2])) {
-    return(list(crit = -.Machine$double.xmax + log_prior(params, complex), coefs = rep(0, p + 1)))
+    return(list(crit = -.Machine$double.xmax + log_prior(mlpost_params, complex), coefs = rep(0, p + 1)))
   }
 
   if (p == 0) {
-    ret <- mod$logmarg[2] + log(params$r) * sum(complex$oc)
+    ret <- mod$logmarg[2] + log(mlpost_params$r) * sum(complex$oc)
     return(list(crit = ret, coefs = mod$mle[[2]]))
   }
-  ret <- mod$logmarg + log(params$r) * sum(complex$oc)
+  ret <- mod$logmarg + log(mlpost_params$r) * sum(complex$oc)
   return(list(crit = ret, coefs = mod$mle[[1]]))
 }
 
@@ -162,7 +162,7 @@ lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), b
 #' @param x The matrix containing the precalculated features
 #' @param model The model to estimate as a logical vector
 #' @param complex A list of complexity measures for the features
-#' @param params A list of parameters for the log likelihood, supplied by the user
+#' @param mlpost_params A list of parameters for the log likelihood, supplied by the user
 #'
 #' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 #'
@@ -171,19 +171,19 @@ lm.logpost.bas <- function (y, x, model, complex, params = list(r = exp(-0.5), b
 #'
 #'
 #' @export logistic.loglik
-logistic.loglik <- function (y, x, model, complex, params = list(r = exp(-0.5))) {
-  if (length(params) == 0)
-    params <- list(r = 1 / dim(x)[1])
-  else if(length(params$r) == 0)
-    params$r = 1 / dim(x)[1]
+logistic.loglik <- function (y, x, model, complex, mlpost_params = list(r = exp(-0.5))) {
+  if (length(mlpost_params) == 0)
+    mlpost_params <- list(r = 1 / dim(x)[1])
+  else if(length(mlpost_params$r) == 0)
+    mlpost_params$r = 1 / dim(x)[1]
   suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = binomial())})
   
   if (length(mod) == 0 || is.nan(mod$deviance)) {
-    return(list(crit = -.Machine$double.xmax + log_prior(params, complex), coefs = rep(0,sum(model))))
+    return(list(crit = -.Machine$double.xmax + log_prior(mlpost_params, complex), coefs = rep(0, sum(model))))
   }
   
   
-  ret <- (-(mod$deviance + log(length(y)) * (mod$rank - 1) - 2 * log(params$r) * sum(complex$oc))) / 2
+  ret <- (-(mod$deviance + log(length(y)) * (mod$rank - 1) - 2 * log(mlpost_params$r) * sum(complex$oc))) / 2
   return(list(crit = ret, coefs = mod$coefficients))
 }
 
@@ -195,7 +195,7 @@ logistic.loglik <- function (y, x, model, complex, params = list(r = exp(-0.5)))
 #' @param x The matrix containing the precalculated features
 #' @param model The model to estimate as a logical vector
 #' @param complex A list of complexity measures for the features
-#' @param params A list of parameters for the log likelihood, supplied by the user, family must be specified
+#' @param mlpost_params A list of parameters for the log likelihood, supplied by the user, family must be specified
 #'
 #' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 #'
@@ -204,15 +204,15 @@ logistic.loglik <- function (y, x, model, complex, params = list(r = exp(-0.5)))
 #'
 #'
 #' @export glm.loglik
-glm.loglik <- function (y, x, model, complex, params = list(r = exp(-0.5), family = "Gamma")) {
-  if (length(params) == 0)
-    params <- list(r = 1 / dim(x)[1])
-  else if(length(params$r) == 0)
-    params$r = 1 / dim(x)[1]
+glm.loglik <- function (y, x, model, complex, mlpost_params = list(r = exp(-0.5), family = "Gamma")) {
+  if (length(mlpost_params) == 0)
+    mlpost_params <- list(r = 1 / dim(x)[1])
+  else if(length(mlpost_params$r) == 0)
+    mlpost_params$r = 1 / dim(x)[1]
 
-  if (params$family == "binomial") {
+  if (mlpost_params$family == "binomial") {
     fam = binomial()
-  } else if (params$family == "poisson") {
+  } else if (mlpost_params$family == "poisson") {
     fam = poisson()
   } else {
     fam = Gamma()
@@ -222,10 +222,10 @@ glm.loglik <- function (y, x, model, complex, params = list(r = exp(-0.5), famil
   suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = fam)})
   
   if (length(mod) == 0 || is.nan(mod$deviance)) {
-    return(list(crit = -.Machine$double.xmax + log_prior(params, complex), coefs = rep(0,sum(model))))
+    return(list(crit = -.Machine$double.xmax + log_prior(mlpost_params, complex), coefs = rep(0, sum(model))))
   }
   
-  ret <- (-(mod$deviance + log(length(y)) * (mod$rank - 1) - 2 * log(params$r) * sum(complex$oc))) / 2
+  ret <- (-(mod$deviance + log(length(y)) * (mod$rank - 1) - 2 * log(mlpost_params$r) * sum(complex$oc))) / 2
   return(list(crit = ret, coefs = mod$coefficients))
 }
 
@@ -236,7 +236,7 @@ glm.loglik <- function (y, x, model, complex, params = list(r = exp(-0.5), famil
 #' @param x The matrix containing the precalculated features
 #' @param model The model to estimate as a logical vector
 #' @param complex A list of complexity measures for the features
-#' @param params A list of parameters for the log likelihood, supplied by the user
+#' @param mlpost_params A list of parameters for the log likelihood, supplied by the user
 #'
 #' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 #'
@@ -245,21 +245,21 @@ glm.loglik <- function (y, x, model, complex, params = list(r = exp(-0.5), famil
 #'
 #'
 #' @export gaussian.loglik
-gaussian.loglik <- function (y, x, model, complex, params) {
+gaussian.loglik <- function (y, x, model, complex, mlpost_params) {
   if (sum(model) == 0)
     return(list(crit = -Inf, coefs = numeric()))
-  if (length(params) == 0)
-    params <- list()
-  if (length(params$r) == 0)
-    params$r <- 1/dim(x)[1]
-  if (length(params$beta_prior$var) == 0)
-    params$beta_prior$var <- "unknown"
+  if (length(mlpost_params) == 0)
+    mlpost_params <- list()
+  if (length(mlpost_params$r) == 0)
+    mlpost_params$r <- 1/dim(x)[1]
+  if (length(mlpost_params$beta_prior$var) == 0)
+    mlpost_params$beta_prior$var <- "unknown"
   suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())})
 
-  if (params$beta_prior$var == "unknown")
-    ret <- (-(mod$aic + (log(length(y))-2) * (mod$rank) - 2 * log(params$r) * (sum(complex$oc)))) / 2
+  if (mlpost_params$beta_prior$var == "unknown")
+    ret <- (-(mod$aic + (log(length(y)) - 2) * (mod$rank) - 2 * log(mlpost_params$r) * (sum(complex$oc)))) / 2
   else
-    ret <- (-(mod$deviance/params$beta_prior$var + log(length(y)) * (mod$rank - 1) - 2 * log_prior(params, complex))) / 2
+    ret <- (-(mod$deviance / mlpost_params$beta_prior$var + log(length(y)) * (mod$rank - 1) - 2 * log_prior(mlpost_params, complex))) / 2
 
   return(list(crit = ret, coefs = mod$coefficients))
 }
@@ -271,7 +271,7 @@ gaussian.loglik <- function (y, x, model, complex, params) {
 #' @param x The matrix containing the precalculated features
 #' @param model The model to estimate as a logical vector
 #' @param complex A list of complexity measures for the features
-#' @param params A list of parameters for the log likelihood, supplied by the user
+#' @param mlpost_params A list of parameters for the log likelihood, supplied by the user
 #'
 #' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 #'
@@ -279,13 +279,13 @@ gaussian.loglik <- function (y, x, model, complex, params) {
 #' gaussian.loglik.g(rnorm(100), matrix(rnorm(100)), TRUE, list(oc=1))
 #'
 #' @export gaussian.loglik.g
-gaussian.loglik.g <- function (y, x, model, complex, params = NULL) {
+gaussian.loglik.g <- function (y, x, model, complex, mlpost_params = NULL) {
   if (sum(model) == 0)
     return(list(crit = -Inf, coefs = numeric()))
-  if (length(params) == 0)
-    params <- list()
-  if (length(params$r) == 0)
-    params$r <- 1/dim(x)[1]
+  if (length(mlpost_params) == 0)
+    mlpost_params <- list()
+  if (length(mlpost_params$r) == 0)
+    mlpost_params$r <- 1/dim(x)[1]
   suppressWarnings({
     mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())
   })
@@ -295,20 +295,20 @@ gaussian.loglik.g <- function (y, x, model, complex, params = NULL) {
   RSS <- sum(mod$residuals^2)
   Rsquare <- 1 - (RSS / TSS)
 
-  if (length(params$r) == 0 || length(params$g) == 0) {
-    params$r <- 1 / dim(x)[1]
-    if (!is.null(params$beta_prior$g))
-      params$g <- params$beta_prior$g
+  if (length(mlpost_params$r) == 0 || length(mlpost_params$g) == 0) {
+    mlpost_params$r <- 1 / dim(x)[1]
+    if (!is.null(mlpost_params$beta_prior$g))
+      mlpost_params$g <- mlpost_params$beta_prior$g
     else
-      params$g <- max(mod$rank^2, length(y))
+      mlpost_params$g <- max(mod$rank^2, length(y))
   }
 
   # logarithm of marginal likelihood
-  mloglik <- 0.5 * (log(1.0 + params$g) * (dim(x)[1] - mod$rank) - log(1.0 + params$g * (1.0 - Rsquare)) * (dim(x)[1]  - 1)) * (mod$rank != 1)
+  mloglik <- 0.5 * (log(1.0 + mlpost_params$g) * (dim(x)[1] - mod$rank) - log(1.0 + mlpost_params$g * (1.0 - Rsquare)) * (dim(x)[1]  - 1)) * (mod$rank != 1)
 
   # logarithm of model prior
    # default value or parameter r
-  lp <- log_prior(params, complex)
+  lp <- log_prior(mlpost_params, complex)
 
   return(list(crit = mloglik + lp, coefs = mod$coefficients))
 }
@@ -322,7 +322,7 @@ gaussian.loglik.g <- function (y, x, model, complex, params = NULL) {
 #' @param x A matrix containing the independent variables, including an intercept column.
 #' @param model A logical vector indicating which variables to include in the model.
 #' @param complex A list containing complexity measures for the features.
-#' @param params A list of parameters for the log likelihood, specifying the tuning parameters of beta priors.
+#' @param mlpost_params A list of parameters for the log likelihood, specifying the tuning parameters of beta priors.
 #'
 #' @return A list with elements:
 #'   \item{crit}{Log marginal likelihood combined with the log prior.}
@@ -334,7 +334,7 @@ gaussian.loglik.g <- function (y, x, model, complex, params = NULL) {
 #' @importFrom BAS phi1 hypergeometric1F1 hypergeometric2F1
 #' @importFrom tolerance F1
 #' @export
-gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r = exp(-0.5), beta_prior = list(type = "intrinsic"))) {
+gaussian_tcch_log_likelihood <- function(y, x, model, complex, mlpost_params = list(r = exp(-0.5), beta_prior = list(type = "intrinsic"))) {
   # Fit the linear model using fastglm
   fitted_model <- fastglm(as.matrix(x[, model]), y, family = gaussian())
   log_likelihood <- -(fitted_model$aic  -2 * (fitted_model$rank))/2
@@ -348,8 +348,8 @@ gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r =
   n <- length(y)
 
   # Switch-like structure to assign hyperparameters based on prior
-  hyper <- params$beta_prior
-  if (params$beta_prior$type == "CH") {
+  hyper <- mlpost_params$beta_prior
+  if (mlpost_params$beta_prior$type == "CH") {
     # CH prior: b and s should be user-specified, with defaults if not provided
     a <- ifelse(!is.null(hyper$a), hyper$a, 1)  # Default to 1 if not specified
     b <- ifelse(!is.null(hyper$b), hyper$b, 2)  # Default to 1 if not specified
@@ -357,77 +357,77 @@ gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r =
     s <- ifelse(!is.null(hyper$s), hyper$s, 1)  # Default to 1 if not specified
     v <- 1
     k <- 1
-  } else if (params$beta_prior$type == "hyper-g") {
+  } else if (mlpost_params$beta_prior$type == "hyper-g") {
     a <- 1
     b <- 2
     r <- 0
     s <- 0
     v <- 1
     k <- 1
-  } else if (params$beta_prior$type == "uniform") {
+  } else if (mlpost_params$beta_prior$type == "uniform") {
     a <- 2
     b <- 2
     r <- 0
     s <- 0
     v <- 1
     k <- 1
-  } else if (params$beta_prior$type == "Jeffreys") {
+  } else if (mlpost_params$beta_prior$type == "Jeffreys") {
     a <- 0.0001
     b <- 2
     r <- 0
     s <- 0
     v <- 1
     k <- 1
-  } else if (params$beta_prior$type == "beta.prime") {
+  } else if (mlpost_params$beta_prior$type == "beta.prime") {
     a <- 1/2
     b <- n - p_M - 1.5
     r <- 0
     s <- 0
     v <- 1
     k <- 1
-  } else if (params$beta_prior$type == "benchmark") {
+  } else if (mlpost_params$beta_prior$type == "benchmark") {
     a <- 0.02
     b <- 0.02 * max(n, p_M^2)
     r <- 0
     s <- 0
     v <- 1
     k <- 1
-  } else if (params$beta_prior$type == "TG") {
+  } else if (mlpost_params$beta_prior$type == "TG") {
     a <- 2 * ifelse(!is.null(hyper$a), hyper$a, 1)
     b <- 2
     r <- 0
     s <- 2 * ifelse(!is.null(hyper$s), hyper$s, 1)
     v <- 1
     k <- 1
-  } else if (params$beta_prior$type == "ZS-adapted") {
+  } else if (mlpost_params$beta_prior$type == "ZS-adapted") {
     a <- 1
     b <- 2
     r <- 0
     s <- n + 3
     v <- 1
     k <- 1
-  } else if (params$beta_prior$type == "robust") {
+  } else if (mlpost_params$beta_prior$type == "robust") {
     a <- 1
     b <- 2
     r <- 1.5
     s <- 0
     v <- (n + 1) / (p_M + 1)
     k <- 1
-  } else if (params$beta_prior$type == "hyper-g-n") {
+  } else if (mlpost_params$beta_prior$type == "hyper-g-n") {
     a <- 1
     b <- 2
     r <- 1.5
     s <- 0
     v <- 1
     k <- 1
-  } else if (params$beta_prior$type == "intrinsic") {
+  } else if (mlpost_params$beta_prior$type == "intrinsic") {
     a <- 1
     b <- 1
     r <- 1
     s <- 0
     v <- (n + p_M + 1) / (p_M + 1)
     k <- (n + p_M + 1) / n
-  } else if (params$beta_prior$type == "tCCH") {
+  } else if (mlpost_params$beta_prior$type == "tCCH") {
     a <- hyper$a
     b <- hyper$b
     r <- hyper$rho
@@ -435,7 +435,7 @@ gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r =
     v <- hyper$v
     k <- hyper$k
   } else {
-    stop("Unknown prior name: ", params$beta_prior$type)
+    stop("Unknown prior name: ", mlpost_params$beta_prior$type)
   }
 
   if (!is.null(r) & r == 0) {
@@ -459,9 +459,9 @@ gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r =
     stop("Invalid inputs: either r = 0 or s = 0 must be specified.")
   }
 
-  if (length(params$r) == 0) params$r <- 1 / dim(x)[1]  # default value or parameter r
+  if (length(mlpost_params$r) == 0) mlpost_params$r <- 1 / dim(x)[1]  # default value or parameter r
 
-  lp <- log_prior(params, complex)
+  lp <- log_prior(mlpost_params, complex)
 
   if (is.nan(marginal_likelihood)) {
     return(list(crit = -.Machine$double.xmax + lp, coefs = rep(0,sum(model))))
@@ -480,7 +480,7 @@ gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r =
 #' @param x The matrix containing the precalculated features
 #' @param model The model to estimate as a logical vector
 #' @param complex A list of complexity measures for the features
-#' @param params A list of parameters for the log likelihood, supplied by the user
+#' @param mlpost_params A list of parameters for the log likelihood, supplied by the user
 #'
 #' @return A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 #'
@@ -489,11 +489,11 @@ gaussian_tcch_log_likelihood <- function(y, x, model, complex, params = list(r =
 #'
 #'
 #' @export logistic.loglik.ala
-logistic.loglik.ala <- function (y, x, model, complex, params = list(r = exp(-0.5))) {
-  if (length(params) == 0)
-    params <- list(r = 1/dim(x)[1])
+logistic.loglik.ala <- function (y, x, model, complex, mlpost_params = list(r = exp(-0.5))) {
+  if (length(mlpost_params) == 0)
+    mlpost_params <- list(r = 1/dim(x)[1])
   suppressWarnings({mod <- fastglm(as.matrix(x[, model]), y, family = binomial(),maxit = 1)})
-  ret <- (-(mod$deviance + log(length(y)) * (mod$rank - 1) -2 * log(params$r) * sum(complex$oc))) / 2
+  ret <- (-(mod$deviance + log(length(y)) * (mod$rank - 1) -2 * log(mlpost_params$r) * sum(complex$oc))) / 2
   return(list(crit=ret, coefs=mod$coefficients))
 }
 
@@ -538,17 +538,17 @@ gaussian.loglik.alpha <- function (a, data, mu_func) {
 
 
 #' Log model prior function
-#' @param params list of passed parameters of the likelihood in GMJMCMC
+#' @param mlpost_params list of passed parameters of the likelihood in GMJMCMC
 #' @param complex list of complexity measures of the features included into the model
 #'
 #' @return A numeric with the log model prior.
 #'
 #' @examples
-#' log_prior(params = list(r=2), complex = list(oc = 2))
+#' log_prior(mlpost_params = list(r=2), complex = list(oc = 2))
 #'
 #' @export log_prior
-log_prior <- function (params, complex) {
-  pl <- log(params$r) * (sum(complex$oc))
+log_prior <- function (mlpost_params, complex) {
+  pl <- log(mlpost_params$r) * (sum(complex$oc))
   return(pl)
 }
 
@@ -562,7 +562,7 @@ log_prior <- function (params, complex) {
 #' @param x A matrix containing the precalculated features (independent variables).
 #' @param model A logical vector indicating which variables to include in the model.
 #' @param complex A list of complexity measures for the features.
-#' @param params A list of parameters controlling the model family, prior, and tuning parameters.
+#' @param mlpost_params A list of parameters controlling the model family, prior, and tuning parameters.
 #'   Key elements include:
 #'   - family: "binomial", "poisson", "gamma" (all three referred to as GLM below), or "gaussian" (default: "gaussian")
 #'   - prior_beta: Type of prior as a string (default: "g-prior"). Possible values include:
@@ -604,35 +604,35 @@ log_prior <- function (params, complex) {
 #' x = matrix(rnorm(100)), 
 #' c(TRUE,TRUE), 
 #' list(oc = 1),
-#' params = list(family = "gaussian", beta_prior = list(type = "g-prior", a = 2),
+#' mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior", a = 2),
 #'          r = exp(-0.5)))
 #'
 #' @importFrom BAS robust beta.prime bic.prior CCH EB.local g.prior hyper.g hyper.g.n tCCH intrinsic TG Jeffreys uniform
 #' @export
-fbms.mlik.master <- function(y, x, model, complex, params = list(family = "gaussian", beta_prior = list(type = "g-prior"), r = NULL)) {
+fbms.mlik.master <- function(y, x, model, complex, mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior"), r = NULL)) {
   # Extract dimensions
   n <- length(y)
   p <- length(model) - 1  # Number of predictors excluding intercept
   params_use <- list()
 
-  if(length(params$r) == 0)
-    params$r <-  1/length(y)
+  if(length(mlpost_params$r) == 0)
+    mlpost_params$r <-  1/length(y)
   
-  if(params$family == "gaussian")
-    params_use$beta_prior <- gen.mlpost.params.lm(params$beta_prior$type, params$beta_prior, p, n)
+  if(mlpost_params$family == "gaussian")
+    params_use$beta_prior <- gen.mlpost.params.lm(mlpost_params$beta_prior$type, mlpost_params$beta_prior, p, n)
   else
   {
-    params_use$beta_prior <- gen.mlpost.params.glm(params$beta_prior$type, params$beta_prior, p, n)
-    params_use$family <- params$family
+    params_use$beta_prior <- gen.mlpost.params.glm(mlpost_params$beta_prior$type, mlpost_params$beta_prior, p, n)
+    params_use$family <- mlpost_params$family
   }
   
-  params_use$r <- params$r
+  params_use$r <- mlpost_params$r
   
   
-  loglik.pi <- select.mlpost.fun(params$beta_prior$type, params$family)
+  loglik.pi <- select.mlpost.fun(mlpost_params$beta_prior$type, mlpost_params$family)
   
   
-  result <- loglik.pi(y,x,model,complex,params_use)
+  result <- loglik.pi(y, x, model, complex, params_use)
 
   return(list(crit = result$crit, coefs = result$coefs))
 }

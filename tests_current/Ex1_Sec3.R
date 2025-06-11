@@ -24,7 +24,7 @@ df.train = data[-te.ind, ]
 df.test = data[te.ind, ]
 
 to3 <- function(x) x^3
-transforms <- c("sigmoid","sin_deg","exp_dbl","p0","troot","to3")
+transforms <- c("sigmoid", "sin_deg", "exp_dbl", "p0", "troot", "to3")
 
 # Logical to decide whether to perform analysis with fbms function
 # If FALSE then gmjmcmc or gmjmcmc.parallel function is used
@@ -40,7 +40,7 @@ params <- gen.params.gmjmcmc(ncol(df.train) - 1)
 if (use.fbms) {
  result.default <- fbms(formula = semimajoraxis ~ 1 + . , data = df.train, method = "gmjmcmc", transforms = transforms, params = params)
 } else {
- result.default <- gmjmcmc(df.train[, -1], df.train[, 1], transforms = transforms, params = params)
+ result.default <- gmjmcmc(x = df.train[, -1], y = df.train[, 1], transforms = transforms, params = params)
 }
 summary(result.default)
 
@@ -67,10 +67,10 @@ set.seed(123)
 
 if (use.fbms) {
  result.P50 <- fbms(data = df.train, method = "gmjmcmc", transforms = transforms,
-                    P = 50, N.init = 1000, N.final = 1000, params = params)
+                    P = 50, N = 1000, N.final = 1000, params = params)
 } else {
- result.P50 <- gmjmcmc(df.train[, -1], df.train[, 1], intercept = TRUE, transforms = transforms,
-                       P = 50, N.init = 1000, N.final = 1000, params = params)
+ result.P50 <- gmjmcmc(x = df.train[, -1], y = df.train[, 1], intercept = TRUE, transforms = transforms,
+                       P = 50, N = 1000, N.final = 1000, params = params)
 }
 summary(result.P50, labels = names(df.train)[-1])
 
@@ -83,7 +83,7 @@ summary(result.P50, labels = names(df.train)[-1])
 set.seed(123)
 if (use.fbms) {
  result_parallel <- fbms(data = df.train, method = "gmjmcmc.parallel", transforms = transforms,
-                         runs = 50, cores = 10, P = 25,params = params)
+                         runs = 50, cores = 10, P = 25, params = params)
 } else {
  result_parallel <- gmjmcmc.parallel(runs = 50, cores = 10, x = df.train[, -1], y = df.train[, 1], intercept = TRUE,
                                      transforms = transforms, P = 25, params = params)
@@ -165,7 +165,7 @@ rmse.P50 <-  sqrt(mean((preds.P50$aggr$mean - df.test$semimajoraxis)^2))
 ###############################
 
 
-preds.multi <- predict(result_parallel , df.test[,-1], link = function(x) x)
+preds.multi <- predict(result_parallel, df.test[,-1], link = function(x) x)
 
 pdf("pred_parallel.pdf") 
 plot(preds.multi$aggr$mean, df.test$semimajoraxis)

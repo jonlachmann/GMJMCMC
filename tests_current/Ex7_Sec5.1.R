@@ -91,13 +91,13 @@ estimate.logic.lm = function(y, x, model, complex, params)
 set.seed(5001)
 
 if (use.fbms) {
-  result <- fbms(data = df.training, family = "custom", loglik.pi = estimate.logic.lm,N.init = 500,N.final = 500, P = 25,
+  result <- fbms(data = df.training, family = "custom", loglik.pi = estimate.logic.lm,N = 500,N.final = 500, P = 25,
                  method = "gmjmcmc", model_prior = list(p = 50), beta_prior = NULL, transforms = transforms, 
                  probs = probs, params = params)
 } else {
   #  result <- gmjmcmc(df.training, transforms = transforms, probs = probs)
   
-  result <- gmjmcmc(x = df.training[, -1], y = df.training[, 1], loglik.pi = estimate.logic.lm,N.init = 500,N.final = 500, , P = 25,
+  result <- gmjmcmc(x = df.training[, -1], y = df.training[, 1], loglik.pi = estimate.logic.lm,N = 500,N.final = 500, , P = 25,
                     transforms = transforms, mlpost_params = list(p = 50), params = params, probs = probs)
   
 }
@@ -142,12 +142,12 @@ points(pred_mpm,df.test$Mean,col = 4)
 set.seed(5002)
 
 if (use.fbms) {
-  result_parallel <- fbms(data = df.training, family = "custom", loglik.pi = estimate.logic.lm, N.init = 500, N.final = 500,
+  result_parallel <- fbms(data = df.training, family = "custom", loglik.pi = estimate.logic.lm, N = 500, N.final = 500,
                           method = "gmjmcmc.parallel",model_prior = list(p = 50), beta_prior = NULL, runs = 16, cores = 8,
                           transforms = transforms, probs = probs, params = params, P=25)
 } else {
   result_parallel =  gmjmcmc.parallel(runs = 16, cores = 8, x = df.training[, -1], y = df.training[, 1],
-                                      loglik.pi = estimate.logic.lm, mlpost_params = list(p = 50), N.init = 500,N.final = 500,
+                                      loglik.pi = estimate.logic.lm, mlpost_params = list(p = 50), N = 500,N.final = 500,
                                       transforms = transforms, probs = probs, params = params, P=25)
 }
 summary(result_parallel)
@@ -231,13 +231,13 @@ estimate.logic.tcch = function(y, x, model, complex, params)
 set.seed(5001)
 
 if (use.fbms) {
-  result <- fbms(data = df.training, family = "custom", loglik.pi = estimate.logic.tcch,N.init = 500,N.final = 500, P = 25,
+  result <- fbms(data = df.training, family = "custom", loglik.pi = estimate.logic.tcch,N = 500,N.final = 500, P = 25,
                  method = "gmjmcmc", transforms = transforms, 
                  probs = probs,model_prior = list(p = 50,n = n),beta_prior =  list(p.a = 1, p.b = 1, p.r = 1.5, p.s = 0, p.k = 1), params = params)
 } else {
   #  result <- gmjmcmc(df.training, transforms = transforms, probs = probs)
   
-  result <- gmjmcmc(x = df.training[, -1], y = df.training[, 1], loglik.pi = estimate.logic.tcch,N.init = 500,N.final = 500, P = 25,
+  result <- gmjmcmc(x = df.training[, -1], y = df.training[, 1], loglik.pi = estimate.logic.tcch,N = 500,N.final = 500, P = 25,
                     transforms = transforms,mlpost_params = list(p = 50, n = n, p.a = 1, p.b = 1, p.r = 1.5, p.s = 0, p.k = 1), params = params, probs = probs)
   
 }
@@ -275,12 +275,12 @@ points(pred_mpm,df.test$Mean,col = 4)
 set.seed(5002)
 
 if (use.fbms) {
-  result_parallel <- fbms(data = df.training, family = "custom", loglik.pi = estimate.logic.tcch,N.init = 500,N.final = 500,
+  result_parallel <- fbms(data = df.training, family = "custom", loglik.pi = estimate.logic.tcch,N = 500,N.final = 500,
                           method = "gmjmcmc.parallel", runs = 16, cores = 8, model_prior = list(p = 50,n = n),beta_prior =  list(p.a = 1, p.b = 1, p.r = 1.5, p.s = 0, p.k = 1),
                           transforms = transforms, probs = probs, params = params, P=25)
 } else {
   result_parallel =  gmjmcmc.parallel(runs = 16, cores = 8, x = df.training[, -1], y = df.training[, 1],
-                                      loglik.pi = estimate.logic.tcch,N.init = 500,N.final = 500,
+                                      loglik.pi = estimate.logic.tcch,N = 500,N.final = 500,
                                       mlpost_params = list(p = 50, n = n, p.a = 1, p.b = 1, p.r = 1.5, p.s = 0, p.k = 1),
                                       transforms = transforms, probs = probs, params = params, P=25)
 }

@@ -11,7 +11,7 @@ lm.logpost.bas2(
   x,
   model,
   complex,
-  params = list(r = exp(-0.5), prior_beta = "g-prior", alpha = 4)
+  mlpost_params = list(r = exp(-0.5), prior_beta = "g-prior", alpha = 4)
 )
 }
 \arguments{
@@ -23,7 +23,7 @@ lm.logpost.bas2(
 
 \item{complex}{A list of complexity measures for the features}
 
-\item{params}{A list of parameters for the log likelihood, supplied by the user, important to specify the tuning parameters of beta priors where the corresponding integers as prior_beta must be provided "g-prior" = 0, "hyper-g" = 1, "EB-local" = 2, "BIC" = 3, "ZS-null" = 4, "ZS-full" = 5, "hyper-g-laplace" = 6, "AIC" = 7, "EB-global" = 2, "hyper-g-n" = 8, "JZS" = 9 and in Gaussian models}
+\item{mlpost_params}{A list of parameters for the log likelihood, supplied by the user, important to specify the tuning parameters of beta priors where the corresponding integers as prior_beta must be provided "g-prior" = 0, "hyper-g" = 1, "EB-local" = 2, "BIC" = 3, "ZS-null" = 4, "ZS-full" = 5, "hyper-g-laplace" = 6, "AIC" = 7, "EB-global" = 2, "hyper-g-n" = 8, "JZS" = 9 and in Gaussian models}
 }
 \value{
 A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).

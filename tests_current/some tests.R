@@ -68,9 +68,9 @@ for (family in families) {
     
     print(prior)
     
-    params <- list(family = family,beta_prior = list(type = prior))
+    params <- list(family = family, beta_prior = list(type = prior))
     
-    params_old <- list(family = family,prior_beta = prior)
+    params_old <- list(family = family, prior_beta = prior)
     
     
     # Add required parameters if applicable
@@ -87,17 +87,17 @@ for (family in families) {
     tryCatch({
       
       set.seed(1)
-      result <- fbms.mlik.master(data$y, data$x, model = c(T, rep(TRUE, ncol(data$x) - 1)), 
-                                 complex = list(oc = 1), params = params)
+      result <- fbms.mlik.master(data$y, data$x, model = c(T, rep(TRUE, ncol(data$x) - 1)),
+                                 complex = list(oc = 1), mlpost_params = params)
       set.seed(1)
-      result.null <- fbms.mlik.master(data$y, data$x, model = c(T, T, rep(FALSE, ncol(data$x) - 2)), 
-                        complex = list(oc = 1), params = params)
+      result.null <- fbms.mlik.master(data$y, data$x, model = c(T, T, rep(FALSE, ncol(data$x) - 2)),
+                                      complex = list(oc = 1), mlpost_params = params)
       set.seed(1)
-      result.old <- fbms.mlik.master_old(data$y, data$x, model = c(T, rep(TRUE, ncol(data$x) - 1)), 
-                                       complex = list(oc = 1), params = params_old)#
+      result.old <- fbms.mlik.master_old(data$y, data$x, model = c(T, rep(TRUE, ncol(data$x) - 1)),
+                                         complex = list(oc = 1), mlpost_params = params_old)#
       set.seed(1)
-      result.null.old <- fbms.mlik.master_old(data$y, data$x, model = c(T, T, rep(FALSE, ncol(data$x) - 2)), 
-                       complex = list(oc = 1), params = params_old)
+      result.null.old <- fbms.mlik.master_old(data$y, data$x, model = c(T, T, rep(FALSE, ncol(data$x) - 2)),
+                                              complex = list(oc = 1), mlpost_params = params_old)
       
       
       crit_rounded <- round(result$crit - result.null$crit - result.old$crit + result.null.old$crit, 8) 

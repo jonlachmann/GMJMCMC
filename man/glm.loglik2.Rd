@@ -11,7 +11,7 @@ glm.loglik2(
   x,
   model,
   complex,
-  params = list(r = exp(-0.5), family = "Gamma")
+  mlpost_params = list(r = exp(-0.5), family = "Gamma")
 )
 }
 \arguments{
@@ -23,7 +23,7 @@ glm.loglik2(
 
 \item{complex}{A list of complexity measures for the features}
 
-\item{params}{A list of parameters for the log likelihood, supplied by the user, family must be specified}
+\item{mlpost_params}{A list of parameters for the log likelihood, supplied by the user, family must be specified}
 }
 \value{
 A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).

@@ -4,7 +4,7 @@
 \alias{gaussian.loglik2.g}
 \title{Log likelihood function for linear regression using Zellners g-prior}
 \usage{
-gaussian.loglik2.g(y, x, model, complex, params = NULL)
+gaussian.loglik2.g(y, x, model, complex, mlpost_params = NULL)
 }
 \arguments{
 \item{y}{A vector containing the dependent variable}
@@ -15,7 +15,7 @@ gaussian.loglik2.g(y, x, model, complex, params = NULL)
 
 \item{complex}{A list of complexity measures for the features}
 
-\item{params}{A list of parameters for the log likelihood, supplied by the user}
+\item{mlpost_params}{A list of parameters for the log likelihood, supplied by the user}
 }
 \value{
 A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).

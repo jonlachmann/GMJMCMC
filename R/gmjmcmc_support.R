@@ -152,13 +152,15 @@ check.data <- function (x, y, fixed, verbose) {
   }
 
   # Ensure that the first F0.size * 2 lines do not contain zero variance variables
-  vars <- diag(var(x[seq_len((ncol(x) - fixed) * 2), ]))
-  for (i in which(vars == 0)[-seq_len(fixed)]) {
-    j <- which(x[, i] != x[1, i])[1]
-    if (is.na(j)) {
-      stop(paste0("column with index ", i, " is constant and only the intercept may be constant, please remove it and try again."))
+  if ((ncol(x) - fixed) * 2 < nrow(x)) {
+    vars <- diag(var(x[seq_len((ncol(x) - fixed) * 2), ]))
+    for (i in which(vars == 0)[-seq_len(fixed)]) {
+      j <- which(x[, i] != x[1, i])[1]
+      if (is.na(j)) {
+        stop(paste0("column with index ", i, " is constant and only the intercept may be constant, please remove it and try again."))
+      }
+      x <- rbind(x[j, ], x[-j, ])
     }
-    x <- rbind(x[j, ], x[-j, ])
   }
 
   return(list(x = x, y = y, fixed = fixed))

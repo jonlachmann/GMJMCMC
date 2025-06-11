@@ -6,14 +6,14 @@
 #' Main algorithm for MJMCMC (Genetically Modified MJMCMC)
 #'
 #' @param x matrix containing the design matrix with data to use in the algorithm,
-#' @param y response variable 
-#' @param mlpost_params parameters for the estimator function loglik.pi
-#' @param intercept  whether intercept should be added to the design matrix (no model selection for intercept)
-#' @param fixed how many of the first columns of the design matrix will always be included in the models
-#' @param loglik.pi The (log) density to explore
+#' @param y response variable
 #' @param N The number of iterations to run for
 #' @param probs A list of the various probability vectors to use
 #' @param params A list of the various parameters for all the parts of the algorithm
+#' @param loglik.pi The (log) density to explore
+#' @param mlpost_params parameters for the estimator function loglik.pi
+#' @param intercept whether intercept should be added to the design matrix (no model selection for intercept)
+#' @param fixed how many of the first columns of the design matrix will always be included in the models
 #' @param sub An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)
 #' @param verbose A logical denoting if messages should be printed
 #'
@@ -28,7 +28,7 @@
 #' \item{populations}{The covariates represented as a list of features.}
 #'
 #' @examples
-#' result <- mjmcmc(y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100), gaussian.loglik)
+#' result <- mjmcmc(y = matrix(rnorm(100), 100), x = matrix(rnorm(600), 100), gaussian.loglik)
 #' summary(result)
 #' plot(result)
 #'
@@ -36,13 +36,13 @@
 mjmcmc <- function (
   x,
   y,
+  N = 100,
+  probs = NULL,
+  params = NULL,
   loglik.pi = NULL,
   mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior")),
   intercept = TRUE,
   fixed = 0,
-  N = 100,
-  probs = NULL,
-  params = NULL,
   sub = FALSE,
   verbose = TRUE
 ) {

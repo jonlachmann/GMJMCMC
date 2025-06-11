@@ -186,12 +186,12 @@ tic()
 if (use.fbms) {
   result1a <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.lme4,
                   model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0)), method = "gmjmcmc", 
-                  transforms = transforms, N.init = 30, 
+                  transforms = transforms, N = 30,
                   probs = probs, params = params, P=3)
 } else { 
   result1a <- gmjmcmc(x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.lme4,
                   mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0)),
-                  transforms = transforms, N.init = 30, 
+                  transforms = transforms, N = 30,
                   probs = probs, params = params, P = 3)
 }
 time.lme4 = toc()
@@ -204,12 +204,12 @@ tic()
 if (use.fbms) {
   result1b <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.inla,
                    model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10), method = "gmjmcmc", 
-                   transforms = transforms, N.init = 30, 
+                   transforms = transforms, N = 30,
                    probs = probs, params = params, P=3)
 } else { 
   result1b <- gmjmcmc(x = df[, -1], y = df[, 1], loglik.pi = mixed.model.loglik.inla,
                       mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10),
-                    transforms = transforms, N.init = 30, 
+                    transforms = transforms, N = 30,
                     probs = probs, params = params, P = 3)
 }
 time.inla = toc()
@@ -218,12 +218,12 @@ tic()
 if (use.fbms) {
   result1c <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.rtmb, method = "gmjmcmc", 
                    model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0)),
-                   transforms = transforms, N.init = 30, 
+                   transforms = transforms, N = 30,
                    probs = probs, params = params, P=3)
 } else { 
   result1c <- gmjmcmc(x = df[, -1], y = df[, 1], , loglik.pi = mixed.model.loglik.rtmb,
                       mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0)),
-                      transforms = transforms, N.init = 30, 
+                      transforms = transforms, N = 30,
                       probs = probs, params = params, P = 3)
 }
 time.rtmb = toc()
@@ -244,14 +244,14 @@ params$feat$pop.max = 10
 if (use.fbms) {
   result2a <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.lme4, method = "gmjmcmc.parallel", 
                    model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0)),
-                   transforms = transforms, N.init = 100,runs = 40, cores = 40, 
+                   transforms = transforms, N = 100,runs = 40, cores = 40,
                    probs = probs, params = params, P=25)
 } else { 
   result2a <- gmjmcmc.parallel(runs = 40, cores = 40, 
                                x = df[, -1], y = df[, 1], 
                                loglik.pi = mixed.model.loglik.lme4,
                                mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0)),  
-                               transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
+                               transforms = transforms, N=100, probs = probs, params = params, P = 25)
   
 }
 
@@ -263,14 +263,14 @@ set.seed(21062024)
 if (use.fbms) {
   result2b <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.lme4, method = "gmjmcmc.parallel", 
                    model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0)),
-                   transforms = transforms, N.init = 100,runs = 120, cores = 40, 
+                   transforms = transforms, N = 100,runs = 120, cores = 40,
                    probs = probs, params = params, P=25)
 } else { 
   result2b <- gmjmcmc.parallel(runs = 120, cores = 40, 
                                x = df[, -1], y = df[, 1], 
                                loglik.pi = mixed.model.loglik.lme4,
                                mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0)),  
-                               transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
+                               transforms = transforms, N=100, probs = probs, params = params, P = 25)
   
 }
 summary(result2b, labels = names(df)[-1])
@@ -287,14 +287,14 @@ set.seed(03072024)
 if (use.fbms) {
   result2c <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.lme4, method = "gmjmcmc.parallel", 
                    model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0)),
-                   transforms = transforms, N.init = 100,runs = 200, cores = 40, 
+                   transforms = transforms, N = 100,runs = 200, cores = 40,
                    probs = probs, params = params, P=25)
 } else { 
   result2c <- gmjmcmc.parallel(runs = 200, cores = 40, 
                                x = df[, -1], y = df[, 1], 
                                loglik.pi = mixed.model.loglik.lme4,
                                mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0)),  
-                               transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
+                               transforms = transforms, N=100, probs = probs, params = params, P = 25)
   
 }
 summary(result2c, labels = names(df)[-1])
@@ -320,14 +320,14 @@ set.seed(22052024)
 if (use.fbms) {
   result2aI <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.inla, method = "gmjmcmc.parallel", 
                    model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 1),
-                   transforms = transforms, N.init = 100,runs = 40, cores = 40, 
+                   transforms = transforms, N = 100,runs = 40, cores = 40,
                    probs = probs, params = params, P=25)
 } else { 
   result2aI <- gmjmcmc.parallel(runs = 40, cores = 40, 
                                x = df[, -1], y = df[, 1], 
                                loglik.pi = mixed.model.loglik.inla,
                                mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 1),  
-                               transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
+                               transforms = transforms, N=100, probs = probs, params = params, P = 25)
   
 }
 
@@ -344,14 +344,14 @@ set.seed(20062024)
 if (use.fbms) {
   result2bI <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.inla, method = "gmjmcmc.parallel", 
                     model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 1),
-                    transforms = transforms, N.init = 100,runs = 100, cores = 20, 
+                    transforms = transforms, N = 100,runs = 100, cores = 20,
                     probs = probs, params = params, P=25)
 } else { 
   result2bI <- gmjmcmc.parallel(runs = 100, cores = 20, 
                                 x = df[, -1], y = df[, 1], 
                                 loglik.pi = mixed.model.loglik.inla,
                                 mlpost_params = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 1),  
-                                transforms = transforms, N.init=100, probs = probs, params = params, P = 25)
+                                transforms = transforms, N=100, probs = probs, params = params, P = 25)
   
 }
 

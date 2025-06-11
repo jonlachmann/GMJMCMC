@@ -90,11 +90,11 @@ set.seed(102)
 
 if (use.fbms) {
   result_parallel2 <- fbms(runs = 40, cores = 40,data = df, method = "gmjmcmc.parallel", transforms = transforms, beta_prior = list(type = "Jeffreys-BIC"), 
-                          probs = probs, params = params, P=25, N.init=1000, N.final=2000)
+                          probs = probs, params = params, P=25, N=1000, N.final=2000)
 } else {
   result_parallel2 =  gmjmcmc.parallel(runs = 40, cores = 40, x = df[, -1], y = df[, 1],mlpost_params = list(family = "gaussian", beta_prior = list(type = "Jeffreys-BIC")),
                           transforms = transforms, probs = probs, params = params, 
-                          P=25, N.init=1000, N.final=2000)
+                          P=25, N=1000, N.final=2000)
 }
 #summary(result_parallel2, labels = names(df[-1]))
 summary(result_parallel2, labels = names(df[-1]), tol = 0.01)
@@ -107,10 +107,10 @@ set.seed(104)
 
 if (use.fbms) {
   result_parallel3 <- fbms(data = df, method = "gmjmcmc.parallel", transforms = transforms, beta_prior = list(type = "Jeffreys-BIC"), 
-                           probs = probs, params = params, P=50, runs = 40, cores = 40, N.init=2000, N.final=4000)
+                           probs = probs, params = params, P=50, runs = 40, cores = 40, N=2000, N.final=4000)
 } else {
   result_parallel3 =  gmjmcmc.parallel(runs = 40, cores = 40, x = df[, -1], y = df[, 1], transforms = transforms, mlpost_params = list(family = "gaussian", beta_prior = list(type = "Jeffreys-BIC")),
-                                       probs = probs, params = params, P=50, N.init=2000, N.final=4000)
+                                       probs = probs, params = params, P=50, N=2000, N.final=4000)
 }
 #summary(result_parallel3, labels = names(df[-1]))
 summary(result_parallel3, labels = names(df[-1]), tol = 0.01)

@@ -45,19 +45,18 @@ params$feat$pop.max <- 50
 ####################################################
 
 ##Parallel runs
-if(run.parallel)
-{
+if (run.parallel) {
   set.seed(123)
   if (use.fbms) {
-    result_parallel1=fbms(data=df,loglik.pi=gaussian.loglik.g,transforms=transforms,
+    result_parallel1 = fbms(data=df,loglik.pi=gaussian.loglik.g,transforms=transforms,
                           probs=probs,params=params,
                           method="gmjmcmc.parallel",
-                          P=50,N.init=1000,N.final=1000,runs=10,cores=10)
-  }else {
+                          P=50,N=1000,N.final=1000,runs=10,cores=10)
+  } else {
     start = Sys.time()
     result_parallel1=gmjmcmc.parallel(x = df[, -1], y = df[, 1], loglik.pi=gaussian.loglik.g,transforms=transforms,
                                       probs=probs,params=params,
-                                      P=50,N.init=1000,N.final=1000,runs=10,cores=10)
+                                      P=50,N=1000,N.final=1000,runs=10,cores=10)
     end = Sys.time()
     print(end-start)
   }
@@ -69,11 +68,11 @@ if(run.parallel)
     result_parallel2=fbms(data=df,loglik.pi=gaussian.loglik.g,transforms=transforms,
                           probs=probs,params=params,
                           method="gmjmcmc.parallel",
-                          P=50,N.init=1000,N.final=1000,runs=10,cores=10)
+                          P=50,N=1000,N.final=1000,runs=10,cores=10)
   } else {
     result_parallel2=gmjmcmc.parallel(x = df[, -1], y = df[, 1], loglik.pi=gaussian.loglik.g,transforms=transforms,
                                      probs=probs,params=params,
-                                     P=50,N.init=1000,N.final=1000,runs=10,cores=10)
+                                     P=50,N=1000,N.final=1000,runs=10,cores=10)
   }
   save(result_parallel2,file="Ex3_parallel2.RData")
   #load("Ex3_parallel2.RData")
@@ -83,11 +82,11 @@ if(run.parallel)
     result_parallel3=fbms(data=df,loglik.pi=gaussian.loglik.g,transforms=transforms,
                           probs=probs,params=params,
                           method="gmjmcmc.parallel",
-                          P=50,N.init=1000,N.final=1000,runs=10,cores=10)
+                          P=50,N=1000,N.final=1000,runs=10,cores=10)
   } else {
     result_parallel3=gmjmcmc.parallel(x = df[, -1], y = df[, 1], loglik.pi=gaussian.loglik.g,transforms=transforms,
                                      probs=probs,params=params,
-                                     P=50,N.init=1000,N.final=1000,runs=10,cores=10)
+                                     P=50,N=1000,N.final=1000,runs=10,cores=10)
   }
   save(result_parallel3,file="Ex3_parallel3.RData")
   #load("Ex3_parallel2.RData")

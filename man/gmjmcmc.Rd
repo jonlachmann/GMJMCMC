@@ -7,17 +7,17 @@
 gmjmcmc(
   x,
   y,
-  loglik.pi = NULL,
-  loglik.alpha = gaussian.loglik.alpha,
-  mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior")),
   transforms,
-  intercept = TRUE,
-  fixed = 0,
   P = 10,
-  N.init = 100,
+  N = 100,
   N.final = 100,
   probs = NULL,
   params = NULL,
+  loglik.pi = NULL,
+  loglik.alpha = gaussian.loglik.alpha,
+  mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior")),
+  intercept = TRUE,
+  fixed = 0,
   sub = FALSE,
   verbose = TRUE
 )
@@ -27,30 +27,29 @@ gmjmcmc(
 
 \item{y}{response variable}
 
-\item{loglik.pi}{The (log) density to explore}
-
-\item{loglik.alpha}{The likelihood function to use for alpha calculation}
-
-\item{mlpost_params}{parameters for the estimator function loglik.pi}
-
-\item{transforms}{A Character vector including the names of the non-linear functions to be used by the modification
-and the projection operator.}
-
-\item{intercept}{whether intercept should be added to the design matrix (no model selection for intercept)}
-
-\item{fixed}{how many of the first columns of the design matrix will always be included in the models}
+\item{transforms}{A Character vector including the names of the non-linear functions to be used by the modification}
 
 \item{P}{The number of generations for GMJMCMC (Genetically Modified MJMCMC).
 The default value is $P = 10$.
 A larger value like $P = 50$ might be more realistic for more complicated examples where one expects a lot of non-linear structures.}
 
-\item{N.init}{The number of iterations per population (total iterations = (T-1)*N.init+N.final)}
+\item{N}{The number of iterations per population (total iterations = (T - 1) * N + N.final)}
 
-\item{N.final}{The number of iterations for the final population (total iterations = (T-1)*N.init+N.final)}
+\item{N.final}{The number of iterations for the final population (total iterations = (T - 1) * N + N.final)}
 
 \item{probs}{A list of the various probability vectors to use}
 
 \item{params}{A list of the various parameters for all the parts of the algorithm}
+
+\item{loglik.pi}{The (log) density to explore}
+
+\item{loglik.alpha}{The likelihood function to use for alpha calculation and the projection operator.}
+
+\item{mlpost_params}{parameters for the estimator function loglik.pi}
+
+\item{intercept}{whether intercept should be added to the design matrix (no model selection for intercept)}
+
+\item{fixed}{how many of the first columns of the design matrix will always be included in the models}
 
 \item{sub}{An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)}
 

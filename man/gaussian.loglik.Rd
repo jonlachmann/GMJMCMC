@@ -4,7 +4,7 @@
 \alias{gaussian.loglik}
 \title{Log likelihood function for gaussian regression with a Jeffreys prior and BIC approximation of MLIK with both known and unknown variance of the responses}
 \usage{
-gaussian.loglik(y, x, model, complex, params)
+gaussian.loglik(y, x, model, complex, mlpost_params)
 }
 \arguments{
 \item{y}{A vector containing the dependent variable}
@@ -15,7 +15,7 @@ gaussian.loglik(y, x, model, complex, params)
 
 \item{complex}{A list of complexity measures for the features}
 
-\item{params}{A list of parameters for the log likelihood, supplied by the user}
+\item{mlpost_params}{A list of parameters for the log likelihood, supplied by the user}
 }
 \value{
 A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).

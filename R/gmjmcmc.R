@@ -11,21 +11,20 @@ NULL
 #' Main algorithm for GMJMCMC (Genetically Modified MJMCMC)
 #'
 #' @param x matrix containing the design matrix with data to use in the algorithm
-#' @param y response variable 
-#' @param intercept  whether intercept should be added to the design matrix (no model selection for intercept)
-#' @param fixed how many of the first columns of the design matrix will always be included in the models
-#' @param loglik.pi The (log) density to explore
-#' @param mlpost_params parameters for the estimator function loglik.pi
-#' @param loglik.alpha The likelihood function to use for alpha calculation
-#' @param transforms A Character vector including the names of the non-linear functions to be used by the modification 
-#' and the projection operator. 
+#' @param y response variable
+#' @param transforms A Character vector including the names of the non-linear functions to be used by the modification
 #' @param P The number of generations for GMJMCMC (Genetically Modified MJMCMC).
 #' The default value is $P = 10$.
-#' A larger value like $P = 50$ might be more realistic for more complicated examples where one expects a lot of non-linear structures. 
-#' @param N.init The number of iterations per population (total iterations = (T-1)*N.init+N.final)
-#' @param N.final The number of iterations for the final population (total iterations = (T-1)*N.init+N.final)
+#' A larger value like $P = 50$ might be more realistic for more complicated examples where one expects a lot of non-linear structures.
+#' @param N The number of iterations per population (total iterations = (T - 1) * N + N.final)
+#' @param N.final The number of iterations for the final population (total iterations = (T - 1) * N + N.final)
 #' @param probs A list of the various probability vectors to use
 #' @param params A list of the various parameters for all the parts of the algorithm
+#' @param loglik.pi The (log) density to explore
+#' @param loglik.alpha The likelihood function to use for alpha calculation and the projection operator.
+#' @param mlpost_params parameters for the estimator function loglik.pi
+#' @param intercept whether intercept should be added to the design matrix (no model selection for intercept)
+#' @param fixed how many of the first columns of the design matrix will always be included in the models
 #' @param sub An indicator that if the likelihood is inexact and should be improved each model visit (EXPERIMENTAL!)
 #' @param verbose A logical denoting if messages should be printed
 #'
@@ -53,17 +52,17 @@ NULL
 gmjmcmc <- function (
   x,
   y,
-  loglik.pi = NULL,
-  loglik.alpha = gaussian.loglik.alpha,
-  mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior")),
   transforms,
-  intercept = TRUE,
-  fixed = 0,
   P = 10,
-  N.init = 100,
+  N = 100,
   N.final = 100,
   probs = NULL,
   params = NULL,
+  loglik.pi = NULL,
+  loglik.alpha = gaussian.loglik.alpha,
+  mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior")),
+  intercept = TRUE,
+  fixed = 0,
   sub = FALSE,
   verbose = TRUE
 ) {
@@ -122,10 +121,10 @@ gmjmcmc <- function (
   complex <- complex.features(S[[1]])
 
   ### Main algorithm loop - Iterate over P different populations
+  N.this <- N
   for (p in seq_len(P)) {
     # Set population iteration count
-    if (p != P) N <- N.init
-    else N <- N.final
+    if (p == P) N.this <- N.final
     # Precalculate covariates and put them in data.t
     if (length(params$feat$prel.filter) > 0 | p != 1) data.t <- precalc.features(data, S[[p]])
     else data.t <- data
@@ -138,7 +137,7 @@ gmjmcmc <- function (
 
     # Run MJMCMC over the population
     if (verbose) cat(paste("Population", p, "begin."))
-    mjmcmc_res <- mjmcmc.loop(data.t, complex, loglik.pi, model.cur, N, probs, params, sub, verbose)
+    mjmcmc_res <- mjmcmc.loop(data.t, complex, loglik.pi, model.cur, N.this, probs, params, sub, verbose)
     if (verbose) cat(paste("\nPopulation", p, "done.\n"))
 
     # Add the models visited in the current population to the model list
@@ -152,6 +151,8 @@ gmjmcmc <- function (
     model.probs.idx[[p]] <- mjmcmc_res$model.probs.idx
     # Store best marginal model probability for current population
     best.margs[[p]] <- mjmcmc_res$best.crit
+    # Store the accepted number of steps for the current population
+    accept[[p]] <- mjmcmc_res$accept
     # Print the marginal posterior distribution of the features after MJMCMC
     if (verbose) {
       cat(paste("\rCurrent best crit:", mjmcmc_res$best.crit, "\n"))
@@ -167,9 +168,9 @@ gmjmcmc <- function (
     }
   }
   # Calculate acceptance rate
-  accept.tot <- sum(unlist(accept)) / (N.init * (P - 1) + N.final)
-  accept <- lapply(accept, function (x) x / N.init)
-  accept[[P]] <- accept[[P]] * N.init / N.final
+  accept.tot <- sum(unlist(accept)) / (N * (P - 1) + N.final)
+  accept <- lapply(accept, function (x) x / N)
+  accept[[P]] <- accept[[P]] * N / N.final
   # Return formatted results
   results <- list(
     models = models,                   # All models per population

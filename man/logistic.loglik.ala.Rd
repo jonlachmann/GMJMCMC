@@ -6,7 +6,7 @@
 This function is created as an example of how to create an estimator that is used
 to calculate the marginal likelihood of a model.}
 \usage{
-logistic.loglik.ala(y, x, model, complex, params = list(r = exp(-0.5)))
+logistic.loglik.ala(y, x, model, complex, mlpost_params = list(r = exp(-0.5)))
 }
 \arguments{
 \item{y}{A vector containing the dependent variable}
@@ -17,7 +17,7 @@ logistic.loglik.ala(y, x, model, complex, params = list(r = exp(-0.5)))
 
 \item{complex}{A list of complexity measures for the features}
 
-\item{params}{A list of parameters for the log likelihood, supplied by the user}
+\item{mlpost_params}{A list of parameters for the log likelihood, supplied by the user}
 }
 \value{
 A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).

@@ -10,6 +10,7 @@ fbms(
   family = "gaussian",
   beta_prior = list(type = "g-prior"),
   model_prior = NULL,
+  extra_params = NULL,
   data = NULL,
   impute = FALSE,
   loglik.pi = NULL,

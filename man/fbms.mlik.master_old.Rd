@@ -9,7 +9,7 @@ fbms.mlik.master_old(
   x,
   model,
   complex,
-  params = list(family = "gaussian", prior_beta = "g-prior", r = exp(-0.5))
+  mlpost_params = list(family = "gaussian", prior_beta = "g-prior", r = exp(-0.5))
 )
 }
 \arguments{
@@ -21,7 +21,7 @@ fbms.mlik.master_old(
 
 \item{complex}{A list of complexity measures for the features.}
 
-\item{params}{A list of parameters controlling the model family, prior, and tuning parameters.
+\item{mlpost_params}{A list of parameters controlling the model family, prior, and tuning parameters.
 Key elements include:
 \itemize{
 \item family: "binomial", "poisson", "gamma" (all three referred to as GLM below), or "gaussian" (default: "gaussian")

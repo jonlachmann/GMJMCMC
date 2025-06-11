@@ -9,7 +9,7 @@ gaussian_tcch_log_likelihood2(
   x,
   model,
   complex,
-  params = list(r = exp(-0.5), prior_beta = "intrinsic")
+  mlpost_params = list(r = exp(-0.5), prior_beta = "intrinsic")
 )
 }
 \arguments{
@@ -21,7 +21,7 @@ gaussian_tcch_log_likelihood2(
 
 \item{complex}{A list containing complexity measures for the features.}
 
-\item{params}{A list of parameters for the log likelihood, specifying the tuning parameters of beta priors.}
+\item{mlpost_params}{A list of parameters for the log likelihood, specifying the tuning parameters of beta priors.}
 }
 \value{
 A list with elements:
