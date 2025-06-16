@@ -141,27 +141,36 @@ loglik.pre <- function (loglik.pi, model, complex, data, params = NULL, visited.
 check.data <- function (x, y, fixed, verbose) {
   if (!is.matrix(x)) {
     x <- as.matrix(x)
-    if (verbose) cat("Data (x) coerced to matrix type.\n")
+    #if (verbose) cat("Data (x) coerced to matrix type.\n")
   }
   if (!is.matrix(y)) {
     y <- as.matrix(y)
-    if (verbose) cat("Data (y) coerced to matrix type.\n")
+    #if (verbose) cat("Data (y) coerced to matrix type.\n")
   }
   if (nrow(x) != nrow(y)) {
     stop("x and y must have the same number of rows")
   }
 
   # Ensure that the first F0.size * 2 lines do not contain zero variance variables
-  # if ((ncol(x) - fixed) * 2 < nrow(x)) {
-  #   vars <- diag(var(x[seq_len((ncol(x) - fixed) * 2), ]))
-  #   for (i in which(vars == 0)[-seq_len(fixed)]) {
-  #     j <- which(x[, i] != x[1, i])[1]
-  #     if (is.na(j)) {
-  #       stop(paste0("column with index ", i, " is constant and only the intercept may be constant, please remove it and try again."))
-  #     }
-  #     x <- rbind(x[j, ], x[-j, ])
-  #   }
-  # }
+  if ((ncol(x) - fixed) * 2 < nrow(x)) {
+    vars <- diag(var(x[seq_len((ncol(x) - fixed) * 2), ]))
+    for (i in which(vars == 0)[-seq_len(fixed)]) {
+      j <- which(x[, i] != x[1, i])[1]
+      if (is.na(j)) {
+        stop(paste0("column with index ", i, " is constant and only the intercept may be constant, please remove it and try again."))
+      }
+      x <- rbind(x[j, ], x[-j, ])
+      if(dim(y)[2] == 1)
+        y <- c(y[j, ], y[-j, ])
+      else
+        y <- rbind(y[j, ], y[-j, ])
+    }
+  }
+  
+  if (!is.matrix(y)) {
+    y <- as.matrix(y)
+    #if (verbose) cat("Data (y) coerced to matrix type.\n")
+  }
 
   return(list(x = x, y = y, fixed = fixed))
 }
