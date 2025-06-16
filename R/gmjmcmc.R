@@ -17,7 +17,7 @@ NULL
 #' The default value is $P = 10$.
 #' A larger value like $P = 50$ might be more realistic for more complicated examples where one expects a lot of non-linear structures.
 #' @param N The number of iterations per population (total iterations = (T - 1) * N + N.final)
-#' @param N.final The number of iterations for the final population (total iterations = (T - 1) * N + N.final)
+#' @param N.final The number of iterations for the final population if NULL (default) then set equal to N (total iterations = (T - 1) * N + N.final)
 #' @param probs A list of the various probability vectors to use
 #' @param params A list of the various parameters for all the parts of the algorithm
 #' @param loglik.pi The (log) density to explore
@@ -55,7 +55,7 @@ gmjmcmc <- function (
   transforms,
   P = 10,
   N = 100,
-  N.final = 100,
+  N.final = NULL,
   probs = NULL,
   params = NULL,
   loglik.pi = NULL,
@@ -120,6 +120,8 @@ gmjmcmc <- function (
 
   complex <- complex.features(S[[1]])
 
+  if(length(N.final) == 0)
+    N.final <- N
   ### Main algorithm loop - Iterate over P different populations
   N.this <- N
   for (p in seq_len(P)) {
