@@ -58,6 +58,8 @@ fbms(
 
 \item{model_prior}{a list with parameters of model priors, by default r should be provided}
 
+\item{extra_params}{extra parameters to be passed to the loglik.pi function}
+
 \item{data}{A data frame containing the variables in the model. If NULL, the variables are taken from the environment of the formula. Default is NULL.}
 
 \item{impute}{TRUE  means imputation combined with adding a dummy column with indicators of imputed values, FALSE (default) means only full data is used.}

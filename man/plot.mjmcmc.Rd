@@ -22,7 +22,10 @@ Function to plot the results, works both for results from gmjmcmc and
 merged results from merge.results
 }
 \examples{
-result <- mjmcmc(y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100), loglik.pi = gaussian.loglik)
+result <- mjmcmc(
+y = matrix(rnorm(100), 100),
+x = matrix(rnorm(600), 100),
+loglik.pi = gaussian.loglik)
 plot(result)
 
 }

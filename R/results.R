@@ -546,7 +546,10 @@ plot.gmjmcmc <- function (x, count = "all", pop = "best", tol = 0.0000001, data 
 #' @return No return value, just creates a plot
 #'
 #' @examples
-#' result <- mjmcmc(y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100), loglik.pi = gaussian.loglik)
+#' result <- mjmcmc(
+#' y = matrix(rnorm(100), 100),
+#' x = matrix(rnorm(600), 100),
+#' loglik.pi = gaussian.loglik)
 #' plot(result)
 #'
 #' @export 

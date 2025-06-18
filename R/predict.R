@@ -41,32 +41,26 @@ predict.bgnlm_model <- function(object, x, link = function(x) {x}, x_train = NUL
   else
     x <- impute_x_pred(object, x_test = x, x_train = x_train)
   x <- data.frame(x)
-  if(object$needs.precalc)
-  {
+  if (object$needs.precalc) {
     if (object$intercept) {
       x <- cbind(1, x)
     }
     precalc <- precalc.features(list(x = x, y = NULL, fixed = object$fixed), object$features)
     
-    if(dim(precalc$x)[2]>length(object$coefs[object$coefs!=0]))
-    {
+    if (dim(precalc$x)[2]>length(object$coefs[object$coefs!=0])) {
       precalc$x <- precalc$x[,-1]
     }
     
     yhat <- link(precalc$x %*% object$coefs[object$coefs != 0])
-  }else
-  {
+  } else {
     x.precalc <- model.matrix(
       as.formula(paste0("~I(", paste0(names(object$coefs)[-1][object$coefs[-1]!=0], collapse = ")+I("), ")")),
       data = x
     )
 
-    if(dim(x.precalc)[2]<length(object$coefs[object$coefs!=0]))
-    {
+    if (dim(x.precalc)[2]<length(object$coefs[object$coefs!=0])) {
       x.precalc <- cbind(1,x.precalc)
-    }
-    else if(dim(x.precalc)[2]>length(object$coefs[object$coefs!=0]))
-    {
+    } else if (dim(x.precalc)[2]>length(object$coefs[object$coefs!=0])) {
       x.precalc <- x.precalc[,-1]
     }
     yhat <- link(x.precalc %*% object$coefs[object$coefs!=0])
@@ -215,13 +209,15 @@ predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles =
 #' \item{quantiles}{Quantiles of aggregated predictions.}
 #' 
 #' @examples
-#' result <- mjmcmc(x = matrix(rnorm(600), 100),y = matrix(rnorm(100), 100), loglik.pi = gaussian.loglik)
+#' result <- mjmcmc(
+#' x = matrix(rnorm(600), 100),
+#' y = matrix(rnorm(100), 100),
+#' loglik.pi = gaussian.loglik)
 #' preds <- predict(result, matrix(rnorm(600), 100))
 #' 
 #' @export
 predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), x_train = NULL, ...) {
   # Select the models and features to predict from at this iteration
-  #browser()
   if(is.null(x_train))
     x <- impute_x(object, x)
   else

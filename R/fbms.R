@@ -35,7 +35,8 @@
 #'   - n: Sample size for some priors (default: length(y))
 #'   - var: Variance assumption for Gaussian models ("known" or "unknown", default: "unknown")
 #'   - laplace: Logical for Laplace approximation in GLM only (default: FALSE)
-#' @param model_prior  a list with parameters of model priors, by default r should be provided
+#' @param model_prior a list with parameters of model priors, by default r should be provided
+#' @param extra_params extra parameters to be passed to the loglik.pi function
 #' @param loglik.pi Custom function to compute the logarithm of the posterior mode based on logarithm of marginal likelihood and logarithm of prior functions (needs specification only used if family = "custom")
 #' @param data A data frame containing the variables in the model. If NULL, the variables are taken from the environment of the formula. Default is NULL.
 #' @param method Which fitting algorithm should be used, currently implemented options include "gmjmcmc", "gmjmcmc.parallel", "mjmcmc" and "mjmcmc.parallel" with "mjmcmc" being the default and 'mjmcmc' means that only linear models will be estimated
