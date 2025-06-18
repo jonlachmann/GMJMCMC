@@ -159,17 +159,9 @@ check.data <- function (x, y, fixed, verbose) {
       if (is.na(j)) {
         stop(paste0("column with index ", i, " is constant and only the intercept may be constant, please remove it and try again."))
       }
-      x <- rbind(x[j, ], x[-j, ])
-      if(dim(y)[2] == 1)
-        y <- c(y[j, ], y[-j, ])
-      else
-        y <- rbind(y[j, ], y[-j, ])
+      x <- rbind(x[j, , drop = FALSE], x[-j, , drop = FALSE])
+      y <- rbind(y[j, , drop = FALSE], y[-j, , drop = FALSE])
     }
-  }
-  
-  if (!is.matrix(y)) {
-    y <- as.matrix(y)
-    #if (verbose) cat("Data (y) coerced to matrix type.\n")
   }
 
   return(list(x = x, y = y, fixed = fixed))
