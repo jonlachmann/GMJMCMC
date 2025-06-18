@@ -6,6 +6,7 @@
 context("MJMCMC")
 
 test_that("Test (G)MJMCMC through the fbms function", {
+  RNGkind("L'Ecuyer-CMRG")
   set.seed(123)
   x <- matrix(rnorm(300), 100)
   y <- rnorm(100, 0, 0.5) + rowSums(x[, 1:2])
@@ -61,6 +62,7 @@ test_that("Test (G)MJMCMC through the fbms function", {
   validate.model(mod1, x, y)
   validate.model(mod1p, x, y)
 
+  set.seed(123)
   data$y <- y_sin
   gmod1 <- fbms(y ~ . - 1, family = "gaussian", beta_prior = list(type = "Jeffreys-BIC"), method = "gmjmcmc", data = data, transforms = "sin", params = params, probs = probs, P = 20, verbose = FALSE)
   gmod1p <- fbms(y ~ . - 1, family = "gaussian", beta_prior = list(type = "Jeffreys-BIC"), method = "gmjmcmc.parallel", data = data, transforms = "sin", params = params, probs = probs, P = 20, verbose = FALSE)
@@ -68,12 +70,14 @@ test_that("Test (G)MJMCMC through the fbms function", {
   validate.gmodel(gmod1p, x, y_sin)
 
   # Model defined intercept
+  set.seed(123)
   data$y <- y_shift
   mod2 <- fbms(y ~ ., family = "gaussian", beta_prior = list(type = "Jeffreys-BIC"), method = "mjmcmc", data = data, verbose = FALSE)
   mod2p <- fbms(y ~ ., family = "gaussian", beta_prior = list(type = "Jeffreys-BIC"), method = "mjmcmc.parallel", data = data, verbose = FALSE)
   validate.model(mod2, x, y_shift)
   validate.model(mod2p, x, y_shift)
 
+  set.seed(123)
   data$y <- y_sin_shift
   gmod2 <- fbms(y ~ ., family = "gaussian", beta_prior = list(type = "Jeffreys-BIC"), method = "gmjmcmc", data = data, transforms = "sin", params = params, probs = probs, P = 20, verbose = FALSE)
   gmod2p <- fbms(y ~ ., family = "gaussian", beta_prior = list(type = "Jeffreys-BIC"), method = "gmjmcmc.parallel", data = data, transforms = "sin", params = params, probs = probs, P = 20, verbose = FALSE)
@@ -81,6 +85,7 @@ test_that("Test (G)MJMCMC through the fbms function", {
   validate.gmodel(gmod2p, x, y_sin_shift)
 
   # User defined intercept
+  set.seed(123)
   data <- cbind(data[, 1], 1, data[, -1])
   colnames(data) <- c("y", "const", "a", "b", "c")
   data$y <- y_shift
@@ -89,6 +94,7 @@ test_that("Test (G)MJMCMC through the fbms function", {
   validate.model(mod3, cbind(1, x), y_shift)
   validate.model(mod3p, cbind(1, x), y_shift)
 
+  set.seed(123)
   data$y <- y_sin_shift
   gmod3 <- fbms(y ~ . - 1, family = "gaussian", beta_prior = list(type = "Jeffreys-BIC"), method = "gmjmcmc", data = data, transforms = "sin", params = params, probs = probs, P = 20, fixed = 1, verbose = FALSE)
   gmod3p <- fbms(y ~ . - 1, family = "gaussian", beta_prior = list(type = "Jeffreys-BIC"), method = "gmjmcmc.parallel", data = data, transforms = "sin", params = params, probs = probs, P = 20, fixed = 1, verbose = FALSE)

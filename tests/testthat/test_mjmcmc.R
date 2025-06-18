@@ -6,6 +6,7 @@
 context("MJMCMC")
 
 test_that("Test (G)MJMCMC", {
+  RNGkind("L'Ecuyer-CMRG")
   set.seed(123)
   x <- matrix(rnorm(300), 100)
   y <- rnorm(100, 0, 0.5) + rowSums(x[, 1:2])
@@ -60,6 +61,7 @@ test_that("Test (G)MJMCMC", {
   validate.model(mod1, x, y)
   validate.model(mod1p, x, y)
 
+  set.seed(123)
   gmod1 <- gmjmcmc(x = x, y = y_sin, loglik.pi = gaussian.loglik, mlpost_params = mlpost_params, transforms = "sin", params = params, probs = probs, P = 20, intercept = FALSE, verbose = FALSE)
   gmod1p <- gmjmcmc.parallel(runs = 2, cores = 2, x = x, y = y_sin, loglik.pi = gaussian.loglik, mlpost_params = mlpost_params, transforms = "sin", params = params, probs = probs, intercept = FALSE, verbose = FALSE)
   validate.gmodel(gmod1, x, y_sin)
@@ -69,6 +71,7 @@ test_that("Test (G)MJMCMC", {
   mod2 <- mjmcmc(x = x, y = y_shift, loglik.pi = gaussian.loglik, mlpost_params = mlpost_params, intercept = TRUE)
   validate.model(mod2, x, y_shift)
 
+  set.seed(123)
   gmod2 <- gmjmcmc(x = x, y = y_sin_shift, loglik.pi = gaussian.loglik, mlpost_params = mlpost_params, transforms = "sin", params = params, probs = probs, intercept = TRUE, P = 20, verbose = FALSE)
   gmod2p <- gmjmcmc.parallel(runs = 2, cores = 2, x = x, y = y_sin_shift, loglik.pi = gaussian.loglik, mlpost_params = mlpost_params, transforms = "sin", params = params, probs = probs, intercept = TRUE, verbose = FALSE)
   validate.gmodel(gmod2, x, y_sin_shift)
@@ -78,6 +81,7 @@ test_that("Test (G)MJMCMC", {
   mod3 <- mjmcmc(x = cbind(1, x), y = y_shift, loglik.pi = gaussian.loglik, mlpost_params = mlpost_params, fixed = 1)
   validate.model(mod3, cbind(1, x), y_shift)
 
+  set.seed(123)
   gmod3 <- gmjmcmc(x = cbind(1, x), y = y_sin_shift, loglik.pi = gaussian.loglik, mlpost_params = mlpost_params, transforms = "sin", params = params, probs = probs, fixed = 1, intercept = FALSE, P = 20, verbose = FALSE)
   gmod3p <- gmjmcmc.parallel(runs = 2, cores = 2, x = cbind(1, x), y = y_sin_shift, loglik.pi = gaussian.loglik, mlpost_params = mlpost_params, transforms = "sin", params = params, probs = probs, fixed = 1, intercept = FALSE, verbose = FALSE)
   validate.gmodel(gmod3, cbind(1, x), y_sin_shift)
