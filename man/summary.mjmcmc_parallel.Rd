@@ -39,7 +39,7 @@ result <- mjmcmc.parallel(runs = 1,
 cores = 1,  
 y = matrix(rnorm(100), 100),
 x = matrix(rnorm(600), 100), 
-gaussian.loglik)
+loglik.pi = gaussian.loglik)
 summary(result)
 
 }

@@ -153,7 +153,7 @@ summary.gmjmcmc_merged <- function (object, tol = 0.0001, labels = FALSE, effect
 #' @examples
 #' result <- mjmcmc(y = matrix(rnorm(100), 100),
 #' x = matrix(rnorm(600), 100), 
-#' gaussian.loglik)
+#' loglik.pi = gaussian.loglik)
 #' summary(result)
 #'
 #' @export
@@ -185,7 +185,7 @@ summary.mjmcmc <- function (object, tol = 0.0001, labels = FALSE, effects = NULL
 #' cores = 1,  
 #' y = matrix(rnorm(100), 100),
 #' x = matrix(rnorm(600), 100), 
-#' gaussian.loglik)
+#' loglik.pi = gaussian.loglik)
 #' summary(result)
 #'
 #' @export

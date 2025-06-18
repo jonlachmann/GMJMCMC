@@ -546,7 +546,7 @@ plot.gmjmcmc <- function (x, count = "all", pop = "best", tol = 0.0000001, data 
 #' @return No return value, just creates a plot
 #'
 #' @examples
-#' result <- mjmcmc(y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100), gaussian.loglik)
+#' result <- mjmcmc(y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100), loglik.pi = gaussian.loglik)
 #' plot(result)
 #'
 #' @export 
@@ -588,7 +588,7 @@ marg.prob.plot <- function (feats.strings, marg.probs, count = "all", ...) {
 #' cores = 1, 
 #' y = matrix(rnorm(100), 100),
 #' x = matrix(rnorm(600), 100), 
-#' gaussian.loglik)
+#' loglik.pi = gaussian.loglik)
 #' plot(result)
 #' 
 #' @export 
@@ -667,7 +667,7 @@ plot.gmjmcmc_merged <- function (x, count = "all", pop = NULL,tol =  0.0000001, 
 #' cores = 1, 
 #' y = matrix(rnorm(100), 100),
 #' x = data, 
-#' gaussian.loglik)
+#' loglik.pi = gaussian.loglik)
 #' compute_effects(result,labels = names(data))
 #'
 #' @seealso \code{\link{predict}}

@@ -37,7 +37,7 @@ Function to print a quick summary of the results
 \examples{
 result <- mjmcmc(y = matrix(rnorm(100), 100),
 x = matrix(rnorm(600), 100), 
-gaussian.loglik)
+loglik.pi = gaussian.loglik)
 summary(result)
 
 }

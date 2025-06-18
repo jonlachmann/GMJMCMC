@@ -215,7 +215,7 @@ predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles =
 #' \item{quantiles}{Quantiles of aggregated predictions.}
 #' 
 #' @examples
-#' result <- mjmcmc(x = matrix(rnorm(600), 100),y = matrix(rnorm(100), 100), gaussian.loglik)
+#' result <- mjmcmc(x = matrix(rnorm(600), 100),y = matrix(rnorm(100), 100), loglik.pi = gaussian.loglik)
 #' preds <- predict(result, matrix(rnorm(600), 100))
 #' 
 #' @export
@@ -261,7 +261,7 @@ predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025
 #' cores = 1, 
 #' x = matrix(rnorm(600), 100),
 #' y = matrix(rnorm(100), 100), 
-#' gaussian.loglik)
+#' loglik.pi = gaussian.loglik)
 #' preds <- predict(result, matrix(rnorm(600), 100))
 #' 
 #' @export

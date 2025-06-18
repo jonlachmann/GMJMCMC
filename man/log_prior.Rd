@@ -26,6 +26,6 @@ Log model prior function
 \examples{
 log_prior(mlpost_params = list(r=2), complex = list(oc = 2))
 
-log_prior(paramsmlpost_params = list(r=2), complex = list(oc = 2))
+log_prior(mlpost_params = list(r=2), complex = list(oc = 2))
 
 }

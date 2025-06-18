@@ -10,7 +10,7 @@ gmjmcmc(
   transforms,
   P = 10,
   N = 100,
-  N.final = 100,
+  N.final = NULL,
   probs = NULL,
   params = NULL,
   loglik.pi = NULL,
@@ -35,7 +35,7 @@ A larger value like $P = 50$ might be more realistic for more complicated exampl
 
 \item{N}{The number of iterations per population (total iterations = (T - 1) * N + N.final)}
 
-\item{N.final}{The number of iterations for the final population (total iterations = (T - 1) * N + N.final)}
+\item{N.final}{The number of iterations for the final population if NULL (default) then set equal to N (total iterations = (T - 1) * N + N.final)}
 
 \item{probs}{A list of the various probability vectors to use}
 

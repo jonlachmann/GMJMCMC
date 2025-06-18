@@ -553,7 +553,7 @@ gaussian.loglik2.alpha <- function (a, data, mu_func) {
 #' @return A numeric with the log model prior.
 #'
 #' @examples
-#' log_prior(paramsmlpost_params = list(r=2), complex = list(oc = 2))
+#' log_prior(mlpost_params = list(r=2), complex = list(oc = 2))
 #'
 #' @export log_prior
 log_prior <- function (mlpost_params, complex) {

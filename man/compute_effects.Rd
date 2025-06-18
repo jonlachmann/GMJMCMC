@@ -28,7 +28,7 @@ result <- mjmcmc.parallel(runs = 2,
 cores = 1, 
 y = matrix(rnorm(100), 100),
 x = data, 
-gaussian.loglik)
+loglik.pi = gaussian.loglik)
 compute_effects(result,labels = names(data))
 
 }

@@ -35,7 +35,7 @@ A list containing aggregated predictions.
 Predict using a mjmcmc result object.
 }
 \examples{
-result <- mjmcmc(x = matrix(rnorm(600), 100),y = matrix(rnorm(100), 100), gaussian.loglik)
+result <- mjmcmc(x = matrix(rnorm(600), 100),y = matrix(rnorm(100), 100), loglik.pi = gaussian.loglik)
 preds <- predict(result, matrix(rnorm(600), 100))
 
 }
