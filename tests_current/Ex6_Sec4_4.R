@@ -82,7 +82,7 @@ set.seed(5001)
 
 
 if (use.fbms) {
-  result = fbms(data = df.training, method = "gmjmcmc", transforms = transforms, beta_prior = list(type = "g-prior", g = 20),
+  result = fbms(formula = Rings~1+., data = df.training, method = "gmjmcmc", transforms = transforms, beta_prior = list(type = "g-prior", g = 20),
                  probs = probs, params = params)
 } else {
   result = gmjmcmc(x = df.training[, -1], y = df.training[, 1], transforms = transforms, probs = probs, mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior", g = 20)), params = params)
@@ -116,7 +116,7 @@ plot(pred$aggr$mean, df.test$Rings)
 set.seed(5003)
 
 if (use.fbms) {
-  result_parallel = fbms(data = df.training, method = "gmjmcmc.parallel", runs = 10, cores = 10, beta_prior = list(type = "g-prior",g = 20),
+  result_parallel = fbms(formula = Rings~1+., data = df.training, method = "gmjmcmc.parallel", runs = 10, cores = 10, beta_prior = list(type = "g-prior",g = 20),
                           transforms = transforms, probs = probs, params = params, P=25)
 } else {
   result_parallel =  gmjmcmc.parallel(runs = 10, cores = 10, x = df.training[, -1], y = df.training[, 1],
@@ -149,6 +149,7 @@ abline(0,1)
 #   Using method 3 to estimate alpha
 #
 #############################################################################
+#error on deep!
 params$feat$alpha = "deep"
 #params$feat$alpha = "random"
 
@@ -157,7 +158,7 @@ set.seed(5003)
 
 
 if (use.fbms) {
-  result.a3 = fbms(data = df.training, method = "gmjmcmc", transforms = transforms, beta_prior = list(type = "g-prior",g = 20), 
+  result.a3 = fbms(formula = Rings~1+., data = df.training, method = "gmjmcmc", transforms = transforms, beta_prior = list(type = "g-prior",g = 20), 
                  probs = probs, params = params)
 } else {
   result.a3 = gmjmcmc(x = df.training[, -1], y = df.training[, 1], transforms = transforms, probs = probs, mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior", g = 20)), params = params)
@@ -176,9 +177,9 @@ plot(pred.a3$aggr$mean, df.test$Rings)
 preds = predict(get.best.model(result.a3), df.test[, -1])
 pred.RMSE.best[3] = sqrt(mean((preds - df.test$Rings)^2))
 
-#not yet applicable to the deep method
-#preds = predict(get.mpm.model(result.a3, y = df.training$Rings, x = df.training[, -1]), df.test[, -1])
-#pred.RMSE.mpm[3] =  NA#sqrt(mean((preds - df.test$Rings)^2))
+
+preds = predict(get.mpm.model(result.a3, y = df.training$Rings, x = df.training[, -1]), df.test[, -1])
+pred.RMSE.mpm[3] =  sqrt(mean((preds - df.test$Rings)^2))
 
 
 

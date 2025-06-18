@@ -53,7 +53,7 @@ transforms <- c("sigmoid","sin_deg","exp_dbl","p0","troot","to3")
 
 set.seed(123)
 if (use.fbms) {
-  result <- fbms(data = df, beta_prior = list(type = "Jeffreys-BIC", var = 1), method = "gmjmcmc", transforms = transforms, P = 40)
+  result <- fbms(formula = Y~1+., data = df, beta_prior = list(type = "Jeffreys-BIC", var = 1), method = "gmjmcmc", transforms = transforms, P = 40)
 } else {
   result <- gmjmcmc(x = df[-1], y = df[,1], transforms =  transforms,mlpost_params = list(family = "gaussian", beta_prior = list(type = "Jeffreys-BIC", var = 1)), P = 40)
 }
@@ -62,11 +62,11 @@ summary(result)
 
 set.seed(123)
 if (use.fbms) {
-  result2 <- result <- fbms(data = df, beta_prior = list(type = "Jeffreys-BIC", var = 1), method = "gmjmcmc", transforms = transforms, 
-                           N = 1000, N.final = 5000, P = 40)
+  result2 <- result <- fbms(formula = Y~1+., data = df, beta_prior = list(type = "Jeffreys-BIC", var = 1), method = "gmjmcmc", transforms = transforms, 
+                           N = 1000, N.final = 1000, P = 40)
 } else {
   result2 <- gmjmcmc(y = df[,1],x = df[-1], transforms = transforms, mlpost_params = list(family = "gaussian", beta_prior = list(type = "Jeffreys-BIC", var = 1)),
-                     N = 1000, N.final = 5000, P = 40)
+                     N = 1000, N.final = 1000, P = 40)
 }
 summary(result2)
 
@@ -78,8 +78,6 @@ summary(result2)
 #  Model which includes no non-linear effects
 #
 #
-
-
 
 
 probs.lin <- gen.probs.mjmcmc()

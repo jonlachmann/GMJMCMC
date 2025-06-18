@@ -66,7 +66,7 @@ sqrt(mean((preds - df.test$semimajoraxis)^2))
 set.seed(123)
 
 if (use.fbms) {
- result.P50 <- fbms(data = df.train, method = "gmjmcmc", transforms = transforms,
+ result.P50 <- fbms(formula = semimajoraxis ~ 1 + .,data = df.train, method = "gmjmcmc", transforms = transforms,
                     P = 50, N = 1000, N.final = 1000, params = params)
 } else {
  result.P50 <- gmjmcmc(x = df.train[, -1], y = df.train[, 1], intercept = TRUE, transforms = transforms,
@@ -82,7 +82,7 @@ summary(result.P50, labels = names(df.train)[-1])
 
 set.seed(123)
 if (use.fbms) {
- result_parallel <- fbms(data = df.train, method = "gmjmcmc.parallel", transforms = transforms,
+ result_parallel <- fbms(formula = semimajoraxis ~ 1 + .,data = df.train, method = "gmjmcmc.parallel", transforms = transforms,
                          runs = 50, cores = 10, P = 25, params = params)
 } else {
  result_parallel <- gmjmcmc.parallel(runs = 50, cores = 10, x = df.train[, -1], y = df.train[, 1], intercept = TRUE,
