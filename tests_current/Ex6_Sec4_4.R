@@ -167,7 +167,7 @@ summary(result.a3)
 
 
 
-pred.a3 = predict(result.a3, x =  df.test[,-1], link = function(x)(x))  
+pred.a3 = predict(result.a3, x =  df.test[,-1], link = function(x)(x))
 
 pred.RMSE[3] = sqrt(mean((pred.a3$aggr$mean - df.test$Rings)^2))
 
@@ -179,7 +179,7 @@ pred.RMSE.best[3] = sqrt(mean((preds - df.test$Rings)^2))
 
 
 preds = predict(get.mpm.model(result.a3, y = df.training$Rings, x = df.training[, -1]), df.test[, -1])
-pred.RMSE.mpm[3] =  sqrt(mean((preds - df.test$Rings)^2))
+pred.RMSE.mpm[3] = sqrt(mean((preds - df.test$Rings)^2))
 
 
 

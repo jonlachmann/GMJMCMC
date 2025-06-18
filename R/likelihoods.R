@@ -512,7 +512,7 @@ logistic.loglik.ala <- function (y, x, model, complex, mlpost_params = list(r = 
 #' @export logistic.loglik.alpha
 logistic.loglik.alpha <- function (a, data, mu_func) {
   m <- 1 / (1 + exp(-eval(parse(text = mu_func))))
-  -sum((data[,1] * log(m) + (1 - data[, 1]) * log(1 - m)))
+  -sum((data$y[,1] * log(m) + (1 - data$y[, 1]) * log(1 - m)))
 }
 
 
@@ -532,8 +532,8 @@ logistic.loglik.alpha <- function (a, data, mu_func) {
 #'}
 #' @export gaussian.loglik.alpha
 gaussian.loglik.alpha <- function (a, data, mu_func) {
-  m <- eval(parse(text=mu_func))
-  sum((data[,1]-m)^2)
+  m <- eval(parse(text = mu_func))
+  sum((data$y[, 1] - m)^2)
 }
 
 
