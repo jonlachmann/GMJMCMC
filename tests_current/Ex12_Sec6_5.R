@@ -51,11 +51,11 @@ probs <- gen.probs.gmjmcmc(transforms)
 
 
 #specify the estimator function for cox 
-surv.pseudo.loglik = function(y, x, model, complex, params){
+surv.pseudo.loglik = function(y, x, model, complex, mlpost_params){
   
-  if(length(params$r)==0)
-    params$r = 0.5
-  data <- data.frame(time = params$time, cens = y, as.matrix(x[,model]))[,-3]  # Removing intercept
+  if(length(mlpost_params$r)==0)
+    mlpost_params$r = 0.5
+  data <- data.frame(time = mlpost_params$time, cens = y, as.matrix(x[,model]))[,-3]  # Removing intercept
   if(dim(data)[2]==2)
   {  
     return(list(crit=-10000, coefs=rep(0,1)))
@@ -68,8 +68,8 @@ surv.pseudo.loglik = function(y, x, model, complex, params){
      mloglik <- (out$loglik[2] - out$loglik[1]) -  log(length(y)) * (dim(data)[2] - 2)/2   
      
      # logarithm of model prior
-     if (length(params$r) == 0)  params$r <- 1/dim(x)[1]  # default value or parameter r
-     lp <- log_prior(params, complex)
+     if (length(mlpost_params$r) == 0)  mlpost_params$r <- 1/dim(x)[1]  # default value or parameter r
+     lp <- log_prior(mlpost_params, complex)
      
      return(list(crit = mloglik + lp, coefs =  c(0,out$coefficients)))
      
@@ -80,7 +80,7 @@ surv.pseudo.loglik = function(y, x, model, complex, params){
 #Single chain analysis (just to illustrate that it works)
 set.seed(5)
 if (use.fbms) {
-  result <- fbms(data = df.train[,-1], family = "custom", loglik.pi = surv.pseudo.loglik, 
+  result <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], family = "custom", loglik.pi = surv.pseudo.loglik, 
                                  method = "gmjmcmc",
                                  model_prior = list(r = 0.5, time = time),
                                  transforms = transforms,
@@ -117,7 +117,7 @@ set.seed(15)
 probs$gen <- c(1,1,1,1)
 
 if (use.fbms) {
-  result <- fbms(data = df.train[,-1], family = "custom", loglik.pi = surv.pseudo.loglik, 
+  result2 <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], family = "custom", loglik.pi = surv.pseudo.loglik, 
                 method = "gmjmcmc.parallel",
                 model_prior = list(r = 0.5, time = time),
                 runs = 80, cores = 40,
@@ -154,12 +154,12 @@ set.seed(25)
 probs$gen <- c(0,0,0,1)
 
 if (use.fbms) {
-  result3 <- fbms(data = df.train[,-1], family = "custom", loglik.pi = surv.pseudo.loglik, 
+  result3 <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], family = "custom", loglik.pi = surv.pseudo.loglik, 
                  method = "gmjmcmc.parallel",
                  model_prior = list(r = 0.5, time = time),
                  runs = 80, cores = 40,
                  transforms = transforms,
-                 params = params, P = 25)
+                 params = params,probs = probs, P = 25)
 } else { 
   result3 <- gmjmcmc.parallel(runs = 80, cores = 40, x = df.train[, -(1:2)], y = df.train[, 2],
                   loglik.pi = surv.pseudo.loglik, 
@@ -192,12 +192,12 @@ linpreds3.best <- predict(get.best.model(result3),df.test[,-(1:2)], link = funct
 set.seed(35)
 probs$gen <- c(0,1,0,1)
 if (use.fbms) {
-  result4 <- fbms(data = df.train[,-1], family = "custom", loglik.pi = surv.pseudo.loglik, 
+  result4 <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], family = "custom", loglik.pi = surv.pseudo.loglik, 
                   method = "gmjmcmc.parallel",
                   model_prior = list(r = 0.5, time = time),
                   runs = 80, cores = 40,
                   transforms = transforms,
-                  params = params, P = 25)
+                  params = params, probs = probs, P = 25)
 } else { 
   result4 <- gmjmcmc.parallel(runs = 80, cores = 40, x = df.train[, -(1:2)], y = df.train[, 2],
                               loglik.pi = surv.pseudo.loglik, 

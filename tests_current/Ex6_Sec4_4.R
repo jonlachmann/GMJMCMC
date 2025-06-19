@@ -195,7 +195,7 @@ params$feat$alpha = "random"
 set.seed(5004)
 
 if (use.fbms) {
-  result_parallel.a3 = fbms(data = df.training, method = "gmjmcmc.parallel", beta_prior = list(type = "g-prior",g = 20), runs = 10, cores = 10,
+  result_parallel.a3 = fbms(formula = Rings~1+., data = df.training, method = "gmjmcmc.parallel", beta_prior = list(type = "g-prior",g = 20), runs = 10, cores = 10,
                           transforms = transforms, probs = probs, params = params, P=25)
 } else {
   result_parallel.a3 =  gmjmcmc.parallel(runs = 10, cores = 10, x = df.training[, -1], y = df.training[, 1], mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior", g = 20)),
@@ -212,8 +212,8 @@ pred.RMSE[4] = sqrt(mean((pred_parallel.a3$aggr$mean - df.test$Rings)^2))
 preds = predict(get.best.model(result_parallel.a3), df.test[, -1])
 pred.RMSE.best[4] = sqrt(mean((preds - df.test$Rings)^2))
 
-#preds = predict(get.mpm.model(result_parallel, y = df.training$Rings, x = df.training[, -1]), df.test[, -1])
-pred.RMSE.mpm[4] = NA #sqrt(mean((preds - df.test$Rings)^2))
+preds = predict(get.mpm.model(result_parallel, y = df.training$Rings, x = df.training[, -1]), df.test[, -1])
+pred.RMSE.mpm[4] = sqrt(mean((preds - df.test$Rings)^2))
 
 
 plot(pred_parallel.a3$aggr$mean, df.test$Rings)
@@ -234,7 +234,7 @@ probs$gen = c(0,1,0,1) #Only modifications!
 set.seed(50005)
 
 if (use.fbms) {
-  result.fp = fbms(data = df.training, method = "gmjmcmc.parallel", runs = 10, cores = 10, beta_prior = list(type = "g-prior", g = 20),
+  result.fp = fbms(formula = Rings~1+., data = df.training, method = "gmjmcmc.parallel", runs = 10, cores = 10, beta_prior = list(type = "g-prior", g = 20),
                              transforms = transforms, probs = probs, params = params, P=25)
 } else {
   result.fp = gmjmcmc.parallel(runs = 40, cores = 40, x = df.training[, -1], y = df.training[, 1], 

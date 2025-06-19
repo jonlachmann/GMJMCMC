@@ -43,12 +43,12 @@ params$feat$pop.max = 10
 
 #estimator function with lme4
 
-mixed.model.loglik.lme4 <- function (y, x, model, complex, params) 
+mixed.model.loglik.lme4 <- function (y, x, model, complex, mlpost_params) 
 {
   
   if (sum(model) > 1) {
     x.model = x[,model]
-    data <- data.frame(y, x = x.model[,-1], dr = params$dr)
+    data <- data.frame(y, x = x.model[,-1], dr = mlpost_params$dr)
 
 #    mm <- NULL
 #    #importance with error handling for unstable libraries that one does not trust 100%
@@ -62,14 +62,14 @@ mixed.model.loglik.lme4 <- function (y, x, model, complex, params)
 #    })
     mm <- lmer(as.formula(paste0("y ~ 1 +",paste0(names(data)[2:(dim(data)[2]-1)],collapse = "+"), "+ (1 | dr)")), data = data, REML = FALSE)
   } else{   #model without fixed effects
-    data <- data.frame(y, dr = params$dr)
+    data <- data.frame(y, dr = mlpost_params$dr)
     mm <- lmer(as.formula(paste0("y ~ 1 + (1 | dr)")), data = data, REML = FALSE)
   }
     
     
    # logarithm of model prior
-  if (length(params$r) == 0)  params$r <- 1/dim(x)[1]  # default value or parameter r
-  lp <- log_prior(params, complex)
+  if (length(mlpost_params$r) == 0)  mlpost_params$r <- 1/dim(x)[1]  # default value or parameter r
+  lp <- log_prior(mlpost_params, complex)
   
   mloglik <- as.numeric(logLik(mm))  -  0.5*log(length(y)) * (dim(data)[2] - 2) #Laplace approximation for beta prior
   
@@ -81,21 +81,21 @@ mixed.model.loglik.lme4 <- function (y, x, model, complex, params)
 
 
 
-mixed.model.loglik.inla <- function (y, x, model, complex, params) 
+mixed.model.loglik.inla <- function (y, x, model, complex, mlpost_params) 
 {
   if(sum(model)>1)
   {
-    data1 = data.frame(y, as.matrix(x[,model]), params$dr)
-    formula1 = as.formula(paste0(names(data1)[1],"~",paste0(names(data1)[3:(dim(data1)[2]-1)],collapse = "+"),"+ f(params.dr,model = \"iid\")"))
+    data1 = data.frame(y, as.matrix(x[,model]), mlpost_params$dr)
+    formula1 = as.formula(paste0(names(data1)[1],"~",paste0(names(data1)[3:(dim(data1)[2]-1)],collapse = "+"),"+ f(mlpost_params.dr,model = \"iid\")"))
   } else
   {
-    data1 = data.frame(y, params$dr)
-    formula1 = as.formula(paste0(names(data1)[1],"~","1 + f(params.dr,model = \"iid\")"))
+    data1 = data.frame(y, mlpost_params$dr)
+    formula1 = as.formula(paste0(names(data1)[1],"~","1 + f(mlpost_params.dr,model = \"iid\")"))
   }
   
   #to make sure inla is not stuck
   inla.setOption(inla.timeout=30)
-  inla.setOption(num.threads=params$INLA.num.threads) 
+  inla.setOption(num.threads=mlpost_params$INLA.num.threads) 
   
   mod<-NULL
   #importance with error handling for unstable libraries that one does not trust 100%
@@ -111,8 +111,8 @@ mixed.model.loglik.inla <- function (y, x, model, complex, params)
   })
   
   # logarithm of model prior
-  if (length(params$r) == 0)  params$r <- 1/dim(x)[1]  # default value or parameter r
-  lp <- log_prior(params, complex)
+  if (length(mlpost_params$r) == 0)  mlpost_params$r <- 1/dim(x)[1]  # default value or parameter r
+  lp <- log_prior(mlpost_params, complex)
   
   if(length(mod)<3||length(mod$mlik[1])==0) {
     return(list(crit = -10000 + lp,coefs = rep(0,dim(data1)[2]-2)))
@@ -125,10 +125,10 @@ mixed.model.loglik.inla <- function (y, x, model, complex, params)
 
 #estimator function with RTMB
 
-mixed.model.loglik.rtmb <- function (y, x, model, complex, params) 
+mixed.model.loglik.rtmb <- function (y, x, model, complex, mlpost_params) 
 {
   
-  z = model.matrix(y~params$dr) #Design matrix for random effect
+  z = model.matrix(y~mlpost_params$dr) #Design matrix for random effect
 
   msize = sum(model)
   #Set up and estimate model
@@ -136,7 +136,7 @@ mixed.model.loglik.rtmb <- function (y, x, model, complex, params)
   par = list(logsd_eps = 0,
              logsd_dr = 0,
              beta = rep(0,msize),
-             u = rep(0,params$nr_dr))
+             u = rep(0,mlpost_params$nr_dr))
   
   
   nll = function(par){
@@ -161,8 +161,8 @@ mixed.model.loglik.rtmb <- function (y, x, model, complex, params)
   opt <- nlminb ( obj$par , obj$fn , obj$gr, control = list(iter.max = 10))
 
   # logarithm of model prior
-  if (length(params$r) == 0)  params$r <- 1/dim(x)[1]  # default value or parameter r
-  lp <- log_prior(params, complex)
+  if (length(mlpost_params$r) == 0)  mlpost_params$r <- 1/dim(x)[1]  # default value or parameter r
+  lp <- log_prior(mlpost_params, complex)
   
 #  if(length(beta)==0) {
 #    return(list(crit = -10000 + lp,coefs = rep(0,dim(data1)[2]-2)))
@@ -184,7 +184,7 @@ set.seed(03052024)
 
 tic()
 if (use.fbms) {
-  result1a <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.lme4,
+  result1a <- fbms(formula = z ~ 1+., data = df, family = "custom", loglik.pi = mixed.model.loglik.lme4,
                   model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0)), method = "gmjmcmc", 
                   transforms = transforms, N = 30,
                   probs = probs, params = params, P=3)
@@ -202,7 +202,7 @@ summary(result1a, labels = names(df)[-1])
 
 tic()
 if (use.fbms) {
-  result1b <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.inla,
+  result1b <- fbms(formula = z ~ 1+., data = df, family = "custom", loglik.pi = mixed.model.loglik.inla,
                    model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 10), method = "gmjmcmc", 
                    transforms = transforms, N = 30,
                    probs = probs, params = params, P=3)
@@ -216,7 +216,7 @@ time.inla = toc()
 
 tic()
 if (use.fbms) {
-  result1c <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.rtmb, method = "gmjmcmc", 
+  result1c <- fbms(formula = z ~ 1+., data = df, family = "custom", loglik.pi = mixed.model.loglik.rtmb, method = "gmjmcmc", 
                    model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0)),
                    transforms = transforms, N = 30,
                    probs = probs, params = params, P=3)
@@ -242,7 +242,7 @@ set.seed(20062024)
 params$feat$pop.max = 10
 
 if (use.fbms) {
-  result2a <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.lme4, method = "gmjmcmc.parallel", 
+  result2a <- fbms(formula = z ~ 1+., data = df, family = "custom", loglik.pi = mixed.model.loglik.lme4, method = "gmjmcmc.parallel", 
                    model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0)),
                    transforms = transforms, N = 100,runs = 40, cores = 40,
                    probs = probs, params = params, P=25)
@@ -261,7 +261,7 @@ summary(result2a,tol = 0.05,labels=names(df)[-1])
 set.seed(21062024)
 
 if (use.fbms) {
-  result2b <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.lme4, method = "gmjmcmc.parallel", 
+  result2b <- fbms(formula = z ~ 1+., data = df, family = "custom", loglik.pi = mixed.model.loglik.lme4, method = "gmjmcmc.parallel", 
                    model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0)),
                    transforms = transforms, N = 100,runs = 120, cores = 40,
                    probs = probs, params = params, P=25)
@@ -285,7 +285,7 @@ set.seed(03072024)
 
 
 if (use.fbms) {
-  result2c <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.lme4, method = "gmjmcmc.parallel", 
+  result2c <- fbms(formula = z ~ 1+., data = df, family = "custom", loglik.pi = mixed.model.loglik.lme4, method = "gmjmcmc.parallel", 
                    model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0)),
                    transforms = transforms, N = 100,runs = 200, cores = 40,
                    probs = probs, params = params, P=25)
@@ -318,7 +318,7 @@ set.seed(22052024)
 
 # Number of threads used by INLA set to 1
 if (use.fbms) {
-  result2aI <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.inla, method = "gmjmcmc.parallel", 
+  result2aI <- fbms(formula = z ~ 1+., data = df, family = "custom", loglik.pi = mixed.model.loglik.inla, method = "gmjmcmc.parallel", 
                    model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 1),
                    transforms = transforms, N = 100,runs = 40, cores = 40,
                    probs = probs, params = params, P=25)
@@ -342,7 +342,7 @@ params$feat$check.col = F
 set.seed(20062024)
 # Number of threads used by INLA set to 1
 if (use.fbms) {
-  result2bI <- fbms(data = df, family = "custom", loglik.pi = mixed.model.loglik.inla, method = "gmjmcmc.parallel", 
+  result2bI <- fbms(formula = z ~ 1+., data = df, family = "custom", loglik.pi = mixed.model.loglik.inla, method = "gmjmcmc.parallel", 
                     model_prior = list(r = 1/dim(df)[1], dr = droplevels(Zambia$dr), nr_dr =  sum((table(Zambia$dr))>0),INLA.num.threads = 1),
                     transforms = transforms, N = 100,runs = 100, cores = 20,
                     probs = probs, params = params, P=25)

@@ -38,22 +38,22 @@ params$sa$t.min <- 0.1
 params$sa$dt <- 10
 
 #estimator function
-poisson.loglik.inla <- function (y, x, model, complex, params) 
+poisson.loglik.inla <- function (y, x, model, complex, mlpost_params) 
 {
 
   if(sum(model)>1)
   {
-    data1 <- data.frame(y, as.matrix(x[,model]), params$PID)
-    formula1 <- as.formula(paste0(names(data1)[1],"~",paste0(names(data1)[3:(dim(data1)[2]-1)],collapse = "+"),"+ f(params.PID,model = \"iid\")"))
+    data1 <- data.frame(y, as.matrix(x[,model]), mlpost_params$PID)
+    formula1 <- as.formula(paste0(names(data1)[1],"~",paste0(names(data1)[3:(dim(data1)[2]-1)],collapse = "+"),"+ f(mlpost_params.PID,model = \"iid\")"))
   } else
   {
-    data1 <- data.frame(y, params$PID)
-    formula1 <- as.formula(paste0(names(data1)[1],"~","1 + f(params.PID,model = \"iid\")"))
+    data1 <- data.frame(y, mlpost_params$PID)
+    formula1 <- as.formula(paste0(names(data1)[1],"~","1 + f(mlpost_params.PID,model = \"iid\")"))
   }
   
   #to make sure inla is not stuck
   inla.setOption(inla.timeout=30)
-  inla.setOption(num.threads=params$INLA.num.threads) 
+  inla.setOption(num.threads=mlpost_params$INLA.num.threads) 
   
   mod<-NULL
   
@@ -68,8 +68,8 @@ poisson.loglik.inla <- function (y, x, model, complex, params)
   })
   
   # logarithm of model prior
-  if (length(params$r) == 0)  params$r <- 1/dim(x)[1]  # default value or parameter r
-  lp <- log_prior(params, complex)
+  if (length(mlpost_params$r) == 0)  mlpost_params$r <- 1/dim(x)[1]  # default value or parameter r
+  lp <- log_prior(mlpost_params, complex)
   
   if(length(mod)<3||length(mod$mlik[1])==0) {
     return(list(crit = -10000 + lp,coefs = rep(0,dim(data1)[2]-2)))
@@ -83,7 +83,7 @@ set.seed(03052024)
 #specify indices for a random effect
 
 if (use.fbms) {
-  result <- fbms(data = df, family = "custom", loglik.pi = poisson.loglik.inla,
+  result <- fbms(formula = y ~ 1 + ., data = df, family = "custom", loglik.pi = poisson.loglik.inla,
                  model_prior = list(r = 1/dim(df)[1],PID = data$Ind, INLA.num.threads = 10),
                  method = "gmjmcmc", 
                  transforms = transforms, probs = probs, params = params, P=3)
@@ -103,7 +103,7 @@ set.seed(23052024)
 tic()
 # Number of threads used by INLA set to 1 to avoid conflicts between two layers of parallelization
 if (use.fbms) {
-  result2 <- fbms(data = df, family = "custom", loglik.pi = poisson.loglik.inla,
+  result2 <- fbms(formula = y ~ 1 + ., data = df, family = "custom", loglik.pi = poisson.loglik.inla,
                   model_prior = list(r = 1/dim(df)[1],PID = data$Ind, INLA.num.threads = 1),
                   method = "gmjmcmc.parallel", runs = 40, cores = 40, 
                   transforms = transforms, probs = probs, params = params, P=25)

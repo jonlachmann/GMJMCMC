@@ -55,20 +55,18 @@ params$feat$L <- 15
 #############################################################################
 
 
-estimate.logic.lm = function(y, x, model, complex, params)
+estimate.logic.lm = function(y, x, model, complex, mlpost_params)
 {
   
-  if (length(params) == 0) 
-    params <- list(r = 1/dim(x)[1]) 
+  if (length(mlpost_params) == 0) 
+    mlpost_params <- list(r = 1/dim(x)[1]) 
   suppressWarnings({
     mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())
   })
   
   wj <- complex$width
  
-  lp <- sum(log(factorial(wj))) - sum(wj*log(params$p) + (2*wj-2)*log(2))
-  
-  #print(lp)
+  lp <- sum(log(factorial(wj))) - sum(wj*log(mlpost_params$p) + (2*wj-2)*log(2))
   
   mloglik <- -(mod$aic + (log(length(y))-2) * (mod$rank))/2 
   
@@ -91,7 +89,7 @@ estimate.logic.lm = function(y, x, model, complex, params)
 set.seed(5001)
 
 if (use.fbms) {
-  result <- fbms(data = df.training, family = "custom", loglik.pi = estimate.logic.lm,N = 500,N.final = 500, P = 25,
+  result <- fbms(formula = Y2~1+., data = df.training, family = "custom", loglik.pi = estimate.logic.lm,N = 500,N.final = 500, P = 25,
                  method = "gmjmcmc", model_prior = list(p = 50), beta_prior = NULL, transforms = transforms, 
                  probs = probs, params = params)
 } else {
@@ -142,7 +140,7 @@ points(pred_mpm,df.test$Mean,col = 4)
 set.seed(5002)
 
 if (use.fbms) {
-  result_parallel <- fbms(data = df.training, family = "custom", loglik.pi = estimate.logic.lm, N = 500, N.final = 500,
+  result_parallel <- fbms(formula = Y2~1+.,data = df.training, family = "custom", loglik.pi = estimate.logic.lm, N = 500, N.final = 500,
                           method = "gmjmcmc.parallel",model_prior = list(p = 50), beta_prior = NULL, runs = 16, cores = 8,
                           transforms = transforms, probs = probs, params = params, P=25)
 } else {
@@ -194,20 +192,20 @@ params <- gen.params.gmjmcmc(ncol(df.training) - 1)
 params$feat$pop.max <- 51
 
 library(BAS) #needed for hypergeometric functions
-estimate.logic.tcch = function(y, x, model, complex, params)
+estimate.logic.tcch = function(y, x, model, complex, mlpost_params)
 {
   
-  if (length(params) == 0) 
-    params <- list(r = 1 / dim(x)[1])
+  if (length(mlpost_params) == 0) 
+    mlpost_params <- list(r = 1 / dim(x)[1])
   suppressWarnings({
     mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())
   })
   
   wj <- complex$width
   
-  lp <- sum(log(factorial(wj))) - sum(wj*log(params$p) + (2*wj-2)*log(2))
+  lp <- sum(log(factorial(wj))) - sum(wj*log(mlpost_params$p) + (2*wj-2)*log(2))
   
-  p.v <- (params$n+1)/(mod$rank+1)
+  p.v <- (mlpost_params$n+1)/(mod$rank+1)
   
   y_mean <- mean(y)
   TSS <- sum((y - y_mean)^2)
@@ -215,11 +213,11 @@ estimate.logic.tcch = function(y, x, model, complex, params)
   R.2 <- 1 - (RSS / TSS)
   p <- mod$rank
   
-  mloglik = (-0.5*p*log(p.v) -0.5*(params$n-1)*log(1-(1-1/p.v)*R.2) + log(beta((params$p.a+p)/2,params$p.b/2)) - log(beta(params$p.a/2,params$p.b/2)) + log(phi1(params$p.b/2,(params$n-1)/2,(params$p.a+params$p.b+p)/2,params$p.s/2/p.v,R.2/(p.v-(p.v-1)*R.2))) - hypergeometric1F1(params$p.b/2,(params$p.a+params$p.b)/2,params$p.s/2/p.v,log = T)) 
+  mloglik = (-0.5*p*log(p.v) -0.5*(mlpost_params$n-1)*log(1-(1-1/p.v)*R.2) + log(beta((mlpost_params$p.a+p)/2,mlpost_params$p.b/2)) - log(beta(mlpost_params$p.a/2,mlpost_params$p.b/2)) + log(phi1(mlpost_params$p.b/2,(mlpost_params$n-1)/2,(mlpost_params$p.a+mlpost_params$p.b+p)/2,mlpost_params$p.s/2/p.v,R.2/(p.v-(p.v-1)*R.2))) - hypergeometric1F1(mlpost_params$p.b/2,(mlpost_params$p.a+mlpost_params$p.b)/2,mlpost_params$p.s/2/p.v,log = T)) 
   if(mloglik ==-Inf||is.na(mloglik )||is.nan(mloglik ))
     mloglik  = -10000
   
-  logpost <- mloglik + lp + params$n
+  logpost <- mloglik + lp + mlpost_params$n
   
   if(logpost==-Inf)
     logpost = -10000
@@ -231,7 +229,7 @@ estimate.logic.tcch = function(y, x, model, complex, params)
 set.seed(5001)
 
 if (use.fbms) {
-  result <- fbms(data = df.training, family = "custom", loglik.pi = estimate.logic.tcch,N = 500,N.final = 500, P = 25,
+  result <- fbms(formula = Y2~1+.,data = df.training, family = "custom", loglik.pi = estimate.logic.tcch,N = 500,N.final = 500, P = 25,
                  method = "gmjmcmc", transforms = transforms, 
                  probs = probs,model_prior = list(p = 50,n = n),beta_prior =  list(p.a = 1, p.b = 1, p.r = 1.5, p.s = 0, p.k = 1), params = params)
 } else {
@@ -275,7 +273,7 @@ points(pred_mpm,df.test$Mean,col = 4)
 set.seed(5002)
 
 if (use.fbms) {
-  result_parallel <- fbms(data = df.training, family = "custom", loglik.pi = estimate.logic.tcch,N = 500,N.final = 500,
+  result_parallel <- fbms(formula = Y2~1+.,data = df.training, family = "custom", loglik.pi = estimate.logic.tcch,N = 500,N.final = 500,
                           method = "gmjmcmc.parallel", runs = 16, cores = 8, model_prior = list(p = 50,n = n),beta_prior =  list(p.a = 1, p.b = 1, p.r = 1.5, p.s = 0, p.k = 1),
                           transforms = transforms, probs = probs, params = params, P=25)
 } else {

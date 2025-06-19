@@ -35,28 +35,28 @@ params <- gen.params.gmjmcmc(ncol(df) - 1)
 transforms <- c("sigmoid","pm1","p0","p05","p2","p3")
 probs <- gen.probs.gmjmcmc(transforms)
 
-logistic.posterior.bic.irlssgd <- function (y, x, model, complex, params) 
+logistic.posterior.bic.irlssgd <- function (y, x, model, complex, mlpost_params) 
 {
-  if (!is.null(params$crit)) {
-    mod <- glm.sgd(x[,model], y, binomial(), sgd.ctrl = list(start=params$coefs, subs=params$subs, maxit=10, alpha=0.00008, decay=0.99, histfreq=10))
+  if (!is.null(mlpost_params$crit)) {
+    mod <- glm.sgd(x[,model], y, binomial(), sgd.ctrl = list(start=mlpost_params$coefs, subs=mlpost_params$subs, maxit=10, alpha=0.00008, decay=0.99, histfreq=10))
     mod$deviance <- get_deviance(mod$coefficients, x[,model], y, binomial())
     mod$rank <- length(mod$coefficients)
   } else {
     mod <- irls.sgd(as.matrix(x[,model]), y, binomial(),
-                  irls.control=list(subs=params$subs, maxit=20, tol=1e-7, cooling = c(1,0.9,0.75), expl = c(3,1.5,1)),
-                  sgd.control=list(subs=params$subs, maxit=250, alpha=0.001, decay=0.99, histfreq=10))
+                  irls.control=list(subs=mlpost_params$subs, maxit=20, tol=1e-7, cooling = c(1,0.9,0.75), expl = c(3,1.5,1)),
+                  sgd.control=list(subs=mlpost_params$subs, maxit=250, alpha=0.001, decay=0.99, histfreq=10))
   }
   
   # logarithm of marginal likelihood
   mloglik <- -mod$deviance / 2 - 0.5 * log(length(y)) * (mod$rank - 1)
     
   # logarithm of model prior
-  if (length(params$r) == 0)  params$r <- 1/dim(x)[1]  # default value or parameter r
-  lp <- log_prior(params, complex)
+  if (length(mlpost_params$r) == 0)  mlpost_params$r <- 1/dim(x)[1]  # default value or parameter r
+  lp <- log_prior(mlpost_params, complex)
   crit <- mloglik + lp
 
-  if (!is.null(params$crit) && params$crit > crit) {
-    return(list(crit = params$crit, coefs = params$coefs))
+  if (!is.null(mlpost_params$crit) && mlpost_params$crit > crit) {
+    return(list(crit = mlpost_params$crit, coefs = mlpost_params$coefs))
   }
   
   return(list(crit = crit, coefs = mod$coefficients))
@@ -73,7 +73,7 @@ logistic.posterior.bic.irlssgd <- function (y, x, model, complex, params)
 set.seed(100001)
 tic()
 if (use.fbms) {
-  result1 <- fbms(data = df, family = "custom", loglik.pi = logistic.posterior.bic.irlssgd, method = "gmjmcmc", 
+  result1 <- fbms(formula = HeartDiseaseorAttack ~ 1 + ., data = df, family = "custom", loglik.pi = logistic.posterior.bic.irlssgd, method = "gmjmcmc", 
                    model_prior = list(r = 0.5, subs = 0.01), transforms = transforms,
                    params = params, P = 2, sub  = T)
 } else { 
@@ -88,7 +88,7 @@ tic()
 # regular analysis
 
 if (use.fbms) {
-  result2 <- fbms(data = df, family = "binomial", method = "gmjmcmc", 
+  result2 <- fbms(formula = HeartDiseaseorAttack ~ 1 + ., data = df, family = "binomial", method = "gmjmcmc", 
                model_prior = list(r = 0.5, subs = 0.01), 
                beta_prior = list(type = "Jeffreys-BIC"),
                transforms = transforms, params = params, P = 2, sub  = T)
@@ -116,7 +116,7 @@ set.seed(100003)
 
 tic()
 if (use.fbms) {
-  result_parallel_1 <- fbms(data = df, family = "custom", loglik.pi = logistic.posterior.bic.irlssgd, 
+  result_parallel_1 <- fbms(formula = HeartDiseaseorAttack ~ 1 + ., data = df, family = "custom", loglik.pi = logistic.posterior.bic.irlssgd, 
               method = "gmjmcmc.parallel", runs = 10, cores = 10,
               model_prior = list(r = 0.5, subs = 0.01), transforms = transforms,
               params = params, P = 2, sub  = T)
@@ -137,7 +137,7 @@ set.seed(100004)
 
 tic()
 if (use.fbms) {
-  result_parallel_2 <- fbms(data = df, family = "binomial", 
+  result_parallel_2 <- fbms(formula = HeartDiseaseorAttack ~ 1 + ., data = df, family = "binomial", 
                             method = "gmjmcmc.parallel", runs = 10, cores = 10,
                             model_prior = list(r = 0.5),
                             beta_prior = list(type = "Jeffreys-BIC"), 
@@ -166,12 +166,12 @@ summary(result_parallel_2)
 set.seed(100005)
 tic()
 if (use.fbms) {
-  result_parallel_long_1 <- fbms(data = df, family = "custom", loglik.pi = logistic.posterior.bic.irlssgd, 
+  result_parallel_long_1 <- fbms(formula = HeartDiseaseorAttack ~ 1 + ., data = df, family = "custom", loglik.pi = logistic.posterior.bic.irlssgd, 
                             method = "gmjmcmc.parallel", runs = 40, cores = 40,
                             model_prior = list(r = 0.5, subs = 0.01), transforms = transforms,
                             params = params, P = 10, sub  = T)
 } else { 
-  result_parallel_long_1 <- gmjmcmc.parallel(runs = 40, cores = 40, x = df[, -1], y = df[, 1],
+  result_parallel_long_1 <- gmjmcmc.parallel(formula = HeartDiseaseorAttack ~ 1 + ., runs = 40, cores = 40, x = df[, -1], y = df[, 1],
                                         loglik.pi = logistic.posterior.bic.irlssgd,
                                         mlpost_params = list(r = 0.5, subs = 0.01), 
                                         transforms = transforms, params = params,  P = 10, sub = T)
@@ -189,7 +189,7 @@ set.seed(100006)
 
 tic()
 if (use.fbms) {
-  result_parallel_long_2 <- fbms(data = df, family = "binomial", 
+  result_parallel_long_2 <- fbms(formula = HeartDiseaseorAttack ~ 1 + ., data = df, family = "binomial", 
                             method = "gmjmcmc.parallel", runs = 40, cores = 40,
                             model_prior = list(r = 0.5),
                             beta_prior = list(type = "Jeffreys-BIC"), 

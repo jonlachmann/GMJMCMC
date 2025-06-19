@@ -8,9 +8,6 @@
 #
 #######################################################
 
-library(devtools)
-devtools::install_github("jonlachmann/GMJMCMC@FBMS", force=T, build_vignettes=F)
-
 library(FBMS)
 use.fbms <- TRUE
 
@@ -50,7 +47,7 @@ params$feat$check.col <- F
 set.seed(6001)
 # Perform analysis with logistic.loglik
 if (use.fbms) {
-  result <- fbms(data = df, method = "gmjmcmc", family = "binomial", beta_prior = list(type = "Jeffreys-BIC"),
+  result <- fbms(formula = y~1+.,data = df, method = "gmjmcmc", family = "binomial", beta_prior = list(type = "Jeffreys-BIC"),
                  transforms = transforms, probs = probs, params = params)
 } else {
   result <- gmjmcmc(x = df[, -1], y = df[, 1], mlpost_params =  list(family = "binomial", beta_prior = list(type = "Jeffreys-BIC")), transforms
@@ -95,7 +92,7 @@ head(cbind(pred$aggr$mean, pred$aggr$quantiles[1,],pred$aggr$quantiles[3,]))
 set.seed(6002)
 
 if (use.fbms) {
-  result_parallel <- fbms(data = df, method = "gmjmcmc.parallel", family = "binomial", beta_prior = list(type = "Jeffreys-BIC"),
+  result_parallel <- fbms(formula = y~1+.,data = df, method = "gmjmcmc.parallel", family = "binomial", beta_prior = list(type = "Jeffreys-BIC"),
                           runs = 4, cores = 4, transforms = transforms, 
                           probs = probs, params = params, P=25)
 } else {
