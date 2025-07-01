@@ -71,22 +71,16 @@ sqroot <- function(x) abs(x)^(1/2)
 #' @export troot
 troot <- function(x) abs(x)^(1/3)
 
-#' Pseudo log transform
+#' arcsinh transform
 #'
 #' @param x The vector of values
-#' @return asinh(x / (2 * sigma)) / log(base)
+#' @return arcsinh(x)
 #'
 #' @examples
-#' pseudo_log_1(2)
+#' arcsinh(2)
 #'
-#' @export pseudo_log_1
-pseudo_log_1 <- function(x) {
-  
-  base = exp(0.5)
-  sigma = 1
-  asinh(x / (2 * sigma)) / log(base)
-  
-}
+#' @export arcsinh
+arcsinh <- function(x) asinh(x)
 
 #' p0 polynomial term
 #'
