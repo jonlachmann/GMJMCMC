@@ -209,17 +209,16 @@ summary_internal <- function (best, feats.strings, marg.probs, effects = NULL, t
   keep <- which(marg.probs[1, ] > tol)
 
   if (verbose) {
-    # Print the final distribution
-    cat("                   Importance | Feature\n")
-    print_dist(marg.probs[keep], feats.strings[keep], -1)
     # Print the best log marginal posterior
     if (length(best.pop) > 0) {
       if (length(thread.best) > 0) {
         cat("\nBest   population:", best.pop, " thread:", thread.best, " log marginal posterior:", best,"\n")
-        cat("Report population:", rep.pop, " thread:", rep.thread, " log marginal posterior:", reported,"\n")
+        if(best.pop!=rep.pop)
+          cat("Report population:", rep.pop, " thread:", rep.thread, " log marginal posterior:", reported,"\n")
       } else {
         cat("\nBest   population:", best.pop, " log marginal posterior:", best,"\n")
-        cat("Report population:", rep.pop, " log marginal posterior:", reported,"\n")
+        if(best.pop!=rep.pop)
+          cat("Report population:", rep.pop, " log marginal posterior:", reported,"\n")
       }
     } else {
       cat("\nBest log marginal posterior: ", best,"\n")
