@@ -23,7 +23,7 @@ mjmcmc(
 
 \item{y}{response variable}
 
-\item{N}{The number of iterations to run for}
+\item{N}{The number of iterations to run for (default 1000)}
 
 \item{probs}{A list of the various probability vectors to use}
 
