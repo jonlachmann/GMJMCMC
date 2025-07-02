@@ -7,7 +7,7 @@
 mjmcmc(
   x,
   y,
-  N = 100,
+  N = 1000,
   probs = NULL,
   params = NULL,
   loglik.pi = NULL,
