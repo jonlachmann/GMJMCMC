@@ -81,10 +81,9 @@ set.seed(1)
   
 
 
-#The default value of  N = 100 by accident yields the correct results 
 set.seed(3)
 
-  result.lindef <- fbms(data = df)
+  result.lindef <- fbms(data = df, N = 5000)
 
 plot(result.lindef)
 summary(result.lindef)
