@@ -2,16 +2,12 @@
 #
 # Example 2 (Section 4.1):
 #
-# Simulated data without any nonlinearities
+# Simulated data without any nonlinearities, only using fbms function
 #
 # This is the valid version for the JSS Paper
 #
 #######################################################
 
-# Logical to decide whether to perform analysis with fbms function
-# If FALSE then gmjmcmc or gmjmcmc.parallel function is used
-use.fbms <- TRUE  
-stronger.singal <- FALSE
 
 library(mvtnorm)
 library(FBMS)
@@ -25,13 +21,14 @@ p.vec <- 1:p
 
 k <- 5    #size of the data generating model
 
-set.seed(1002)
 
-correct.model <- sample(p.vec, k)
-beta.k <- 1*ifelse(stronger.singal,10,1) + rnorm(k)/2   # Coefficents of the correct submodel
+correct.model <- 1:k
+beta.k <- (1:5)/5   # Coefficents of the correct submodel
 
 beta <- c(rep(0, p))
 beta[correct.model] <- beta.k
+
+set.seed(123)
 
 x <- rmvnorm(n, rep(0, p))
 y <- x %*% beta    + rnorm(n)
@@ -51,23 +48,14 @@ beta.k
 to3 <- function(x) x^3
 transforms <- c("sigmoid","sin_deg","exp_dbl","p0","troot","to3")
 
-set.seed(123)
-if (use.fbms) {
-  result <- fbms(formula = Y~1+., data = df, beta_prior = list(type = "Jeffreys-BIC", var = 1), method = "gmjmcmc", transforms = transforms, P = 40)
-} else {
-  result <- gmjmcmc(x = df[-1], y = df[,1], transforms =  transforms,mlpost_params = list(family = "gaussian", beta_prior = list(type = "Jeffreys-BIC", var = 1)), P = 40)
-}
-summary(result)
-
-
-set.seed(123)
-if (use.fbms) {
-  result2 <- result <- fbms(formula = Y~1+., data = df, beta_prior = list(type = "Jeffreys-BIC", var = 1), method = "gmjmcmc", transforms = transforms, 
-                           N = 1000, N.final = 1000, P = 40)
-} else {
-  result2 <- gmjmcmc(y = df[,1],x = df[-1], transforms = transforms, mlpost_params = list(family = "gaussian", beta_prior = list(type = "Jeffreys-BIC", var = 1)),
-                     N = 1000, N.final = 1000, P = 40)
-}
+set.seed(1)
+  result <- fbms(data = df, method = "gmjmcmc", transforms = transforms, P = 40)
+ 
+  summary(result)
+ 
+set.seed(2)
+  result2 <- result <- fbms(data = df, method = "gmjmcmc", transforms = transforms, 
+                            N = 1000, P = 40)
 summary(result2)
 
 
@@ -80,35 +68,23 @@ summary(result2)
 #
 
 
-probs.lin <- gen.probs.mjmcmc()
-params.lin <- gen.params.mjmcmc(ncol(df) - 1)
+set.seed(1)
+  result.lin <- fbms(data = df, N = 5000)
+  summary(result.lin)
 
-set.seed(123)
-if (use.fbms) {
-  result.lin <- fbms(data = df, beta_prior = list(type = "Jeffreys-BIC", var = 1), N = 5000)
-} else {
-  result.lin <- mjmcmc(y = df[,1], x = df[,-1], mlpost_params = list(family = "gaussian", beta_prior = list(type = "Jeffreys-BIC", var = 1)), N = 5000, probs = probs.lin, params = params.lin)
-}
-
-plot(result.lin)
-
-summary(result.lin)
-
-correct.model 
-beta.k
+  set.seed(2)
+  result.lin <- fbms(data = df, N = 1000)
+  summary(result.lin)
+  
+  plot(result.lin)
+ 
+  
 
 
-#The default value of  N = 100  does not lead to the same result here
-set.seed(123)
+#The default value of  N = 100 by accident yields the correct results 
+set.seed(3)
 
-if (use.fbms) {
-  result.lindef <- fbms(data = df, beta_prior = list(type = "Jeffreys-BIC", var = 1))
-} else {
-  result.lindef <- mjmcmc(x = df[,-1],y = df[,1], mlpost_params = list(family = "gaussian", beta_prior = list(type = "Jeffreys-BIC", var = 1)))
-}
+  result.lindef <- fbms(data = df)
 
 plot(result.lindef)
 summary(result.lindef)
-
-
-###############################################################################
