@@ -80,10 +80,9 @@ set.seed(1)
  
   
 
-
 set.seed(3)
 
-  result.lindef <- fbms(data = df, N = 5000)
+  result.lindef <- fbms(data = df)
 
 plot(result.lindef)
 summary(result.lindef)
