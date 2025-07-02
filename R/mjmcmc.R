@@ -7,7 +7,7 @@
 #'
 #' @param x matrix containing the design matrix with data to use in the algorithm,
 #' @param y response variable
-#' @param N The number of iterations to run for
+#' @param N The number of iterations to run for (default 1000)
 #' @param probs A list of the various probability vectors to use
 #' @param params A list of the various parameters for all the parts of the algorithm
 #' @param loglik.pi The (log) density to explore
@@ -18,9 +18,9 @@
 #' @param verbose A logical denoting if messages should be printed
 #'
 #' @return A list containing the following elements:
-#' \item{models}{All visited models.}
+#' \item{models}{All visited models in both mjmcmc and local optimization.}
 #' \item{accept}{Average acceptance rate of the chain.}
-#' \item{lo.models}{All models visited during local optimization.}
+#' \item{mc.models}{All models visited during mjmcmc iterations.}
 #' \item{best.crit}{The highest log marginal probability of the visited models.}
 #' \item{marg.probs}{Marginal probabilities of the features.}
 #' \item{model.probs}{Marginal probabilities of all of the visited models.}
@@ -122,7 +122,7 @@ mjmcmc <- function (
 #' @return A list containing the following elements:
 #' \item{models}{All visited models.}
 #' \item{accept}{Number of accepted proposals of the chain.}
-#' \item{lo.models}{All models visited during local optimization.}
+#' \item{mc.models}{All models visited during mjmcmc.}
 #' \item{best.crit}{The highest log marginal probability of the visited models.}
 #' \item{marg.probs}{Marginal probabilities of the features.}
 #' \item{model.probs}{Marginal probabilities of all of the visited models.}
@@ -178,12 +178,14 @@ mjmcmc.loop <- function (data, complex, loglik.pi, model.cur, N, probs, params, 
   }
 
   # Calculate and store the marginal inclusion probabilities and the model probabilities
-  marg.probs <- marginal.probs.renorm(c(models, lo.models), type = "both")
+  all.models <- c(models, lo.models)
+  marg.probs <- marginal.probs.renorm(all.models, type = "both")
+  best.crit <- all.models[[marg.probs$idx[which.max(marg.probs$probs.m)]]]$crit
   
   return(list(
-    models = models,
+    models = c(models, lo.models),
     accept = accept,
-    lo.models = lo.models,
+    mc.models = models,
     best.crit = best.crit,
     marg.probs = marg.probs$probs.f,
     model.probs = marg.probs$probs.m,

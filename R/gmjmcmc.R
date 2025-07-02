@@ -30,7 +30,7 @@ NULL
 #'
 #' @return A list containing the following elements:
 #' \item{models}{All models per population.}
-#' \item{lo.models}{All local optimization models per population.}
+#' \item{mc.models}{All models accepted by mjmcmc per population.}
 #' \item{populations}{All features per population.}
 #' \item{marg.probs}{Marginal feature probabilities per population.}
 #' \item{model.probs}{Marginal feature probabilities per population.}
@@ -101,7 +101,7 @@ gmjmcmc <- function (
   S <- vector("list", P)
   # A list of models that have been visited, refering to the populations
   models <- vector("list", P)
-  lo.models <- vector("list", P)
+  mc.models <- vector("list", P)
   # A list of all the marginal probabilities for the features, per population
   marg.probs <- vector("list", P)
   # A list of all the marginal probabilities for the models, per population
@@ -144,7 +144,7 @@ gmjmcmc <- function (
 
     # Add the models visited in the current population to the model list
     models[[p]] <- mjmcmc_res$models
-    lo.models[[p]] <- mjmcmc_res$lo.models
+    mc.models[[p]] <- mjmcmc_res$mc.models
     # Store marginal likelihoods for current features
     marg.probs[[p]] <- mjmcmc_res$marg.probs
     # Store marginal likelihoods for the visited models
@@ -176,7 +176,7 @@ gmjmcmc <- function (
   # Return formatted results
   results <- list(
     models = models,                   # All models per population
-    lo.models = lo.models,             # All local optim models per population
+    mc.models = mc.models,             # Only mjmcmc models per population
     populations = S,                   # All features per population
     marg.probs = marg.probs,           # Marginal feature probabilities per population
     model.probs = model.probs,         # Marginal feature probabilities per population

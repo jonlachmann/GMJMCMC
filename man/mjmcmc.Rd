@@ -43,9 +43,9 @@ mjmcmc(
 }
 \value{
 A list containing the following elements:
-\item{models}{All visited models.}
+\item{models}{All visited models in both mjmcmc and local optimization.}
 \item{accept}{Average acceptance rate of the chain.}
-\item{lo.models}{All models visited during local optimization.}
+\item{mc.models}{All models visited during mjmcmc iterations.}
 \item{best.crit}{The highest log marginal probability of the visited models.}
 \item{marg.probs}{Marginal probabilities of the features.}
 \item{model.probs}{Marginal probabilities of all of the visited models.}

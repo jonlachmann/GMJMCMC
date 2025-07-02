@@ -89,7 +89,6 @@ if (use.fbms) {
 } else {
   result.lin <- mjmcmc(y = df[,1], x = df[,-1], mlpost_params = list(family = "gaussian", beta_prior = list(type = "Jeffreys-BIC", var = 1)), N = 5000, probs = probs.lin, params = params.lin)
 }
-plot.mjmcmc
 
 plot(result.lin)
 

@@ -229,8 +229,7 @@ predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025
   }
   
  
-  
-  models <- c(object$models, object$lo.models)[object$model.probs.idx]
+  models <- object$models[object$model.probs.idx]
 
   yhat <- matrix(0, nrow = nrow(x), ncol = length(models))
   for (k in seq_along(models)) {

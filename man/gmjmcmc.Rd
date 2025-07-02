@@ -58,7 +58,7 @@ A larger value like $P = 50$ might be more realistic for more complicated exampl
 \value{
 A list containing the following elements:
 \item{models}{All models per population.}
-\item{lo.models}{All local optimization models per population.}
+\item{mc.models}{All models accepted by mjmcmc per population.}
 \item{populations}{All features per population.}
 \item{marg.probs}{Marginal feature probabilities per population.}
 \item{model.probs}{Marginal feature probabilities per population.}

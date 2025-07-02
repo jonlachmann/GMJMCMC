@@ -198,8 +198,7 @@ summary.mjmcmc_parallel <- function (object, tol = 0.0001, labels = FALSE, effec
   # Get marginal posterior of features
 
   models <- unlist(lapply(object$chains, function (x) x$models), recursive = FALSE)
-  lo.models <- unlist(lapply(object$chains, function (x) x$lo.models), recursive = FALSE)
-  marg.probs <- marginal.probs.renorm(c(models,lo.models))$probs
+  marg.probs <- marginal.probs.renorm(models)$probs
   best <- max(sapply(object$chains, function (x) x$best))
   if (!is.null(effects) & !is.null(labels)) {
     effects <- compute_effects(object$chains[[1]], labels = labels, quantiles = effects)

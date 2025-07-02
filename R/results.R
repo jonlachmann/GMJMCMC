@@ -337,7 +337,7 @@ get.mpm.model <- function(result, y, x, labels = F, family = "gaussian", loglik.
     features = features,
     fixed = result$fixed,
     intercept = result$intercept,
-    needs.precalc = TRUE
+    needs.precalc = FALSE
   ), class = "bgnlm_model")
  
   set.transforms(transforms.bak)
