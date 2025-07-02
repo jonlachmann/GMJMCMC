@@ -2,11 +2,12 @@
 #
 # Example 1:
 #
-# Kepler Example with the most recent database update
+# Kepler Example with the most recent database update, only using fbms function
 #
 # This is the valid version for the JSS paper
 #
 ##################################################
+
 
 #install.packages("FBMS")
 #install.packages("devtools")
@@ -14,47 +15,29 @@
 #devtools::install_github("jonlachmann/GMJMCMC@data-inputs", force=T, build_vignettes=F)
 library(FBMS)
 
+data(exoplanet)
 
-data <- FBMS::exoplanet
-summary(data)
+train.indx <- 1:500
+df.train = exoplanet[train.indx, ]
+df.test = exoplanet[-train.indx, ]
 
-
-te.ind <- 540:939
-df.train = data[-te.ind, ]
-df.test = data[te.ind, ]
 
 to3 <- function(x) x^3
-transforms <- c("sigmoid", "sin_deg", "exp_dbl", "p0", "troot", "to3")
+transforms <- c("sigmoid","sin_deg","exp_dbl","p0","troot","to3")
 
-# Logical to decide whether to perform analysis with fbms function
-# If FALSE then gmjmcmc or gmjmcmc.parallel function is used
-use.fbms <- TRUE  
 
 ####################################################
 #
 # single thread analysis (default values, Section 3.1)
 #
 ####################################################
+
+
 set.seed(123)
-params <- gen.params.gmjmcmc(ncol(df.train) - 1)
-if (use.fbms) {
- result.default <- fbms(formula = semimajoraxis ~ 1 + . , data = df.train, method = "gmjmcmc", transforms = transforms, params = params)
-} else {
- result.default <- gmjmcmc(x = df.train[, -1], y = df.train[, 1], transforms = transforms, params = params)
-}
-summary(result.default)
 
-preds <- predict(result.default, df.test[,-1], link = function(x) x)
-sqrt(mean((preds$aggr$mean - df.test$semimajoraxis)^2))
+result.default <- fbms(formula = semimajoraxis ~ 1 + . , data = df.train, method = "gmjmcmc", transforms = transforms)
 
-#new additional ways to predict using MPM and best model
-get.best.model(result = result.default)
-preds <- predict(get.best.model(result.default), df.test[, -1])
-sqrt(mean((preds - df.test$semimajoraxis)^2))
 
-get.mpm.model(result = result.default, y = df.train$semimajoraxis, x = df.train[, -1])
-preds <- predict(get.mpm.model(result.default, y = df.train$semimajoraxis, x = df.train[, -1]), df.test[, -1])
-sqrt(mean((preds - df.test$semimajoraxis)^2))
 
 ####################################################
 #
@@ -65,15 +48,12 @@ sqrt(mean((preds - df.test$semimajoraxis)^2))
 
 set.seed(123)
 
-if (use.fbms) {
- result.P50 <- fbms(formula = semimajoraxis ~ 1 + .,data = df.train, method = "gmjmcmc", transforms = transforms,
-                    P = 50, N = 1000, N.final = 1000, params = params)
-} else {
- result.P50 <- gmjmcmc(x = df.train[, -1], y = df.train[, 1], intercept = TRUE, transforms = transforms,
-                       P = 50, N = 1000, N.final = 1000, params = params)
-}
-summary(result.P50, labels = names(df.train)[-1])
+result.P50 <- fbms(data = df.train, method = "gmjmcmc", transforms = transforms,
+                     P = 50, N = 1000, N.final = 5000)
 
+pdf("diagn_long.pdf") 
+diagn_plot(result.P50, ylim = c(600,1500), FUN = max)
+dev.off()
 ####################################################
 #
 # multiple thread analysis (Section 3.3)
@@ -81,14 +61,13 @@ summary(result.P50, labels = names(df.train)[-1])
 ####################################################
 
 set.seed(123)
-if (use.fbms) {
- result_parallel <- fbms(formula = semimajoraxis ~ 1 + .,data = df.train, method = "gmjmcmc.parallel", transforms = transforms,
-                         runs = 50, cores = 10, P = 25, params = params)
-} else {
- result_parallel <- gmjmcmc.parallel(runs = 50, cores = 10, x = df.train[, -1], y = df.train[, 1], intercept = TRUE,
-                                     transforms = transforms, P = 25, params = params)
-}
-summary(result_parallel, tol = 0.01)
+
+result_parallel <- fbms(data = df.train, method = "gmjmcmc.parallel", transforms = transforms,
+                          runs = 40, cores = 40, P = 25)
+
+pdf("diagn_par.pdf") 
+diagn_plot(result_parallel, ylim = c(600,1500),FUN = max)
+dev.off()
 
 ####################################################
 #
@@ -100,12 +79,22 @@ summary(result_parallel, tol = 0.01)
 # summary
 
 summary(result.default)
-summary(result.default, labels = names(df.train)[-1])
+summary(result.default, pop = "all", labels = paste0("x",1:length(df.train[,-1])))
+
 
 summary(result.P50)
+summary(result.P50, pop = "best", labels = paste0("x",1:length(df.train[,-1])))
+summary(result.P50, pop = "last", labels = paste0("x",1:length(df.train[,-1])))
+summary(result.P50, pop = "last", tol = 0.01, labels = paste0("x",1:length(df.train[,-1])))
+summary(result.P50, pop = "all")
 
 summary(result_parallel)
-summary(result_parallel, tol = 0.01,labels = names(df.train)[-1])
+library(tictoc)
+tic()
+summary(result_parallel, tol = 0.01, pop = "all")
+toc()
+
+
 
 
 ######################
@@ -133,11 +122,14 @@ dev.off()
 
 plot(result_parallel)
 
+
 ######################
 # Prediction
 
-#preds <-  predict(result, df.test[,-1], link = function(x) x)  
+
+#preds <- predict(result.default, df.test[,-1], link = function(x) x)
 preds <-  predict(result.default, df.test[,-1])
+rmse.default <- sqrt(mean((preds$aggr$mean - df.test$semimajoraxis)^2))
 
 pdf("prediction.pdf") 
 plot(preds$aggr$mean, df.test$semimajoraxis)
@@ -145,13 +137,17 @@ dev.off()
 
 plot(preds$aggr$mean, df.test$semimajoraxis)
 
-rmse.default <- sqrt(mean((preds$aggr$mean - df.test$semimajoraxis)^2))
+
+
+
+
 
 ###############################
 
 
 #preds.P50 = predict(result.P50, df.test[,-1], link = function(x) x)  
 preds.P50 = predict(result.P50, df.test[,-1])  
+rmse.P50 <-  sqrt(mean((preds.P50$aggr$mean - df.test$semimajoraxis)^2))
 
 pdf("prediction.P50.pdf") 
 plot(preds.P50$aggr$mean, df.test$semimajoraxis)
@@ -159,19 +155,36 @@ dev.off()
 
 plot(preds.P50$aggr$mean, df.test$semimajoraxis)
 
-rmse.P50 <-  sqrt(mean((preds.P50$aggr$mean - df.test$semimajoraxis)^2))
 
 
 ###############################
 
 
-preds.multi <- predict(result_parallel, df.test[,-1], link = function(x) x)
+preds.multi <- predict(result_parallel , df.test[,-1], link = function(x) x)
+rmse.parallel <- sqrt(mean((preds.multi$aggr$mean - df.test$semimajoraxis)^2))
 
 pdf("pred_parallel.pdf") 
 plot(preds.multi$aggr$mean, df.test$semimajoraxis)
 dev.off()
 
-rmse.parallel <- sqrt(mean((preds.multi$aggr$mean - df.test$semimajoraxis)^2))
+
+
+
+round(c(rmse.default, rmse.P50, rmse.parallel),2)
 
 
 ###############################
+
+
+
+#new additional ways to predict using MPM and best model
+get.best.model(result = result.default)
+preds.best <- predict(get.best.model(result.default), df.test[, -1])
+sqrt(mean((preds.best - df.test$semimajoraxis)^2))
+
+get.mpm.model(result = result.default, y = df.train$semimajoraxis, x = df.train[, -1])
+preds.mpm <- predict(get.mpm.model(result.default, y = df.train$semimajoraxis, x = df.train[, -1]), df.test[, -1])
+sqrt(mean((preds.mpm - df.test$semimajoraxis)^2))
+
+
+
