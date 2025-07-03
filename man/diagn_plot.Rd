@@ -4,20 +4,30 @@
 \alias{diagn_plot}
 \title{Plot convergence of best/median/mean/other summary log posteriors in time}
 \usage{
-diagn_plot(res, FUN = median, conf = 0.95, burnin = 0, window = 5, ylim = NULL)
+diagn_plot(
+  res,
+  FUN = median,
+  conf = 0.95,
+  burnin = 0,
+  window = 5,
+  ylim = NULL,
+  ...
+)
 }
 \arguments{
 \item{res}{Object corresponding gmjmcmc output}
 
 \item{FUN}{The summary statistics to check convergence}
 
-\item{conf}{which confidence intervals to plot}
+\item{conf}{Which confidence intervals to plot}
 
-\item{burnin}{how many first populations to skip}
+\item{burnin}{How many first populations to skip}
 
-\item{window}{sliding window for computing the standard deviation}
+\item{window}{Sliding window for computing the standard deviation}
 
-\item{ylim}{limits for the plotting range, if unspecified, min and max of confidence intervals will be used}
+\item{ylim}{Limits for the plotting range; if unspecified, min and max of confidence intervals will be used}
+
+\item{...}{Additional graphical parameters passed to plot and lines functions, e.g. col, lwd, lty, main, xlab, ylab, ylim}
 }
 \value{
 A list of summary statistics for checking convergence with given confidence intervals
@@ -27,9 +37,9 @@ Plot convergence of best/median/mean/other summary log posteriors in time
 }
 \examples{
 result <- gmjmcmc(y = matrix(rnorm(100), 100),
-x = matrix(rnorm(600), 100), 
-P = 2, 
-transforms =  c("p0", "exp_dbl"))
-diagnstats <- diagn_plot(result)
+                  x = matrix(rnorm(600), 100), 
+                  P = 2, 
+                  transforms =  c("p0", "exp_dbl"))
+diagnstats <- diagn_plot(result, col = "blue", lwd = 2, main = "Custom Title")
 
 }
