@@ -13,6 +13,7 @@ gmjmcmc.parallel(
   transforms,
   runs = 2,
   cores = getOption("mc.cores", 2L),
+  verbose = FALSE,
   merge.options = list(populations = "best", complex.measure = 2, tol = 1e-07),
   ...
 )
@@ -33,6 +34,8 @@ gmjmcmc.parallel(
 \item{runs}{The number of runs to run}
 
 \item{cores}{The number of cores to run on}
+
+\item{verbose}{A logical denoting if messages should be printed}
 
 \item{merge.options}{A list of options to pass to the \code{\link[=merge_results]{merge_results()}} function run after the run}
 

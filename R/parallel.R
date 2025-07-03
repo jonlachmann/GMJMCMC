@@ -118,6 +118,7 @@ mjmcmc.parallel <- function(runs = 2, cores = getOption("mc.cores", 2L), ...) {
 #' @param transforms A Character vector including the names of the non-linear functions to be used by the modification 
 #' @param runs The number of runs to run
 #' @param cores The number of cores to run on
+#' @param verbose A logical denoting if messages should be printed
 #' @param merge.options A list of options to pass to the [merge_results()] function run after the run
 #' @param ... Further parameters passed to mjmcmc.
 #' @return Results from multiple gmjmcmc runs
@@ -146,11 +147,12 @@ gmjmcmc.parallel <- function(
   transforms,
   runs = 2,
   cores = getOption("mc.cores", 2L),
+  verbose = FALSE,
   merge.options = list(populations = "best", complex.measure = 2, tol = 0.0000001),
   ...
 ) {
   options("gmjmcmc-transformations" = transforms)
-  results <- rmclapply(seq_len(runs), args = list(x = x, y = y, loglik.pi = loglik.pi, loglik.alpha = loglik.alpha, mlpost_params = mlpost_params, transforms = transforms, ...), mc.cores = cores, fun = gmjmcmc)
+  results <- rmclapply(seq_len(runs), args = list(x = x, y = y, loglik.pi = loglik.pi, loglik.alpha = loglik.alpha, mlpost_params = mlpost_params, transforms = transforms, verbose = verbose, ...), mc.cores = cores, fun = gmjmcmc)
   class(results) <- "gmjmcmc_parallel"
   merged <- merge_results(results, merge.options$populations, merge.options$complex.measure, merge.options$tol, data = list(x = x, y = y))
   merged$labels <- merged$results.raw[[1]]$labels
