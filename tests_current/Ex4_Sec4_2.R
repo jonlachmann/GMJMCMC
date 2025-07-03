@@ -2,7 +2,7 @@
 #
 # Example 4 (Section 4.2):
 #
-# Simulated data with interactions
+# Simulated data with interactions, using only fbms
 #
 # This is the valid version for the JSS Paper
 #
@@ -10,10 +10,8 @@
 
 library(mvtnorm)
 library(FBMS)
-use.fbms <- TRUE  
-stronger.singal <- FALSE
 
-n <- 100*ifelse(stronger.singal,10,1)  # sample size
+n <- 100  # sample size
 p <- 20   # number of covariates
 
 # Model:  
@@ -33,12 +31,8 @@ y<-scale(y)
 
 df <- data.frame(y = y, X)
 
-#beta_prior = list(type = "Jeffreys-BIC", var = 1) would do better here since we used sd of 1 in rnorm
-#but with stronger.singal <- T, any prior works well here
 
 transforms <- c("")
-params <- gen.params.gmjmcmc(ncol(df) - 1)
-#params$mlpost$var = "unknown" #this will set the variance to unknwon
 probs <- gen.probs.gmjmcmc(transforms)
 probs$gen <- c(1,0,0,1)            #Include interactions and mutations
 
@@ -49,23 +43,14 @@ probs$gen <- c(1,0,0,1)            #Include interactions and mutations
 ####################################################
 
 set.seed(123)
-if (use.fbms) {
-  result <- fbms(formula = y~1+., data = df, method = "gmjmcmc", transforms = transforms, beta_prior = list(type = "EB-local"),
-                  probs = probs, params = params, P=40)
-} else {
-  result <- gmjmcmc(x = df[, -1], y = df[, 1], mlpost_params = list(family = "gaussian", beta_prior = list(type = "EB-local")), transforms = transforms, params = params, probs = probs, P=40)
-}
+result <- fbms(data = df, method = "gmjmcmc", transforms = transforms, 
+                 probs = probs)
 summary(result)
 
 
 set.seed(123)
-if (use.fbms) {
-  result2 <- fbms(formula = y~1+., data = df, method = "gmjmcmc", transforms = transforms, beta_prior = list(type = "EB-local"),
-                 probs = probs, params = params, P=40)
-} else {
-  result2 <- gmjmcmc(x = df[, -1], y = df[, 1], mlpost_params = list(family = "gaussian", beta_prior = list(type = "EB-local")), transforms = transforms, N = 1000, N.final = 5000,
-                     probs = probs, params = params,  P = 40)
-}
+result2 <- fbms(data = df, method = "gmjmcmc", transforms = transforms, 
+                 N = 1000, probs = probs, P=40)
 summary(result2, tol = 0.01)
 
 
@@ -78,14 +63,9 @@ summary(result2, tol = 0.01)
 
 set.seed(123)
 
-if (use.fbms) {
-  result_parallel <- fbms(formula = y~1+., data = df, method = "gmjmcmc.parallel", transforms = transforms, beta_prior = list(type = "EB-local"),
-                 runs = 40, cores = 10,
-                 probs = probs, params = params, P=25)
-} else {
-  result_parallel =  gmjmcmc.parallel(runs = 40, cores = 10, x = df[, -1], y = df[, 1],
-                            transforms = transforms,mlpost_params = list(family = "gaussian", beta_prior = list(type = "EB-local")), probs = probs, params = params, P=25)
-}
+  result_parallel <- fbms(data = df, method = "gmjmcmc.parallel", transforms = transforms,
+                          runs = 40, cores = 40,
+                          probs = probs, P=25)
 
 summary(result_parallel, tol = 0.01)
 
@@ -94,38 +74,11 @@ summary(result_parallel, tol = 0.01)
 # Using longer more iterations of MJMCMC chains does not change results substantially
 set.seed(123)
 
-if (use.fbms) {
-  result_parallel2 <- fbms(formula = y~1+., data = df, method = "gmjmcmc.parallel", transforms = transforms,beta_prior = list(type = "EB-local"),
-                 runs = 40, cores = 10, N=1000,
-                 probs = probs, params = params, P=25)
-} else {
-  result_parallel2 =  gmjmcmc.parallel(runs = 40, cores = 10, x = df[, -1], y = df[, 1],
-                                transforms = transforms,mlpost_params = list(family = "gaussian", beta_prior = list(type = "EB-local")), probs = probs, params = params, P=25, 
-                                N=1000)
-}
+result_parallel2 <- fbms(data = df, method = "gmjmcmc.parallel", transforms = transforms,
+                           runs = 40, cores = 10, N=1000, N.final=2000,
+                           probs = probs, P=25)
 summary(result_parallel2, tol = 0.01)
 
-
-
-
-########################################################
-#
-#  Model which includes no interactions effects
-#
-#
-
-
-set.seed(123)
-
-
-if (use.fbms) {
-  result.lin <- fbms(formula = y~1+., data = df, beta_prior = list(type = "EB-local"), N = 5000)
-} else {
-  result.lin <- mjmcmc(x = df[, -1], y = df[, 1],mlpost_params = list(family = "gaussian", beta_prior = list(type = "EB-local")), N = 5000)
-}
-
-plot(result.lin)
-summary(result.lin)
-
+#summary(result_parallel2, pop = "all", tol = 0.01)
 
 
