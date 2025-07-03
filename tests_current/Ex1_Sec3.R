@@ -8,6 +8,7 @@
 #
 ##################################################
 
+setwd("/home/florian/FBMS")
 
 #install.packages("FBMS")
 #install.packages("devtools")
@@ -51,9 +52,7 @@ set.seed(123)
 result.P50 <- fbms(data = df.train, method = "gmjmcmc", transforms = transforms,
                      P = 50, N = 1000, N.final = 5000)
 
-pdf("diagn_long.pdf") 
-diagn_plot(result.P50, ylim = c(600,1500), FUN = max)
-dev.off()
+ 
 ####################################################
 #
 # multiple thread analysis (Section 3.3)
@@ -65,9 +64,6 @@ set.seed(123)
 result_parallel <- fbms(data = df.train, method = "gmjmcmc.parallel", transforms = transforms,
                           runs = 40, cores = 40, P = 25)
 
-pdf("diagn_par.pdf") 
-diagn_plot(result_parallel, ylim = c(600,1500),FUN = max)
-dev.off()
 
 ####################################################
 #
@@ -168,16 +164,14 @@ plot(preds.multi$aggr$mean, df.test$semimajoraxis)
 dev.off()
 
 
-
-
 round(c(rmse.default, rmse.P50, rmse.parallel),2)
 
 
 ###############################
 
 
+#Prediction based on the best model () or the MPM (Median Probability Model)
 
-#new additional ways to predict using MPM and best model
 get.best.model(result = result.default)
 preds.best <- predict(get.best.model(result.default), df.test[, -1])
 sqrt(mean((preds.best - df.test$semimajoraxis)^2))
@@ -186,5 +180,30 @@ get.mpm.model(result = result.default, y = df.train$semimajoraxis, x = df.train[
 preds.mpm <- predict(get.mpm.model(result.default, y = df.train$semimajoraxis, x = df.train[, -1]), df.test[, -1])
 sqrt(mean((preds.mpm - df.test$semimajoraxis)^2))
 
+
+####################################################
+#
+# Diagnostic plots  (Section 3.5)
+#
+####################################################
+
+
+pdf("diagn_default.pdf") 
+diagn_plot(result.default, ylim = c(600,1500), FUN = max)
+dev.off()
+diagn_plot(result.default, ylim = c(600,1500), FUN = max)
+
+
+pdf("diagn_long.pdf") 
+diagn_plot(result.P50, ylim = c(600,1500), FUN = max)
+dev.off()
+diagn_plot(result.P50, ylim = c(600,1500), FUN = max)
+
+
+pdf("diagn_par.pdf") 
+diagn_plot(result_parallel, ylim = c(600,1500),FUN = max)
+dev.off()
+
+diagn_plot(result_parallel, ylim = c(600,1500),FUN = max)
 
 

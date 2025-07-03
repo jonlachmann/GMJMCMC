@@ -8,6 +8,12 @@
 #
 #######################################################
 
+setwd("/home/florian/FBMS")
+
+#install.packages("FBMS")
+#install.packages("devtools")
+#library(devtools)
+#devtools::install_github("jonlachmann/GMJMCMC@data-inputs", force=T, build_vignettes=F)
 
 library(mvtnorm)
 library(FBMS)
@@ -44,45 +50,47 @@ colnames(df) <- c("Y", paste0("X", seq_len(ncol(df) - 1)))
 correct.model
 beta.k
 
+########################################################
+#
+#  Models with non-linear effects (gmjmcmc)
+#
+#
 
 to3 <- function(x) x^3
 transforms <- c("sigmoid","sin_deg","exp_dbl","p0","troot","to3")
 
 set.seed(1)
-  result <- fbms(data = df, method = "gmjmcmc", transforms = transforms, P = 40)
- 
+  result <- fbms(data = df, method = "gmjmcmc", transforms = transforms)
   summary(result)
- 
-set.seed(2)
-  result2 <- result <- fbms(data = df, method = "gmjmcmc", transforms = transforms, 
-                            N = 1000, P = 40)
-summary(result2)
+  plot(result)
 
+   
+set.seed(2)
+  result2 <- fbms(data = df, method = "gmjmcmc", transforms = transforms, 
+                            N = 1000, P = 40)
+  summary(result2, tol = 0.1)
+  plot(result)
 
 
 
 ########################################################
 #
-#  Model which includes no non-linear effects
+#  Model which includes no non-linear effects (mjmcmc)
 #
 #
 
-
-set.seed(1)
-  result.lin <- fbms(data = df, N = 5000)
-  summary(result.lin)
-
-  set.seed(2)
+  # The default value of  N = 1000 works relatively well here. 
+  set.seed(1)
+  result.lindef <- fbms(data = df)
+  summary(result.lindef)
+  plot(result.lindef)
+  
+  # Check that this is actually the default
+  set.seed(1)
   result.lin <- fbms(data = df, N = 1000)
   summary(result.lin)
-  
   plot(result.lin)
- 
   
 
-set.seed(3)
 
-  result.lindef <- fbms(data = df)
 
-plot(result.lindef)
-summary(result.lindef)
