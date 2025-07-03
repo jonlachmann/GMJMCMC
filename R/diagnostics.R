@@ -21,7 +21,7 @@
 #'                   x = matrix(rnorm(600), 100), 
 #'                   P = 2, 
 #'                   transforms =  c("p0", "exp_dbl"))
-#' diagnstats <- diagn_plot(result, col = "blue", lwd = 2, main = "Custom Title")
+#' diagnstats <- diagn_plot(result)
 #' 
 #' @export
 diagn_plot <- function(res, FUN = median, conf = 0.95, burnin = 0, window = 5, ylim = NULL, ...) {
