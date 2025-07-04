@@ -2,7 +2,7 @@
 #
 # Example 6 (Section 4.4):
 #
-# Prediction using non-linear Projections
+# Prediction using non-linear Projections, only using fbms function
 #
 #  DATA - abalone data set
 #
@@ -17,8 +17,6 @@
 
 
 library(FBMS)
-use.fbms = TRUE  
-
 
 data("abalone")
 
@@ -57,19 +55,14 @@ df.test = df[3134:n,-2]
 summary(df.training)
 
 
-pred.RMSE = rep(0,5)   # Collect the results of prediction RMSE from the five different methods
+pred.RMSE = rep(0,5)   # To collect the results of prediction RMSE from the five different methods
 
 pred.RMSE.mpm = rep(0,5) # Same for MPM
-
 pred.RMSE.best = rep(0,5) # Same for posterior modes in the model space
 
 transforms = c("sigmoid")
 probs = gen.probs.gmjmcmc(transforms)
 probs$gen = c(0,0,1,1) #Only projections!
-
-params = gen.params.gmjmcmc(ncol(df.training) - 1)
-#params$mlpost$r = 0.9
-#params$mlpost$var = "unknown"
 
 
 #############################################################################
@@ -79,18 +72,11 @@ params = gen.params.gmjmcmc(ncol(df.training) - 1)
 #############################################################################
 
 set.seed(5001)
-
-
-if (use.fbms) {
-  result = fbms(formula = Rings~1+., data = df.training, method = "gmjmcmc", transforms = transforms, beta_prior = list(type = "g-prior", g = 20),
-                 probs = probs, params = params)
-} else {
-  result = gmjmcmc(x = df.training[, -1], y = df.training[, 1], transforms = transforms, probs = probs, mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior", g = 20)), params = params)
-}
+result = fbms(data = df.training, method = "gmjmcmc", transforms = transforms, 
+                probs = probs)
 summary(result)
 
-pred = predict(result, x =  df.test[,-1], link = function(x)(x))  
-
+pred = predict(result, x =  df.test[,-1])  
 pred.RMSE[1] = sqrt(mean((pred$aggr$mean - df.test$Rings)^2))
 
 preds = predict(get.best.model(result), df.test[, -1])
@@ -112,23 +98,14 @@ plot(pred$aggr$mean, df.test$Rings)
 #
 #############################################################################
 
-#RNGkind("L'Ecuyer-CMRG") 
 set.seed(5003)
-
-if (use.fbms) {
-  result_parallel = fbms(formula = Rings~1+., data = df.training, method = "gmjmcmc.parallel", runs = 10, cores = 10, beta_prior = list(type = "g-prior",g = 20),
-                          transforms = transforms, probs = probs, params = params, P=25)
-} else {
-  result_parallel =  gmjmcmc.parallel(runs = 10, cores = 10, x = df.training[, -1], y = df.training[, 1],
-                                    loglik.pi =gaussian.loglik,loglik.alpha = gaussian.loglik.alpha, 
-                                    transforms = transforms, probs = probs,mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior", g = 20)), params = params, P=25)
-}
-summary(result_parallel)
+result_parallel = fbms(data = df.training, method = "gmjmcmc.parallel", runs = 40, cores = 40, 
+                         transforms = transforms, probs = probs, P=25)
+summary(result_parallel, tol = 0.05)
 
 
 
 pred_parallel = predict(result_parallel, x =  df.test[,-1], link = function(x)(x))  
-
 pred.RMSE[2] = sqrt(mean((pred_parallel$aggr$mean - df.test$Rings)^2))
 
 preds = predict(get.best.model(result_parallel), df.test[, -1])
@@ -149,26 +126,20 @@ abline(0,1)
 #   Using method 3 to estimate alpha
 #
 #############################################################################
-#error on deep!
+
+
+params = gen.params.gmjmcmc(ncol(df.training) - 1)
 params$feat$alpha = "deep"
-#params$feat$alpha = "random"
 
 
 set.seed(5003)
-
-
-if (use.fbms) {
-  result.a3 = fbms(formula = Rings~1+., data = df.training, method = "gmjmcmc", transforms = transforms, beta_prior = list(type = "g-prior",g = 20), 
-                 probs = probs, params = params)
-} else {
-  result.a3 = gmjmcmc(x = df.training[, -1], y = df.training[, 1], transforms = transforms, probs = probs, mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior", g = 20)), params = params)
-}
+result.a3 = fbms(data = df.training, method = "gmjmcmc", transforms = transforms, 
+                   probs = probs, params = params)
 summary(result.a3)
 
 
 
-pred.a3 = predict(result.a3, x =  df.test[,-1], link = function(x)(x))
-
+pred.a3 = predict(result.a3, x =  df.test[,-1], link = function(x)(x))  
 pred.RMSE[3] = sqrt(mean((pred.a3$aggr$mean - df.test$Rings)^2))
 
 plot(pred.a3$aggr$mean, df.test$Rings)
@@ -177,9 +148,9 @@ plot(pred.a3$aggr$mean, df.test$Rings)
 preds = predict(get.best.model(result.a3), df.test[, -1])
 pred.RMSE.best[3] = sqrt(mean((preds - df.test$Rings)^2))
 
-
-preds = predict(get.mpm.model(result.a3, y = df.training$Rings, x = df.training[, -1]), df.test[, -1])
-pred.RMSE.mpm[3] = sqrt(mean((preds - df.test$Rings)^2))
+#not yet applicable to the deep method
+#preds = predict(get.mpm.model(result.a3, y = df.training$Rings, x = df.training[, -1]), df.test[, -1])
+pred.RMSE.mpm[3] =  NA#sqrt(mean((preds - df.test$Rings)^2))
 
 
 
@@ -193,27 +164,20 @@ pred.RMSE.mpm[3] = sqrt(mean((preds - df.test$Rings)^2))
 params$feat$alpha = "random"
 
 set.seed(5004)
-
-if (use.fbms) {
-  result_parallel.a3 = fbms(formula = Rings~1+., data = df.training, method = "gmjmcmc.parallel", beta_prior = list(type = "g-prior",g = 20), runs = 10, cores = 10,
-                          transforms = transforms, probs = probs, params = params, P=25)
-} else {
-  result_parallel.a3 =  gmjmcmc.parallel(runs = 10, cores = 10, x = df.training[, -1], y = df.training[, 1], mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior", g = 20)),
-                                                                transforms = transforms, probs = probs, params = params, P=25)
-}
-summary(result_parallel.a3)
+result_parallel.a3 = fbms(data = df.training, method = "gmjmcmc.parallel",  runs = 40, cores = 40,
+                            transforms = transforms, probs = probs, params = params, P=25)
+summary(result_parallel.a3, tol = 0.05)
 
 
 
 pred_parallel.a3 = predict(result_parallel.a3, x =  df.test[,-1], link = function(x)(x))  
-
 pred.RMSE[4] = sqrt(mean((pred_parallel.a3$aggr$mean - df.test$Rings)^2))
 
 preds = predict(get.best.model(result_parallel.a3), df.test[, -1])
 pred.RMSE.best[4] = sqrt(mean((preds - df.test$Rings)^2))
 
-preds = predict(get.mpm.model(result_parallel, y = df.training$Rings, x = df.training[, -1]), df.test[, -1])
-pred.RMSE.mpm[4] = sqrt(mean((preds - df.test$Rings)^2))
+#preds = predict(get.mpm.model(result_parallel, y = df.training$Rings, x = df.training[, -1]), df.test[, -1])
+pred.RMSE.mpm[4] = NA #sqrt(mean((preds - df.test$Rings)^2))
 
 
 plot(pred_parallel.a3$aggr$mean, df.test$Rings)
@@ -232,21 +196,12 @@ probs = gen.probs.gmjmcmc(transforms)
 probs$gen = c(0,1,0,1) #Only modifications!
 
 set.seed(50005)
-
-if (use.fbms) {
-  result.fp = fbms(formula = Rings~1+., data = df.training, method = "gmjmcmc.parallel", runs = 10, cores = 10, beta_prior = list(type = "g-prior", g = 20),
-                             transforms = transforms, probs = probs, params = params, P=25)
-} else {
-  result.fp = gmjmcmc.parallel(runs = 40, cores = 40, x = df.training[, -1], y = df.training[, 1], 
-                                mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior", g = 20)),
-                                transforms = transforms, probs = probs, params = params, P=25)
-}
+result.fp = fbms(data = df.training, method = "gmjmcmc.parallel", runs = 40, cores = 40, 
+                   transforms = transforms, probs = probs, P=25)
 summary(result.fp)
 
 
-
 pred_fp = predict(result.fp, x =  df.test[,-1], link = function(x)(x))  
-
 pred.RMSE[5] = sqrt(mean((pred_fp$aggr$mean - df.test$Rings)^2))
 
 plot(pred_fp$aggr$mean, df.test$Rings)
@@ -259,6 +214,13 @@ pred.RMSE.mpm[5] = sqrt(mean((preds - df.test$Rings)^2))
 
 
 
-print(pred.RMSE)
-print(pred.RMSE.best)
-print(pred.RMSE.mpm)
+#############################################################################
+#
+#   Summary of predictions
+#
+#############################################################################
+
+round(pred.RMSE,3)
+round(pred.RMSE.best,3)
+round(pred.RMSE.mpm,3)
+
