@@ -1,14 +1,14 @@
 #######################################################
 #
-# Example 6 (Section 4.4):
+# Example 5 (Section 4.4):
 #
 # Prediction using non-linear Projections, only using fbms function
 #
-#  DATA - abalone data set
+# DATA - abalone data set
 #
-#  Data set is available at https://www.kaggle.com/datasets/rodolfomendes/abalone-dataset
+# Data set is available at https://www.kaggle.com/datasets/rodolfomendes/abalone-dataset
 #
-#  For convenience we provide the file abalone.csv which contains already the names of the variables
+# For convenience we provide the file abalone.csv which contains already the names of the variables
 #
 #
 # This is the valid version for the JSS Paper

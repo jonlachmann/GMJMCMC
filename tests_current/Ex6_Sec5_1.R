@@ -1,6 +1,6 @@
 #######################################################
 #
-# Example 7 (Section 5.1): Sanger data again
+# Example 6 (Section 5.1): Sanger data again
 #
 # High dimensional analysis without nonlinearities, using only FBMS
 #
@@ -11,7 +11,7 @@
 #library(devtools)
 #devtools::install_github("jonlachmann/GMJMCMC@FBMS", force=T, build_vignettes=F)
 
-#library(FBMS)
+library(FBMS)
 library(xtable)
 library(tictoc)
 run.parallel <- TRUE  # Flag to control whether to run gmjmcmc in parallel or just load results
@@ -45,41 +45,40 @@ params$feat$pop.max <- 50    # Maximum population size for the GMJMCMC search
 # Three independent runs of gmjmcmc.parallel
 #
 ####################################################
-n = dim(df)[1]; p=dim(df)[2]
 
 
 if (run.parallel) {
   set.seed(123)
-  result_parallel1 = fbms(data=df,transforms=transforms,beta_prior = list(type = "g-prior", alpha = max(n,p^2)),
+    result_parallel1 = fbms(data=df,loglik.pi=gaussian.loglik.g,transforms=transforms,
+                            probs=probs,params=params,
+                            method="gmjmcmc.parallel",
+                            P=50,N=1000,N.final=1000,runs=10,cores=10)
+  save(result_parallel1,file="Ex6_parallel1_orig.RData")
+
+  set.seed(1234)
+     result_parallel2=fbms(data=df,loglik.pi=gaussian.loglik.g,transforms=transforms,
                           probs=probs,params=params,
                           method="gmjmcmc.parallel",
                           P=50,N=1000,N.final=1000,runs=10,cores=10)
-  save(result_parallel1,file="Ex3_parallel1_orig.RData")
-  
-  set.seed(1234)
-  result_parallel2=fbms(data=df,transforms=transforms,beta_prior = list(type = "g-prior", alpha = max(n,p^2)),
-                        probs=probs,params=params,
-                        method="gmjmcmc.parallel",
-                        P=50,N=1000,N.final=1000,runs=10,cores=10)
-  #save(result_parallel2,file="Ex3_parallel2_orig.RData")
+  save(result_parallel2,file="Ex6_parallel2_orig.RData")
   
   set.seed(123456)
-  result_parallel3=fbms(data=df,transforms=transforms,beta_prior = list(type = "g-prior", alpha = max(n,p^2)),
-                        probs=probs,params=params,
-                        method="gmjmcmc.parallel",
-                        P=50,N=1000,N.final=1000,runs=10,cores=10)
-  #save(result_parallel3,file="Ex3_parallel3_orig.RData")
-  
+     result_parallel3=fbms(data=df,loglik.pi=gaussian.loglik.g,transforms=transforms,
+                          probs=probs,params=params,
+                          method="gmjmcmc.parallel",
+                          P=50,N=1000,N.final=1000,runs=10,cores=10)
+  save(result_parallel3,file="Ex6_parallel3_orig.RData")
+
 } else {
   
   # If not running gmjmcmc.parallel again, load previously saved results
-  load("Ex3_parallel1.RData")
-  load("Ex3_parallel2.RData")
-  load("Ex3_parallel3.RData")
+  load("Ex6_parallel1.RData")
+  load("Ex6_parallel2.RData")
+  load("Ex6_parallel3.RData")
   
 }
-
-
+  
+  
 # Summarize results from each of the three parallel runs with tolerance of 0.01
 
 res1 = summary(result_parallel1,tol=0.01)
@@ -116,4 +115,4 @@ X.best = df[,names.best]
 pdf("crossplot_Sanger_best.pdf")
 corrplot::corrplot(cor(X.best))
 dev.off()
-
+  

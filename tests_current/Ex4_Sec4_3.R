@@ -1,6 +1,6 @@
 #######################################################
 #
-# Example 5 (Section 4.3):
+# Example 4 (Section 4.3):
 #
 # Fractional Polynomials: Depths is set to 1, using only fbms
 #
@@ -69,7 +69,7 @@ summary(result)
 set.seed(101)
 result_parallel <- fbms(data = df, method = "gmjmcmc.parallel", transforms = transforms, 
                           probs = probs, params = params, P=25,runs = 40, cores = 40)
-summary(result_parallel, tol = 0.01)
+summary(result_parallel, tol = 0.05)
 
 diagn_plot(result_parallel, FUN = median)
 
@@ -81,20 +81,19 @@ set.seed(102)
                            probs = probs, params = params, P=25, N=1000, N.final=2000, 
                            runs = 40, cores = 40,)
 
-summary(result_parallel2, tol = 0.01)
+summary(result_parallel2, tol = 0.05)
 
 diagn_plot(result_parallel2,FUN = median)
 
 
-# Very large number of mjmcmc iterations (not needed for paper)
-set.seed(104)
+##########################
 
-if (use.fbms) {
-  result_parallel3 <- fbms(data = df, method = "gmjmcmc.parallel", transforms = transforms, beta_prior = list(type = "Jeffreys-BIC"), 
-                           probs = probs, params = params, P=50, runs = 40, cores = 40, N.init=2000, N.final=4000)
-} else {
-  result_parallel3 =  gmjmcmc.parallel(runs = 40, cores = 40, x = df[, -1], y = df[, 1], transforms = transforms, mlpost_params = list(family = "gaussian", beta_prior = list(type = "Jeffreys-BIC")),
-                                       probs = probs, params = params, P=50, N.init=2000, N.final=4000)
-}
-#summary(result_parallel3, labels = names(df[-1]))
-summary(result_parallel3, labels = names(df[-1]), tol = 0.01)
+# Using Jeffreys-BIC prior
+
+set.seed(103)
+result_parallel3 <- fbms(data = df, method = "gmjmcmc.parallel", beta_prior = list(type = "Jeffreys-BIC"), transforms = transforms, 
+                         probs = probs, params = params, P=25, N=1000, N.final=2000, 
+                         runs = 40, cores = 40,)
+
+summary(result_parallel3, tol = 0.05)
+

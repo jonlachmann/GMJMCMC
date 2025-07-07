@@ -1,6 +1,6 @@
 #######################################################
 #
-# Example 4 (Section 4.2):
+# Example 3 (Section 4.2):
 #
 # Simulated data with interactions, using only fbms
 #
