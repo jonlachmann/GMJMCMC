@@ -33,7 +33,7 @@ c.vec = unlist(mclapply(2:ncol(df), function(x)abs(cor(df[,1],df[,x]))))
 ids = sort(order(c.vec,decreasing=TRUE)[1:50])
 
 # Generate default parameters for GMJMCMC for p-1 predictors
-params = gen.params.gmjmcmc(ncol(df) - 1)
+params = gen.params.gmjmcmc(length(ids))
 # Restrict feature pre-filtering to top 50 predictors selected by correlation
 params$feat$prel.filter <- ids
 
@@ -45,40 +45,41 @@ params$feat$pop.max <- 50    # Maximum population size for the GMJMCMC search
 # Three independent runs of gmjmcmc.parallel
 #
 ####################################################
+n = dim(df)[1]; p=dim(df)[2] - 1
 
 
 if (run.parallel) {
   set.seed(123)
-    result_parallel1 = fbms(data=df,loglik.pi=gaussian.loglik.g,transforms=transforms,
-                            probs=probs,params=params,
-                            method="gmjmcmc.parallel",
-                            P=50,N=1000,N.final=1000,runs=10,cores=10)
-  save(result_parallel1,file="Ex6_parallel1_orig.RData")
-
-  set.seed(1234)
-     result_parallel2=fbms(data=df,loglik.pi=gaussian.loglik.g,transforms=transforms,
+  result_parallel1 = fbms(data=df,transforms=transforms,beta_prior = list(type = "g-prior", alpha = max(n,p^2)),
                           probs=probs,params=params,
                           method="gmjmcmc.parallel",
                           P=50,N=1000,N.final=1000,runs=10,cores=10)
-  save(result_parallel2,file="Ex6_parallel2_orig.RData")
+  save(result_parallel1,file="Ex3_parallel1_orig.RData")
+  
+  set.seed(1234)
+  result_parallel2=fbms(data=df,transforms=transforms,beta_prior = list(type = "g-prior", alpha = max(n,p^2)),
+                        probs=probs,params=params,
+                        method="gmjmcmc.parallel",
+                        P=50,N=1000,N.final=1000,runs=10,cores=10)
+  #save(result_parallel2,file="Ex3_parallel2_orig.RData")
   
   set.seed(123456)
-     result_parallel3=fbms(data=df,loglik.pi=gaussian.loglik.g,transforms=transforms,
-                          probs=probs,params=params,
-                          method="gmjmcmc.parallel",
-                          P=50,N=1000,N.final=1000,runs=10,cores=10)
-  save(result_parallel3,file="Ex6_parallel3_orig.RData")
-
+  result_parallel3=fbms(data=df,transforms=transforms,beta_prior = list(type = "g-prior", alpha = max(n,p^2)),
+                        probs=probs,params=params,
+                        method="gmjmcmc.parallel",
+                        P=50,N=1000,N.final=1000,runs=10,cores=10)
+  #save(result_parallel3,file="Ex3_parallel3_orig.RData")
+  
 } else {
   
   # If not running gmjmcmc.parallel again, load previously saved results
-  load("Ex6_parallel1.RData")
-  load("Ex6_parallel2.RData")
-  load("Ex6_parallel3.RData")
+  load("Ex3_parallel1.RData")
+  load("Ex3_parallel2.RData")
+  load("Ex3_parallel3.RData")
   
 }
-  
-  
+
+
 # Summarize results from each of the three parallel runs with tolerance of 0.01
 
 res1 = summary(result_parallel1,tol=0.01)
@@ -115,4 +116,3 @@ X.best = df[,names.best]
 pdf("crossplot_Sanger_best.pdf")
 corrplot::corrplot(cor(X.best))
 dev.off()
-  
