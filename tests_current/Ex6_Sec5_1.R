@@ -9,7 +9,7 @@
 #######################################################
 
 #library(devtools)
-#devtools::install_github("jonlachmann/GMJMCMC@FBMS", force=T, build_vignettes=F)
+#devtools::install_github("jonlachmann/GMJMCMC@data-inputs", force=T, build_vignettes=F)
 
 library(FBMS)
 library(xtable)
@@ -61,14 +61,14 @@ if (run.parallel) {
                         probs=probs,params=params,
                         method="gmjmcmc.parallel",
                         P=50,N=1000,N.final=1000,runs=10,cores=10)
-  #save(result_parallel2,file="Ex3_parallel2_orig.RData")
+  save(result_parallel2,file="Ex3_parallel2_orig.RData")
   
   set.seed(123456)
   result_parallel3=fbms(data=df,transforms=transforms,beta_prior = list(type = "g-prior", alpha = max(n,p^2)),
                         probs=probs,params=params,
                         method="gmjmcmc.parallel",
                         P=50,N=1000,N.final=1000,runs=10,cores=10)
-  #save(result_parallel3,file="Ex3_parallel3_orig.RData")
+  save(result_parallel3,file="Ex3_parallel3_orig.RData")
   
 } else {
   
