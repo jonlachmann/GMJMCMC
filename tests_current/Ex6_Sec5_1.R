@@ -37,7 +37,6 @@ params = gen.params.gmjmcmc(length(ids))
 # Restrict feature pre-filtering to top 50 predictors selected by correlation
 params$feat$prel.filter <- ids
 
-params$feat$check.col <- T   # Check for collinearity among features
 params$feat$pop.max <- 50    # Maximum population size for the GMJMCMC search
 
 ####################################################
@@ -53,21 +52,21 @@ if (run.parallel) {
   result_parallel1 = fbms(data=df,transforms=transforms,beta_prior = list(type = "g-prior", alpha = max(n,p^2)),
                           probs=probs,params=params,
                           method="gmjmcmc.parallel",
-                          P=50,N=1000,N.final=1000,runs=10,cores=10)
+                          P=50,N=1000,runs=10,cores=10)
   save(result_parallel1,file="Ex3_parallel1_orig.RData")
   
   set.seed(1234)
   result_parallel2=fbms(data=df,transforms=transforms,beta_prior = list(type = "g-prior", alpha = max(n,p^2)),
                         probs=probs,params=params,
                         method="gmjmcmc.parallel",
-                        P=50,N=1000,N.final=1000,runs=10,cores=10)
+                        P=50,N=1000,runs=10,cores=10)
   save(result_parallel2,file="Ex3_parallel2_orig.RData")
   
   set.seed(123456)
   result_parallel3=fbms(data=df,transforms=transforms,beta_prior = list(type = "g-prior", alpha = max(n,p^2)),
                         probs=probs,params=params,
                         method="gmjmcmc.parallel",
-                        P=50,N=1000,N.final=1000,runs=10,cores=10)
+                        P=50,N=1000,runs=10,cores=10)
   save(result_parallel3,file="Ex3_parallel3_orig.RData")
   
 } else {
