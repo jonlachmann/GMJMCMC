@@ -79,7 +79,7 @@ estimate.logic.lm = function(y, x, model, complex, mlpost_params)
   
   return(list(crit = logpost, coefs = mod$coefficients))
 }
- 
+
 
 
 #############################################################################
@@ -93,7 +93,7 @@ set.seed(5001)
 result <- fbms(formula = Y2~1+., data = df.training, probs = probs, params = params,  
                method = "gmjmcmc", transforms = transforms, N = 500, P = 25,
                family = "custom", loglik.pi = estimate.logic.lm,
-               model_prior = list(p = p), beta_prior = NULL)
+               model_prior = list(p = p))
 summary(result)
 mpm <- get.mpm.model(result, y = df.training$Y2, x = df.training[,-1], family = "custom", loglik.pi = estimate.logic.lm,params = list(p = 50))
 mpm$coefs
@@ -141,7 +141,7 @@ set.seed(5002)
 result_parallel <- fbms(formula = Y2~1+.,data = df.training, probs = probs, params = params, 
                    method = "gmjmcmc.parallel", transforms = transforms, N = 500, P=25,
                    family = "custom", loglik.pi = estimate.logic.lm, 
-                   model_prior = list(p = p), beta_prior = NULL, runs = 16, cores = 8)
+                   model_prior = list(p = p), runs = 16, cores = 8)
 summary(result_parallel)
 mpm <- get.mpm.model(result_parallel, y = df.training$Y2, x = df.training[,-1], family = "custom", loglik.pi = estimate.logic.lm,params = list(p = 50))
 mbest <- get.best.model(result_parallel)
@@ -178,12 +178,6 @@ points(pred_par_mpm,df.test$Mean,col = 4)
 #
 #############################################################################
 
-transforms <- c("not")
-probs <- gen.probs.gmjmcmc(transforms)
-probs$gen <- c(1,1,0,1) #No projections allowed
-probs$filter <- 0.6
-params <- gen.params.gmjmcmc(ncol(df.training) - 1)
-params$feat$pop.max <- 51
 
 library(BAS) #needed for hypergeometric functions
 estimate.logic.tcch = function(y, x, model, complex, mlpost_params)
@@ -217,7 +211,7 @@ estimate.logic.tcch = function(y, x, model, complex, mlpost_params)
   if(logpost==-Inf)
     logpost = -10000
   
-  return(list(crit = logpost + lp, coefs = mod$coefficients))
+  return(list(crit = logpost, coefs = mod$coefficients))
 }
 
 
