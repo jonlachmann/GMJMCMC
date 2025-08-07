@@ -17,15 +17,14 @@ library(survival)
 
 use.fbms <- TRUE
 
-setwd("~/Rprojects/EMJMCMC")
-
 download.file('https://www.uniklinik-freiburg.de/fileadmin/mediapool/08_institute/biometrie-statistik/Dateien/Studium_und_Lehre/Lehrbuecher/Multivariable_Model-building/gbsg_br_ca.zip',
               'gbsg_br_ca.zip')
 
 df1 <- read.csv(unz('gbsg_br_ca.zip',
                     'gbsg_br_ca/gbsg_br_ca.csv'),
                 header = TRUE)
-#system('rm whitehall1.zip')
+
+file.remove("gbsg_br_ca.zip")
 
 
 df <- df1[, c(13, 14, 2:4, 6:8, 10:12)]
@@ -60,9 +59,9 @@ surv.pseudo.loglik = function(y, x, model, complex, mlpost_params){
   {  
     return(list(crit=-10000, coefs=rep(0,1)))
   }  else {
-     formula1 = as.formula(paste0("Surv(time,cens)","~ 1 + ."))
+     formula1 <- as.formula(paste0("Surv(time,cens)","~ 1 + ."))
 
-     out = coxph(formula1, data = data)
+     out <- coxph(formula1, data = data)
 
      # logarithm of marginal likelihood
      mloglik <- (out$loglik[2] - out$loglik[1]) -  log(length(y)) * (dim(data)[2] - 2)/2   
@@ -71,7 +70,13 @@ surv.pseudo.loglik = function(y, x, model, complex, mlpost_params){
      if (length(mlpost_params$r) == 0)  mlpost_params$r <- 1/dim(x)[1]  # default value or parameter r
      lp <- log_prior(mlpost_params, complex)
      
-     return(list(crit = mloglik + lp, coefs =  c(0,out$coefficients)))
+     crit <- mloglik + lp
+     
+     if(is.na(crit) | is.infinite(crit)|sum(is.na(out$coefficients))>0)
+       crit <- -10000
+       
+     
+     return(list(crit = crit, coefs =  c(0,out$coefficients)))
      
   }
   
@@ -195,7 +200,7 @@ if (use.fbms) {
   result4 <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], family = "custom", loglik.pi = surv.pseudo.loglik, 
                   method = "gmjmcmc.parallel",
                   model_prior = list(r = 0.5, time = time),
-                  runs = 80, cores = 40,
+                  runs = 80, cores = 8,
                   transforms = transforms,
                   params = params, probs = probs, P = 25)
 } else { 
