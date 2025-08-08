@@ -48,7 +48,7 @@ predict.bgnlm_model <- function(object, x, link = function(x) {x}, x_train = NUL
     precalc <- precalc.features(list(x = x, y = NULL, fixed = object$fixed), object$features)
     
     if (dim(precalc$x)[2]>length(object$coefs[object$coefs!=0])) {
-      precalc$x <- precalc$x[,-1]
+      precalc$x <- as.matrix(precalc$x[,-1])
     }
     
     yhat <- link(precalc$x %*% object$coefs[object$coefs != 0])
@@ -57,11 +57,11 @@ predict.bgnlm_model <- function(object, x, link = function(x) {x}, x_train = NUL
       as.formula(paste0("~I(", paste0(names(object$coefs)[-1][object$coefs[-1]!=0], collapse = ")+I("), ")")),
       data = x
     )
-
+    
     if (dim(x.precalc)[2]<length(object$coefs[object$coefs!=0])) {
       x.precalc <- cbind(1,x.precalc)
     } else if (dim(x.precalc)[2]>length(object$coefs[object$coefs!=0])) {
-      x.precalc <- x.precalc[,-1]
+      x.precalc <- as.matrix(x.precalc[,-1])
     }
     yhat <- link(x.precalc %*% object$coefs[object$coefs!=0])
   }
@@ -112,7 +112,7 @@ predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.
     x <- impute_x_pred(object, x, x_train)
   
   mmodel <- lapply(object[1:8], function (x) x[[pop]])
-
+  
   # Precalculate the features for the new data (c(0,1...) is because precalc features thinks there is an intercept and y col).
   x.precalc <- precalc.features(cbind(0, 1, x), mmodel$populations)[, -1]
   set.transforms(transforms.bak)
@@ -147,8 +147,8 @@ predict.gmjmcmc.2 <- function (object, x, link = function(x) x, quantiles = c(0.
 #'
 #' @export
 predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), pop = NULL, tol = 0.0000001, x_train = NULL, ...) {
-
-
+  
+  
   if(is.null(x_train))
     x <- impute_x(object, x)
   else
@@ -170,24 +170,24 @@ predict.gmjmcmc_merged <- function (object, x, link = function(x) x, quantiles =
       models <- object$results[[i]]$models[[j]]
       features <- object$results[[i]]$populations[[j]]
       model.probs <- object$results[[i]]$model.probs[[j]]
-
+      
       # Precalculate the features for the new data
       x.precalc <- precalc.features(list(x = x, fixed = object$fixed), features)$x
-
+      
       yhat <- matrix(0, nrow = nrow(x), ncol = length(models))
       for (k in seq_along(models)) {
         # Models which have 0 weight are skipped since they may also be invalid, and would not influence the predictions.
         if (models[[k]]$crit == -.Machine$double.xmax) next
         yhat[, k] <- link(x.precalc[, c(rep(TRUE, object$fixed), models[[k]]$model), drop=FALSE] %*% models[[k]]$coefs)
       }
-
+      
       mean.pred <- rowSums(yhat %*% diag(as.numeric(model.probs)))
       pred.quant <- apply(yhat, 1, weighted.quantiles, weights=model.probs, prob=quantiles)
-
+      
       preds[[i]][[j]] <- list(mean=mean.pred, quantiles=pred.quant, weight=object$results[[i]]$pop.weights[j])
     }
   }
-
+  
   aggr <- list()
   aggr$mean <- 0 * preds[[1]][[1]]$mean
   aggr$quantiles <- 0 * preds[[1]][[1]]$quantiles
@@ -222,25 +222,25 @@ predict.mjmcmc <- function (object, x, link = function(x) x, quantiles = c(0.025
     x <- impute_x(object, x)
   else
     x <- impute_x_pred(object, x, x_train)
-
-
+  
+  
   if (object$intercept) {
     x <- cbind(1, x)
   }
   
- 
+  
   models <- object$models[object$model.probs.idx]
-
+  
   yhat <- matrix(0, nrow = nrow(x), ncol = length(models))
   for (k in seq_along(models)) {
     # Models which have 0 weight are skipped since they may also be invalid, and would not influence the predictions.
     if (models[[k]]$crit == -.Machine$double.xmax) next
     yhat[, k] <- link(x[, c(rep(TRUE, object$fixed), models[[k]]$model), drop=FALSE] %*% models[[k]]$coefs)
   }
-
+  
   mean.pred <- rowSums(yhat %*% diag(as.numeric(object$model.probs)))
   pred.quant <- apply(yhat, 1, weighted.quantiles, weights = object$model.probs, prob = quantiles)
-
+  
   return(list(mean = mean.pred, quantiles = pred.quant))
 }
 
@@ -265,13 +265,13 @@ predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles 
     x <- impute_x(object, x)
   else
     x <- impute_x_pred(object, x, x_train)
-
+  
   max.crits <- sapply(object$chains, function (x) x$best.crit)
   max.crit <- max(max.crits)
   result.weights <- exp(max.crits - max.crit) / sum(exp(max.crits - max.crit))
-
+  
   preds <- lapply(object$chains, predict.mjmcmc,x, link, quantiles)
-
+  
   aggr <- list()
   aggr$mean <- 0 * preds[[1]]$mean
   aggr$quantiles <- 0 * preds[[1]]$quantiles
@@ -279,7 +279,7 @@ predict.mjmcmc_parallel <- function (object, x, link = function(x) x, quantiles 
     aggr$mean <- aggr$mean + preds[[i]]$mean * result.weights[i]
     aggr$quantiles <- aggr$quantiles + preds[[i]]$quantiles * result.weights[i]
   }
-
+  
   return(list(aggr = aggr, preds = preds))
 }
 
@@ -326,7 +326,7 @@ predict.gmjmcmc_parallel <- function (object, x, link = function(x) x, quantiles
 weighted.quantiles <- function (values, weights, prob = c(0.025, 0.975)) {
   ordered <- order(values)
   P <- cumsum(weights[ordered])
-
+  
   iv <- integer(length(prob))
   for (i in seq_along(iv)) {
     iv[i] <- which.max(P >= prob[i])

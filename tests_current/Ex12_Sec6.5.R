@@ -56,7 +56,7 @@ surv.pseudo.loglik = function(y, x, model, complex, mlpost_params){
   data <- data.frame(time = mlpost_params$time, cens = y, as.matrix(x[,model]))[,-3]  # Removing intercept
   if(dim(data)[2]==2)
   {  
-    return(list(crit=-100, coefs=rep(0,1)))
+    return(list(crit=-.Machine$double.xmax, coefs=rep(0,1)))
   }  else {
     formula1 <- as.formula(paste0("Surv(time,cens)","~ 1 + ."))
     
@@ -73,7 +73,7 @@ surv.pseudo.loglik = function(y, x, model, complex, mlpost_params){
     
     crit <- mloglik + lp
     if(is.na(crit) | is.infinite(crit)|sum(is.na(out$coefficients))>0)
-      crit <- -100
+      crit <- -.Machine$double.xmax
     
     return(list(crit = crit, coefs =  c(0,out$coefficients)))
   }
@@ -90,10 +90,10 @@ surv.pseudo.loglik = function(y, x, model, complex, mlpost_params){
 # 1) Single chain analysis (just to illustrate how it works)
 set.seed(121)
 result1 <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], params = params, P = 5,
-               transforms = transforms, method = "gmjmcmc",
-               family = "custom", loglik.pi = surv.pseudo.loglik, 
-               model_prior = list(r = 0.5),
-               extra_params = list(time = time))
+                transforms = transforms, method = "gmjmcmc",
+                family = "custom", loglik.pi = surv.pseudo.loglik, 
+                model_prior = list(r = 0.5),
+                extra_params = list(time = time))
 
 
 summary(result1,labels = names(df.train)[-(1:2)], tol = 0.01)
@@ -102,8 +102,8 @@ summary(result1,labels = names(df.train)[-(1:2)], tol = 0.01)
 
 
 set.seed(122)
-result2 <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], params = params, N = 5000,
-                 method = "mjmcmc.parallel", runs = 1, cores = 1,
+result2 <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], params = params, N = 500,
+                method = "mjmcmc.parallel", runs = 80, cores = 40,
                 family = "custom", loglik.pi = surv.pseudo.loglik, 
                 model_prior = list(r = 0.5), extra_params = list(time = time))
 
@@ -118,13 +118,13 @@ probs$gen <- c(0,1,0,1)
 
 
 result3 <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], params = params, P = 25, 
-                transforms = transforms, method = "gmjmcmc.parallel", runs = 80, cores = 8,
+                transforms = transforms, method = "gmjmcmc.parallel", runs = 80, cores = 40,
                 family = "custom", loglik.pi = surv.pseudo.loglik, 
                 model_prior = list(r = 0.5), extra_params = list(time = time))
 
 
 summary(result3,tol = 0.01,labels = names(df.train)[-(1:2)],effects = c(0.025,0.5,0.975))
-  
+
 
 
 # 4) Parallel version using all types of non-linear features
@@ -133,12 +133,12 @@ probs$gen <- c(1,1,1,1)
 
 
 result4 <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], params = params, P = 25, 
-                transforms = transforms, method = "gmjmcmc.parallel", runs = 80, cores = 8,
+                transforms = transforms, method = "gmjmcmc.parallel", runs = 80, cores = 40,
                 family = "custom", loglik.pi = surv.pseudo.loglik, 
                 model_prior = list(r = 0.5), extra_params = list(time = time))
 
 
-summary(result4,tol = 0.01,labels = names(df.train)[-c(1,2)])
+summary(result4,tol = 0.01,labels = names(df.train)[-c(1,2)],effects = c(0.025,0.5,0.975))
 
 
 
@@ -203,8 +203,10 @@ cindex6 <- cindex(mod6, mod6$formula, data = as.data.frame(df.test), cens.model 
 
 round(unlist(c(cindex1, cindex2, cindex3, cindex4, cindex5, cindex6)),3)
 
+# Clean the train and test data for the next type of predictions
 
-
+df.train <- df[train,]
+df.test <- df[-train,]
 
 ##############################################
 #
@@ -255,7 +257,10 @@ cindex4 <- cindex(mod4, mod4$formula, data = as.data.frame(df.test), cens.model 
 
 round(unlist(c(cindex1, cindex2, cindex3, cindex4, cindex5, cindex6)),3)
 
+# Clean the train and test data for the next type of predictions
 
+df.train <- df[train,]
+df.test <- df[-train,]
 
 ##############################################
 #
@@ -275,6 +280,7 @@ linpreds.mpm <- predict(get.mpm.model(result1, y = df.train$cens, x = df.train[,
 linpreds2.train.mpm <- predict(get.mpm.model(result2, y = df.train$cens, x = df.train[, -c(1,2)],family = "custom",
                                              loglik.pi = surv.pseudo.loglik,params = list(r = 0.5, time = time)),
                                df.train[,-(1:2)], link = function(x) x)
+
 linpreds2.mpm <- predict(get.mpm.model(result2, y = df.train$cens, x = df.train[, -c(1,2)],family = "custom",
                                        loglik.pi = surv.pseudo.loglik,params = list(r = 0.5, time = time)),df.test[,-(1:2)], link = function(x) x)
 
