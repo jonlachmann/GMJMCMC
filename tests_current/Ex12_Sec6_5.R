@@ -15,9 +15,6 @@ library(pec) #for the computation of cindex
 #install.packages("survival")
 library(survival)
 
-setwd("/home/florian/FBMS/")
-
-
 
 # Download data
 download.file('https://www.uniklinik-freiburg.de/fileadmin/mediapool/08_institute/biometrie-statistik/Dateien/Studium_und_Lehre/Lehrbuecher/Multivariable_Model-building/gbsg_br_ca.zip',
@@ -43,7 +40,7 @@ df.test <- df[-train,]
 time <- df.train$time
 
 
-params <- gen.params.gmjmcmc(ncol(df.train) - 1)
+params <- gen.params.gmjmcmc(ncol(df.train) - 2)
 params$feat$keep.min = 0.2
 transforms <- c("p0","p2","p3","p05","pm05","pm1","pm2")
 probs <- gen.probs.gmjmcmc(transforms)
@@ -72,12 +69,13 @@ surv.pseudo.loglik = function(y, x, model, complex, mlpost_params){
     # Compute criterion and consider special cases like multicollinearity
     
     crit <- mloglik + lp
-    if(is.na(crit) | is.infinite(crit)|sum(is.na(out$coefficients))>0)
+    if(sum(is.na(out$coefficients))>0)   #Get rid of models with collinearities (with more than two features)
       crit <- -.Machine$double.xmax
     
     return(list(crit = crit, coefs =  c(0,out$coefficients)))
   }
 }
+
 
 
 #######################################################
@@ -102,7 +100,7 @@ summary(result1,labels = names(df.train)[-(1:2)], tol = 0.01)
 
 
 set.seed(122)
-result2 <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], params = params, N = 500,
+result2 <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], params = params,
                 method = "mjmcmc.parallel", runs = 80, cores = 40,
                 family = "custom", loglik.pi = surv.pseudo.loglik, 
                 model_prior = list(r = 0.5), extra_params = list(time = time))
@@ -117,7 +115,7 @@ set.seed(123)
 probs$gen <- c(0,1,0,1)
 
 
-result3 <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], params = params, P = 25, 
+result3 <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], params = params, P = 10, 
                 transforms = transforms, method = "gmjmcmc.parallel", runs = 80, cores = 40,
                 family = "custom", loglik.pi = surv.pseudo.loglik, 
                 model_prior = list(r = 0.5), extra_params = list(time = time))
@@ -132,7 +130,7 @@ set.seed(124)
 probs$gen <- c(1,1,1,1)
 
 
-result4 <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], params = params, P = 25, 
+result4 <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], params = params, P = 10, 
                 transforms = transforms, method = "gmjmcmc.parallel", runs = 80, cores = 40,
                 family = "custom", loglik.pi = surv.pseudo.loglik, 
                 model_prior = list(r = 0.5), extra_params = list(time = time))
@@ -201,7 +199,8 @@ cindex5 <- cindex(mod5, mod5$formula, data = as.data.frame(df.test), cens.model 
 mod6 <- coxph(Surv(time, cens) ~ 1, data = as.data.frame(df.train[,1:11]),x = T)
 cindex6 <- cindex(mod6, mod6$formula, data = as.data.frame(df.test), cens.model = 'cox')$AppCindex
 
-round(unlist(c(cindex1, cindex2, cindex3, cindex4, cindex5, cindex6)),3)
+all.cindices = round(unlist(c(cindex1, cindex2, cindex3, cindex4, cindex5, cindex6)),3)
+names(all.cindices) = c("Model 1", "Model 2", "Model 3", "Model 4", "Full Linear Model", "Null Model")
 
 # Clean the train and test data for the next type of predictions
 
@@ -253,9 +252,7 @@ cindex3 <- cindex(mod3, mod3$formula, data = as.data.frame(df.test), cens.model 
 mod4 <- coxph(Surv(time, cens) ~ best.lin.pred4, data = as.data.frame(df.train),  x = TRUE)
 cindex4 <- cindex(mod4, mod4$formula, data = as.data.frame(df.test), cens.model = 'cox')$AppCindex
 
-
-
-round(unlist(c(cindex1, cindex2, cindex3, cindex4, cindex5, cindex6)),3)
+all.cindices <- rbind(all.cindices, round(unlist(c(cindex1, cindex2, cindex3, cindex4, cindex5, cindex6)),3))
 
 # Clean the train and test data for the next type of predictions
 
@@ -321,4 +318,7 @@ mod4 <- coxph(Surv(time, cens) ~ mpm.lin.pred4, data = as.data.frame(df.train), 
 cindex4 <- cindex(mod4, mod4$formula, data = as.data.frame(df.test), cens.model = 'cox')$AppCindex
 
 
-round(unlist(c(cindex1, cindex2, cindex3, cindex4, cindex5, cindex6)),3)
+all.cindices <- rbind(all.cindices, round(unlist(c(cindex1, cindex2, cindex3, cindex4, cindex5, cindex6)),3))
+rownames(all.cindices) = c("Model Averaging", "Best Model", "MPM")
+
+print(all.cindices)
