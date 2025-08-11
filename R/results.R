@@ -52,19 +52,19 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
     complex.measure <- 2
   if (is.null(tol))
     tol <- 0.0000001
-
+  
   # Check and filter results that did not run successfully
   results <- filter.results(results)
   raw.results <- results
   res.count <- length(results)
-
+  
   # Select populations to use
   res.lengths <- vector("list")
   for (i in 1:res.count) res.lengths[[i]] <- length(results[[i]]$populations)
   if (populations == "last") pops.use <- res.lengths
   else if (populations == "all") pops.use <- lapply(res.lengths, function(x) 1:x)
   else if (populations == "best") pops.use <- lapply(1:res.count, function(x) which.max(unlist(results[[x]]$best.marg)))
-
+  
   # Get the population weigths to be able to weight the features
   pw <- population.weigths(results, pops.use)
   pop.weights <- pw$weights
@@ -96,7 +96,7 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
       renorms <- append(renorms, pop.weights[weight_idx] * results[[i]]$marg.probs[[pop]])
       results[[i]]$pop.weights[pop] <- pop.weights[weight_idx]
       weight_idx <- weight_idx + 1
-
+      
       model.probs <- marginal.probs.renorm(results[[i]]$models[[pop]], "models")
       results[[i]]$model.probs[[pop]] <- model.probs$probs
       results[[i]]$models[[pop]] <- results[[i]]$models[[pop]][model.probs$idx]
@@ -119,10 +119,10 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
     features <- features[-na.feats]
   }
   feat.count <- length(features)
-
+  
   # Get complexity for all features
   complex <- complex.features(features)
-
+  
   ## Detect equivalent features
   # Generate mock data to compare features with
   if (is.null(data)) mock.data <- list(x = matrix(runif((results[[1]]$ncov)^2, -100, 100), ncol = results[[1]]$ncov))
@@ -131,10 +131,10 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
   if (results[[1]]$intercept) mock.data$x <- cbind(1, mock.data$x)
   
   mock.data.precalc <- precalc.features(mock.data, features)$x[ , seq_len(feat.count) + results[[1]]$fixed, drop = FALSE]
-
+  
   # Calculate the correlation to find equivalent features
   cors <- cor(mock.data.precalc)
-
+  
   # A map to link equivalent features together,
   # row 1-3 are the simplest equivalent features based on three different complexity measures
   # row 4 is the total weighted density of those features
@@ -177,7 +177,7 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
 filter.results <- function (results) {
   res.count <- length(results)
   res.converged <- sum(sapply(results, function(x) length(x) > 1))
-
+  
   if (res.converged == 0) {
     stop(paste0("All chains resulted in an error!", results[[1]],"\n Please debug and restart"))
   }
@@ -209,7 +209,7 @@ population.weigths <- function (results, pops.use) {
     }
   }
   max.crits <- unlist(max.crits)
-
+  
   return(list(weights = exp(max.crits-max.crit) / sum(exp(max.crits-max.crit)), best = max.crit, thread.best = thread.best, pop.best = pop.best))
 }
 
@@ -290,21 +290,21 @@ model.string <- function (model, features, link = "I", round = 2) {
 #'
 #' @export
 get.mpm.model <- function(result, y, x, labels = F, family = "gaussian", loglik.pi = gaussian.loglik, params = NULL) {
-   
-   transforms.bak <- set.transforms(result$transforms)
-   
-   if (!family %in% c("custom","binomial","gaussian"))
+  
+  transforms.bak <- set.transforms(result$transforms)
+  
+  if (!family %in% c("custom","binomial","gaussian"))
     warning("Unknown family specified. The default gaussian.loglik will be used.")
- 
+  
   if(!labels & length(result$labels)>0)
     labels <- result$labels
-   
+  
   if (!is.null(attr(result, which = "imputed")))
     x <- impute_x(result,x)
   
   if (family == "binomial")
     loglik.pi <- logistic.loglik
-
+  
   if (is(result, "mjmcmc_parallel")) {
     models <- unlist(lapply(result$chains, function (x) x$models), recursive = FALSE)
     marg.probs <- marginal.probs.renorm(models)$probs
@@ -330,7 +330,10 @@ get.mpm.model <- function(result, y, x, labels = F, family = "gaussian", loglik.
   
   coefs <- loglik.pi(y = y, x = precalc$x, model = rep(TRUE, length(features) + result$fixed), complex = list(oc = 0), mlpost_params = params)$coefs
   
+  coefs[is.na(coefs)] <- 0
+  
   names(coefs) <- c(names(coefs)[seq_len(result$fixed)], sapply(features, print.feature,labels = labels))
+  
   
   model <- structure(list(
     coefs = coefs,
@@ -339,7 +342,7 @@ get.mpm.model <- function(result, y, x, labels = F, family = "gaussian", loglik.
     intercept = result$intercept,
     needs.precalc = FALSE
   ), class = "bgnlm_model")
- 
+  
   set.transforms(transforms.bak)
   
   attr(model, which = "imputed") <- attr(result, which = "imputed")
@@ -407,7 +410,7 @@ get.best.model <- function(result, labels = FALSE) {
   }
   
   if (is(result,"gmjmcmc_merged")) {
-   
+    
     if (length(labels) == 1 && labels[1] == FALSE && length(result$results.raw[[1]]$labels) > 0) {
       labels <- result$results.raw[[1]]$labels
     }
@@ -522,7 +525,7 @@ plot.gmjmcmc <- function (x, count = "all", pop = "best", tol = 0.0000001, data 
     x <- merge_results(results, pop, 2, 0.0000001, data = data)
     return(marg.prob.plot(sapply(x$features, print), x$marg.probs, count = count))
   }
- 
+  
   if (pop == "last") pop <- length(x$populations)
   if (is.null(x$populations)) {
     pops <- x$features
@@ -566,7 +569,7 @@ plot.mjmcmc <- function (x, count = "all", ...) {
     feats.strings <- sapply(x$populations, print)
     marg.probs <- x$marg.probs
   }
-
+  
   marg.prob.plot(feats.strings, marg.probs, count)
   set.transforms(transforms.bak)
   return("done")
@@ -683,7 +686,7 @@ compute_effects <- function(object, labels, quantiles = c(0.025, 0.5, 0.975)) {
   else
     preds.eff <- t(preds.eff$quantiles)
   preds.eff[2:(length(labels) + 1), ] <- preds.eff[2:(length(labels) + 1), ] - preds.eff[1, ]
-
+  
   summ <- data.frame(cbind(c("intercept", labels), round(preds.eff, 4)))
   names(summ) <- c("Covariate", paste0("quant_", quantiles))
   return(summ)
