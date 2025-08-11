@@ -125,13 +125,25 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
   
   ## Detect equivalent features
   # Generate mock data to compare features with
-  if (is.null(data)) mock.data <- list(x = matrix(runif((results[[1]]$ncov)^2, -100, 100), ncol = results[[1]]$ncov))
-  else mock.data <- list(x = data)
-  mock.data$fixed = results[[1]]$fixed
-  if (results[[1]]$intercept) mock.data$x <- cbind(1, mock.data$x)
-  
-  mock.data.precalc <- precalc.features(mock.data, features)$x[ , seq_len(feat.count) + results[[1]]$fixed, drop = FALSE]
-  
+  uk <- 1 
+  good.mock <- FALSE
+  while(!good.mock & uk < 10)
+  {
+    uk <- uk + 1
+    if (is.null(data)) mock.data <- list(x = matrix(runif((results[[1]]$ncov)^2, -100, 100), ncol = results[[1]]$ncov))
+    else 
+      if(is.null(data$x)) mock.data <- list(x = data) else mock.data = data
+    mock.data$fixed = results[[1]]$fixed
+    if (results[[1]]$intercept) mock.data$x <- cbind(1, mock.data$x)
+    
+    mock.data.precalc <- precalc.features(mock.data, features)$x[ , seq_len(feat.count) + results[[1]]$fixed, drop = FALSE]
+    
+    if(min(sapply(1:dim(mock.data.precalc)[2], function(x)sd(mock.data.precalc[,x])))>0)
+    {
+      good.mock <- TRUE
+      break
+    }
+  }
   # Calculate the correlation to find equivalent features
   cors <- cor(mock.data.precalc)
   
