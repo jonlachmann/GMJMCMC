@@ -126,7 +126,7 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
   ## Detect equivalent features
   # Generate mock data to compare features with
   if (is.null(data)) mock.data <- list(x = matrix(runif((results[[1]]$ncov)^2, -100, 100), ncol = results[[1]]$ncov))
-  else mock.data <- data
+  else mock.data <- list(x = data)
   mock.data$fixed = results[[1]]$fixed
   if (results[[1]]$intercept) mock.data$x <- cbind(1, mock.data$x)
   
