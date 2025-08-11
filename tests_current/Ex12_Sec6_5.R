@@ -41,7 +41,6 @@ time <- df.train$time
 
 
 params <- gen.params.gmjmcmc(ncol(df.train) - 2)
-params$feat$keep.min = 0.2
 transforms <- c("p0","p2","p3","p05","pm05","pm1","pm2")
 probs <- gen.probs.gmjmcmc(transforms)
 probs$gen <- c(1,1,0,0)
@@ -101,7 +100,7 @@ summary(result1,labels = names(df.train)[-(1:2)], tol = 0.01)
 
 set.seed(122)
 result2 <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], params = params,
-                method = "mjmcmc.parallel", runs = 80, cores = 40,
+                method = "mjmcmc.parallel", runs = 40, cores = 40,
                 family = "custom", loglik.pi = surv.pseudo.loglik, 
                 model_prior = list(r = 0.5), extra_params = list(time = time))
 
@@ -113,30 +112,29 @@ summary(result2,tol = 0.01,labels = names(df.train)[-(1:2)],effects = c(0.025,0.
 
 set.seed(123)
 probs$gen <- c(0,1,0,1)
+params$feat$D <- 1
 
-
-result3 <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], params = params, P = 10, 
-                transforms = transforms, method = "gmjmcmc.parallel", runs = 80, cores = 40,
+result3 <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], params = params, probs = probs, P = 10,
+                transforms = transforms, method = "gmjmcmc.parallel", runs = 40, cores = 40,
                 family = "custom", loglik.pi = surv.pseudo.loglik, 
                 model_prior = list(r = 0.5), extra_params = list(time = time))
 
 
-summary(result3,tol = 0.01,labels = names(df.train)[-(1:2)],effects = c(0.025,0.5,0.975))
+summary(result3,tol = 0.01, effects = c(0.025,0.5,0.975))
 
 
 
 # 4) Parallel version using all types of non-linear features
 set.seed(124)
 probs$gen <- c(1,1,1,1)
-
-
-result4 <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], params = params, P = 10, 
-                transforms = transforms, method = "gmjmcmc.parallel", runs = 80, cores = 40,
+params$feat$D <- 5
+result4 <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], params = params, probs = probs,P = 20, 
+                transforms = transforms, method = "gmjmcmc.parallel", runs = 40, cores = 40,
                 family = "custom", loglik.pi = surv.pseudo.loglik, 
                 model_prior = list(r = 0.5), extra_params = list(time = time))
 
 
-summary(result4,tol = 0.01,labels = names(df.train)[-c(1,2)],effects = c(0.025,0.5,0.975))
+summary(result4,tol = 0.01)
 
 
 

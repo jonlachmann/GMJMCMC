@@ -45,7 +45,12 @@ predict.bgnlm_model <- function(object, x, link = function(x) {x}, x_train = NUL
     if (object$intercept) {
       x <- cbind(1, x)
     }
-    precalc <- precalc.features(list(x = x, y = NULL, fixed = object$fixed), object$features)
+    
+    if(object$intercept & length(object$features)==0)
+    {
+      warning("MPM has no featres included! All posteriors below 0.5! Baseline only used.")
+      x.precalc <-  model.matrix(~1, data = x)
+    } else precalc <- precalc.features(list(x = x, y = NULL, fixed = object$fixed), object$features)
     
     if (dim(precalc$x)[2]>length(object$coefs[object$coefs!=0])) {
       precalc$x <- as.matrix(precalc$x[,-1])
@@ -53,10 +58,18 @@ predict.bgnlm_model <- function(object, x, link = function(x) {x}, x_train = NUL
     
     yhat <- link(precalc$x %*% object$coefs[object$coefs != 0])
   } else {
-    x.precalc <- model.matrix(
-      as.formula(paste0("~I(", paste0(names(object$coefs)[-1][object$coefs[-1]!=0], collapse = ")+I("), ")")),
-      data = x
-    )
+    
+    if(object$intercept & length(object$coefs)==1)
+    {
+      warning("MPM has no featres included! All posteriors below 0.5! Baseline only used.")
+      x.precalc <-  model.matrix(~1, data = x)
+    }
+    else{
+      x.precalc <- model.matrix(
+        as.formula(paste0("~I(", paste0(names(object$coefs)[-1][object$coefs[-1]!=0], collapse = ")+I("), ")")),
+        data = x
+      )
+    }
     
     if (dim(x.precalc)[2]<length(object$coefs[object$coefs!=0])) {
       x.precalc <- cbind(1,x.precalc)
