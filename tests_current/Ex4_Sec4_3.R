@@ -11,8 +11,6 @@
 
 library(FBMS)
 
-setwd("/home/florian/FBMS/")
-
 
 url <- "https://www.uniklinik-freiburg.de/fileadmin/mediapool/08_institute/biometrie-statistik/Dateien/Studium_und_Lehre/Lehrbuecher/Multivariable_Model-building/ART.zip"
 temp_dir <- tempfile()

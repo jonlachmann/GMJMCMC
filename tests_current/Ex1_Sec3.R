@@ -8,7 +8,6 @@
 #
 ##################################################
 
-setwd("/home/florian/FBMS")
 
 #install.packages("FBMS")
 #install.packages("devtools")
