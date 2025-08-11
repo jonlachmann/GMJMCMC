@@ -46,7 +46,7 @@ predict.bgnlm_model <- function(object, x, link = function(x) {x}, x_train = NUL
       x <- cbind(1, x)
     }
     
-    if(object$intercept & length(object$features)==0)
+    if(length(object$features)==0)
     {
       warning("MPM has no featres included! All posteriors below 0.5! Baseline only used.")
       x.precalc <-  model.matrix(~1, data = x)
@@ -59,7 +59,7 @@ predict.bgnlm_model <- function(object, x, link = function(x) {x}, x_train = NUL
     yhat <- link(precalc$x %*% object$coefs[object$coefs != 0])
   } else {
     
-    if(object$intercept & length(object$coefs)==1)
+    if(length(object$coefs)==1)
     {
       warning("MPM has no featres included! All posteriors below 0.5! Baseline only used.")
       x.precalc <-  model.matrix(~1, data = x)
