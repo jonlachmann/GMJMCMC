@@ -13,7 +13,7 @@ The `FBMS` package provides functions to estimate Bayesian Generalized nonlinear
 To install and load the development version of the package, just run
 ```
 library(devtools)
-install_github("jonlachmann/GMJMCMC@FBMS", force=T, build_vignettes=T)
+install_github("jonlachmann/GMJMCMC@data-inputs", force=T, build_vignettes=T)
 library(FBMS)
 ```
 With the package loaded, a vignette that shows how to run the package is available by running
