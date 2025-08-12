@@ -60,7 +60,7 @@ fbms(
 
 \item{extra_params}{extra parameters to be passed to the loglik.pi function}
 
-\item{data}{A data frame containing the variables in the model. If NULL, the variables are taken from the environment of the formula. Default is NULL.}
+\item{data}{A data frame or matrix containing the data to be used for model fitting. If the outcome variable is in the first column of the data frame, the formula argument in fbms can be omitted, provided that all other columns are intended to serve as input covariates.}
 
 \item{impute}{TRUE  means imputation combined with adding a dummy column with indicators of imputed values, FALSE (default) means only full data is used.}
 

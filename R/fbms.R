@@ -38,7 +38,7 @@
 #' @param model_prior a list with parameters of model priors, by default r should be provided
 #' @param extra_params extra parameters to be passed to the loglik.pi function
 #' @param loglik.pi Custom function to compute the logarithm of the posterior mode based on logarithm of marginal likelihood and logarithm of prior functions (needs specification only used if family = "custom")
-#' @param data A data frame containing the variables in the model. If NULL, the variables are taken from the environment of the formula. Default is NULL.
+#' @param data A data frame or matrix containing the data to be used for model fitting. If the outcome variable is in the first column of the data frame, the formula argument in fbms can be omitted, provided that all other columns are intended to serve as input covariates.
 #' @param method Which fitting algorithm should be used, currently implemented options include "gmjmcmc", "gmjmcmc.parallel", "mjmcmc" and "mjmcmc.parallel" with "mjmcmc" being the default and 'mjmcmc' means that only linear models will be estimated
 #' @param verbose If TRUE, print detailed progress information during the fitting process. Default is TRUE.
 #' @param impute TRUE  means imputation combined with adding a dummy column with indicators of imputed values, FALSE (default) means only full data is used.
