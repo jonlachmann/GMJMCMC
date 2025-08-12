@@ -32,7 +32,8 @@ Suggests:
     rmarkdown,
     markdown,
     lme4,
-    kernlab
+    kernlab,
+    mvtnorm
 RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr
