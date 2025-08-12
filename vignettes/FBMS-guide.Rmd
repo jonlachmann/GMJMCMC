@@ -10,13 +10,624 @@ vignette: >
 
 The `FBMS` package provides functions for Flexible Bayesian Model Selection and Model Averaging.
 
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
+```{r}
+library(FBMS)
 ```
 
-# Examples
+## Bayesian Model Selection and Averaging
 
-Must be provided based on test_currect folder
+1.  Consider a class of models: $\Omega: m_1(Y|X,\theta_1), \dots, m_k(Y|X,\theta_k)$
+2.  Assign priors:
+    -   For models: $P(m_1), \dots, P(m_k)$\
+    -   For parameters: $P(\theta_1|m_1), \dots, P(\theta_k|m_k)$
+3.  Obtain joint posterior distribution: $P(m_1,\theta_1|D), \dots, P(m_k,\theta_k|D)$
+4.  Make inference on $\Delta$:\
+    $P(\Delta|D) = \sum_{\Omega} P(m|D) \int_{\Theta} P(\Delta|m,\theta,D) P(\theta|m,D) d\theta$
+
+### Bayesian Generalized Nonlinear Model
+
+**Reference**: [@hubin2020flexible]\
+$$
+\begin{aligned}
+Y_i | \mu_i, \phi &\sim \mathfrak{f}(y|\mu_i,\phi), \quad i = 1, \dots, n \\
+\mathsf{h}(\mu_i) &= \beta_0 + \sum_{j=1}^{q} \gamma_j \beta_j F_j(\boldsymbol{x}_i, \boldsymbol{\alpha}_j) + \sum_{k=1}^{r} \delta_k
+\end{aligned}
+$$ - **Predictors (features)**: $F_j(\boldsymbol{x}_i, \boldsymbol{\alpha}_j)$, $j = 1, \dots, q$\
+- **Random effects**: $\delta_k$\
+- Total models: $2^q$
+
+### Features
+
+**Resulting Feature Space**:\
+Vast, depending on allowed nonlinear functions $\mathcal{G}$. Includes:\
+- $g(x) = \text{sigmoid}(x)$ implies Neural networks\
+- $g(x) = \text{I}(x \geq 1)$ implies Decision trees\
+- $g(x) = \max(0, x-t)$ implies Adaptive regression splines\
+- $g(x) = x^{r/s}$ implies Fractional polynomials\
+- Logic combinations implies Logic regression\
+- And more
+
+### Transformations Available in FBMS
+
+| Name    | Function                  | Name    | Function                 |
+|---------|---------------------------|---------|--------------------------|
+| sigmoid | $1 / (1 + \exp(-x))$      | sqroot  | $|x|^{1/2}$              |
+| relu    | $\max(x, 0)$              | troot   | $|x|^{1/3}$              |
+| nrelu   | $\max(-x, 0)$             | sin_deg | $\sin(x/180 \cdot \pi)$  |
+| hs      | $x > 0$                   | cos_deg | $\cos(x/180 \cdot \pi)$  |
+| nhs     | $x < 0$                   | exp_dbl | $\exp(-|x|)$             |
+| gelu    | $x \Phi(x)$               | gauss   | $\exp(-x^2)$             |
+| ngelu   | $-x \Phi(-x)$             | erf     | $2 \Phi(\sqrt{2}x) - 1$  |
+| pm2     | $x^{-2}$                  | p0pm2   | $p0(x) \cdot x^{-2}$     |
+| pm1     | $\text{sign}(x) |x|^{-1}$ | p0pm05  | $p0(x) \cdot |x|^{-0.5}$ |
+| pm05    | $|x|^{-0.5}$              | p0p0    | $p0(x)^2$                |
+| p05     | $|x|^{0.5}$               | p0p05   | $p0(x) \cdot |x|^{0.5}$  |
+| p2      | $x^2$                     | p0p1    | $p0(x) \cdot x$          |
+| p3      | $x^3$                     | p0p2    | $p0(x) \cdot x^2$        |
+|         |                           | p0p3    | $p0(x) \cdot x^3$        |
+
+Custom functions can be added to $\mathcal{G}$.
+
+### Model Priors
+
+**Model topology**: $M = (\gamma_1, \dots, \gamma_q)$, for linear models $q = p$\
+**Prior**:\
+$$
+P(M) \propto \text{I}(|\boldsymbol\gamma_{1:q}| \leq Q) \prod_{j=1}^q r^{\gamma_j c(F_j(\mathbf{x}, \boldsymbol{\alpha}_j))}, \quad 0 < r < 1
+$$ - $c(F_j(\mathbf{x}))$: Complexity measure\
+- Linear models: $c(x) = 1$\
+- BGNLM: Counts algebraic operators + 1
+
+### Parameter Priors
+
+**Mixtures of g-priors**:\
+$$
+\begin{aligned}
+P(\beta_0, \phi | M) &\propto \phi^{-1} \\
+P(\boldsymbol{\beta} | g) &\sim N_{|M|}(\boldsymbol{0}, g \cdot \phi \mathcal{J}_n(\boldsymbol{\beta})^{-1}) \\
+P\left(\frac{1}{1+g}\right) &\sim tCCH\left(\frac{a}{2}, \frac{b}{2}, \rho, \frac{s}{2}, v, \kappa\right)
+\end{aligned}
+$$ - Robust-g prior: $a=1, b=2, \rho=1.5, s=0, v=\frac{n+1}{|M|+1}, \kappa=1$
+
+**Jeffreys prior**:\
+$$
+P(\phi | M) = \phi^{-1}, \quad P(\beta_0, \boldsymbol{\beta} | M) = |\mathcal{J}_n(\beta_0, \boldsymbol{\beta})|^{\frac{1}{2}}
+$$
+
+**All priors available**
+
+| Prior (Alias) | $a$ | $b$ | $\rho$ | $s$ | $v$ | $k$ | Families |
+|----|----|----|----|----|----|----|----|
+| **Default:** |  |  |  |  |  |  |  |
+| `g-prior` | $g$ (default: $\max(n, p^2)$) |  |  |  |  |  | GLM |
+| **tCCH-Related Priors:** |  |  |  |  |  |  |  |
+| `CH` | $a$ | $b$ | 0 | $s$ | 1 | 1 | GLM |
+| `hyper-g` | 1 | 2 | 0 | 0 | 1 | 1 | GLM |
+| `uniform` | 2 | 2 | 0 | 0 | 1 | 1 | GLM |
+| `Jeffreys` | 0 | 2 | 0 | 0 | 1 | 1 | GLM |
+| `beta.prime` | $\frac{1}{2}$ | $n - p_{\M} - 1.5$ | 0 | 0 | 1 | 1 | GLM |
+| `benchmark` | 0.02 | $0.02 \max(n, p^2)$ | 0 | 0 | 1 | 1 | GLM |
+| `TG` | $2a$ | 2 | 0 | $2s$ | 1 | 1 | GLM |
+| `ZS-adapted` | 1 | 2 | 0 | $n + 3$ | 1 | 1 | GLM |
+| `robust` | 1 | 2 | 1.5 | 0 | $\frac{n+1}{p_{\M} + 1}$ | 1 | GLM |
+| `hyper-g-n` | 1 | 2 | 1.5 | 0 | 1 | $\frac{1}{n}$ | GLM |
+| `intrinsic` | 1 | 1 | 1 | 0 | $\frac{n + p_{\M} + 1}{p_{\M} + 1}$ | $\frac{n + p_{\M} + 1}{n}$ | GLM |
+| `tCCH` | $a$ | $b$ | $\rho$ | $s$ | $v$ | $k$ | GLM |
+| **Other Priors:** |  |  |  |  |  |  |  |
+| `EB-local` | $a$ |  |  |  |  |  | GLM |
+| `EB-global` | $a$ |  |  |  |  |  | G |
+| `JZS` | $a$ |  |  |  |  |  | G |
+| `ZS-null` | $a$ |  |  |  |  |  | G |
+| `ZS-full` | $a$ |  |  |  |  |  | G |
+| `hyper-g-laplace` | $a$ |  |  |  |  |  | G |
+| `AIC` | None |  |  |  |  |  | GLM |
+| `BIC` | None |  |  |  |  |  | GLM |
+| `Jeffreys-BIC` | Var |  |  |  |  |  | GLM |
+
+*Parameter priors available in the `fbms.mlik.master` estimator function with hyperparameters and applicability.* $p_{\M}$ is the number of predictors excluding the intercept. G stands for only "gaussian" family, GLM includes additionally the "binomial", "poisson", and "gamma" families. Hyperparameters $a, b, \rho, s, v, k$ are as defined for tCCH priors; others use specific parameters as noted. Parameters in italics (e.g., $a, s, g$) denote user-specified values.
+
+## Inference Algorithms
+
+### Computation of Model Posterior
+
+**Marginal likelihood**:\
+$$
+P(D|M) = \int_{\theta_M \in \Theta_M} P(D|\theta_M, M) P(\theta_M|M) d\theta_M
+$$ - Use conjugate priors, Laplace approximation, INLA, etc.
+
+**Posterior**:\
+$$
+P(M|D) = \frac{P(D|M) P(M)}{\sum_{M' \in \Omega} P(D|M') P(M')}
+$$
+
+**Approximation**:\
+$$
+P(M|D) \approx \frac{P(D|M) P(M)}{\sum_{M' \in \Omega^*} P(D|M') P(M')}, \quad M \in \Omega^*
+$$ - Marginal inclusion probability:\
+$$
+P(\gamma_j=1|D) \approx \sum_{M \in \Omega^*: \gamma_j=1} P(M|D)
+$$
+
+### Algorithmic Details: MCMC
+
+**Variable selection**: $2^p$ potential models\
+- Multimodality implies MCMC trapped by local maxima or low acceptance ratios.
+
+**Mode Jumping MCMC (MJMCMC)**:\
+- Random model + local improvement proposals.\
+- Valid Metropolis-Hastings acceptance probability [@hubin2018mode].
+
+### Algorithmic Details: GMJMCMC
+
+**Problem**: Large model space $\Omega$ for BGNLM/Logic Regressions.\
+**GMJMCMC Solution**: [@hubin2020logic; @hubin2020flexible]\
+- Embeds MJMCMC in a genetic algorithm with populations $\mathcal{S}_1, \mathcal{S}_2, \dots, \mathcal{S}_{T_{max}}$.\
+- Uses multiplication, modification, projection, mutation operators.
+
+**RGMJMCMC Solution**: [@hubin2021reversible]\
+- Proper MCMC algorithm.
+
+**Subsampling**: [@lachmann2022subsampling]\
+- Runs (R)(G)MJMCMC on tall data via SGD.
+
+### Parallelization
+
+-   Run $B$ (R)(G)MJMCMC chains on different CPUs.\
+-   Combine unique models into $\Omega^*$.\
+-   Evaluate posterior:\
+    $$
+    \widehat{P}(\Delta|D) = \sum_{M \in \Omega^*} P(\Delta|M,D) \widehat{P}(M|D)
+    $$
+
+### Bayesian Linear Models
+
+**Reference**: [@hubin2018mode]\
+**Sample**: Observations $i = 1, \dots, n$\
+- $Y_i$: Response data\
+- $\boldsymbol{x}_i = (x_{i1}, \dots, x_{ip})$: $p$-dimensional vector of input covariates
+
+$$
+\begin{aligned}
+Y_i | \mu_i, \phi &\sim \mathfrak{f}(y|\mu_i,\phi), \quad i = 1, \dots, n \\
+\mathsf{h}(\mu_i) &= \beta_0 + \sum_{j=1}^{p} \gamma_j \beta_j x_{ij}
+\end{aligned}
+$$
+
+-   $\mathfrak{f}(\cdot|\mu,\phi)$: Density from exponential family with mean $\mu_i$ and dispersion $\phi$
+-   $\mathsf{h}$: Link function
+-   $\beta_j \in \mathbb{R}$: Regression coefficients with priors $P(\beta_j|\gamma_j)$
+-   $\gamma_j \in \{0,1\}$: Indicator for $j$-th covariate with priors $P(\gamma_j)$
+-   $M= (\gamma_1, \dots, \gamma_p)$: $2^p$ models in total
+
+### Example
+
+**True model**: `correct.model = c(4, 7, 9, 12, 15)`\
+**Coefficients**:\
+$$
+\boldsymbol{\beta} = (0, 0, 0, 0.21, 0, 0, 1.07, 0, 0.82, 0, 0, 1.95, 0, 0, 1.15, 0, 0, 0, 0, 0)
+$$ **Data**:\
+$$
+X \sim \mathcal{MVN}(0, \textbf{I}_{20}), \quad y = X^T \boldsymbol{\beta} + \varepsilon, \quad \varepsilon \sim {N(0, 1)}
+$$
+
+Generate the data
+
+```{r}
+library(mvtnorm)
+n <- 100  # sample size
+p <- 20   # number of covariates
+p.vec <- 1:p
+
+
+k <- 5    #size of the data generating model
+
+
+correct.model <- 1:k
+beta.k <- (1:5)/5   # Coefficents of the correct submodel
+
+beta <- c(rep(0, p))
+beta[correct.model] <- beta.k
+
+set.seed(123)
+
+x <- rmvnorm(n, rep(0, p))
+y <- x %*% beta    + rnorm(n)
+X <- as.matrix(x)
+
+y<-scale(y)
+X<-scale(X)/sqrt(n)
+
+
+df <- as.data.frame(cbind(y, X))
+colnames(df) <- c("Y", paste0("X", seq_len(ncol(df) - 1)))
+
+correct.model
+beta.k
+```
+
+run MJMCMC with a g-prior with
+
+```{r}
+result.lin <- fbms(formula = Y ~ 1 + ., data = df, beta_prior = list(type = "g-prior", g = 100), method = "mjmcmc", N = 5000)
+```
+
+### Plotting the Output
+
+```{r}
+plot(result.lin)
+```
+
+### Summary of the Output
+
+```{r}
+#effects allows to specify quantiles for posterior modes of the effects across the space of models that we want to see
+summary(result.lin,effects = c(0.5,0.025,0.975))
+```
+
+### Bayesian Fractional Polynomials
+
+**Reference**: [@hubin2023fractional]\
+**Polynomial terms**:\
+- $\mathbf{F}_0 = \{x\}$\
+- $\mathbf{F}_1 = \{x^{-2}, x^{-1}, x^{-0.5}, \log x, x^{0.5}, x^{2}, x^{3}\}$\
+- $\mathbf{F}_2 = \{x^{-2}\log x, x^{-1}\log x, x^{-0.5}\log x, \log x \log x, x^{0.5}\log x, x\log x, x^{2}\log x, x^{3}\log x\}$\
+- $\mathcal{K}$: Indexes of $\mathbf{F}_0 \cup \mathbf{F}_1 \cup \mathbf{F}_2$\
+- $\rho_k(x)$: Polynomial term from $\{\mathbf{F}_0 \cup \mathbf{F}_1 \cup \mathbf{F}_2\}_k$
+
+$$
+\begin{aligned}
+Y_i | \mu_i, \phi &\sim \mathfrak{f}(y|\mu_i,\phi), \quad i = 1, \dots, n \\
+\mathsf{h}(\mu_i) &= \beta_0 + \sum_{j=1}^{p} \sum_{k \in \mathcal{K}} \gamma_{jk} \beta_{jk} \rho_k(x_{ij})
+\end{aligned}
+$$ - Total models: $2^{p \times |\mathcal{K}|}$
+
+### Example
+
+**True Model**:\
+$$
+y = {x_1^{0.5} + x_1 + x_3^{-0.5} + x_3^{-0.5} * \log(x_3) + x_{4a} + x_5^{-1} + \log(x_6) + x_8 + x_{10} + \epsilon}, \quad \epsilon \sim {N(0, 1)}
+$$ **Dimensions**: \$n = 250, p = 12 \$\$
+
+**Prepare the parameters**
+
+```{r}
+transforms <- c("p0", "p2", "p3", "p05", "pm05", "pm1", "pm2", "p0p0",
+                "p0p05", "p0p1", "p0p2", "p0p3", "p0p05", "p0pm05", "p0pm1", "p0pm2") # FPs allowed
+probs <- gen.probs.gmjmcmc(transforms)
+probs$gen <- c(0, 1, 0, 1) # only modifications and mutations allowed
+params <- gen.params.gmjmcmc(ncol(df) - 1)
+params$feat$D <- 1 #max depths of features of 1 allowed
+```
+
+Run the GMJMCMC algorithm
+
+```{r}
+# Run parallel GMJMCMC
+result <- fbms(formula = y ~ 1 + ., data = df, 
+                       method = "gmjmcmc", 
+                       transforms = transforms, 
+                       beta_prior = list(type = "Jeffreys-BIC"), 
+                       probs = probs, params = params, P = 25)
+
+summary(result)
+```
+
+And the parallel GMJMCMC
+
+```{r}
+# Run parallel GMJMCMC
+result_parallel <- fbms(formula = y ~ 1 + ., data = df, 
+                       method = "gmjmcmc.parallel", 
+                       transforms = transforms, 
+                       beta_prior = list(type = "Jeffreys-BIC"), 
+                       probs = probs, params = params, P = 25, runs = 5, cores = 5)
+
+summary(result_parallel)
+```
+
+### Mixed effects FPs with interactions
+
+**Dataset**: $n = 659$ kids\
+**Response**: $y$ - standardized height\
+**Variables**: c.bf, c.age, m.ht, m.bmi, reg, dr\
+**Model**: Fractional polynomials with random effects on districts.
+
+**Define a custom estimator function that allows random effects**
+
+```{r}
+# Custom log-likelihood for mixed model
+mixed.model.loglik.lme4 <- function (y, x, model, complex, mlpost_params) 
+{
+  # logarithm of marginal likelihood (Laplace approximation)
+  if (sum(model) > 1) {
+    x.model = x[,model]
+    data <- data.frame(y, x = x.model[,-1], dr = mlpost_params$dr)
+    mm <- lmer(as.formula(paste0("y ~ 1 +",paste0(names(data)[2:(dim(data)[2]-1)],collapse = "+"), "+ (1 | dr)")), data = data, REML = FALSE)
+  } else{   #model without fixed effects
+    data <- data.frame(y, dr = mlpost_params$dr)
+    mm <- lmer(as.formula(paste0("y ~ 1 + (1 | dr)")), data = data, REML = FALSE)
+  }
+  mloglik <- as.numeric(logLik(mm))  -  0.5*log(length(y)) * (dim(data)[2] - 2) #Laplace approximation for beta prior
+  # logarithm of model prior
+  if (length(mlpost_params$r) == 0)  mlpost_params$r <- 1/dim(x)[1]  # default value or parameter r
+  lp <- log_prior(mlpost_params, complex)
+  return(list(crit = mloglik + lp, coefs = fixef(mm)))
+}
+
+```
+
+**Run parallel GMJMCMC**
+
+```{r}
+
+library(lme4)
+
+data(Zambia, package = "cAIC4")
+df <- as.data.frame(sapply(Zambia[1:5],scale))
+
+
+transforms <- c("p0","p2","p3","p05","pm05","pm1","pm2","p0p0","p0p05","p0p1","p0p2","p0p3","p0p05","p0pm05","p0pm1","p0pm2")
+probs <- gen.probs.gmjmcmc(transforms)
+probs$gen <- c(1,1,0,1) # Modifications and interactions
+
+params <- gen.params.gmjmcmc(ncol(df) - 1)
+params$feat$D <- 1   # Set depth of features to 1 (still allows for interactions)
+params$feat$pop.max = 10
+
+params$feat$pop.max = 10
+
+result2a <- fbms(formula = z ~ 1+., data = df, transforms = transforms,
+                 probs = probs, params = params, P=25, N = 100,
+                 method = "gmjmcmc.parallel", runs = 4, cores = 4,
+                 family = "custom", loglik.pi = mixed.model.loglik.lme4,
+                 model_prior = list(r = 1/dim(df)[1]), 
+                 extra_params = list(dr = droplevels(Zambia$dr)))
+  
+summary(result2a,tol = 0.05,labels=names(df)[-1])   
+```
+
+### Bayesian Logic Regression
+
+**Reference**: [@hubin2020logic]\
+$$
+\begin{aligned}
+Y_i | \mu_i, \phi &\sim \mathfrak{f}(y|\mu_i,\phi), \quad i = 1, \dots, n \\
+\mathsf{h}(\mu_i) &= \beta_0 + \sum_{j=1}^{q} \gamma_j \beta_j L_{ji}
+\end{aligned}
+$$ - **Trees**: Logical combinations (e.g., $L_{ji} = (x_{i1} \wedge x_{i2}) \vee x_{i3}^c$)\
+- **Leaves**: $v(L_j) = \{x_{i1}, x_{i2}, x_{i3}\}$, size $s$ is cardinality of leaves\
+- Total models: $2^q$
+
+### Example
+
+**True Model**:\
+$$
+y = {1 + 1.5 x_{37} + 3.5 x_2 \wedge x_9 + 9 x_7 \wedge x_{12} \wedge x_{20} + 7 x_4 \wedge x_{10} \wedge x_{17} \wedge x_{30} + \epsilon}, \quad \epsilon \sim {N(0, 1)}
+$$ **Data**: $n = 2000, p = 50$, $x_j \sim Bernoulli(0.5)$
+
+**Generate the data:**
+
+```{r}
+n = 2000
+p = 50
+
+set.seed(1)
+X2 <- as.data.frame(array(data = rbinom(n = n*p,size = 1,prob = runif(n = n*p,0,1)),dim = c(n,p)))
+y2.Mean = 1+7*(X2$V4*X2$V17*X2$V30*X2$V10) + 9*(X2$V7*X2$V20*X2$V12)+ 3.5*(X2$V9*X2$V2)+1.5*(X2$V37)
+
+Y2 <- rnorm(n = n,mean = y2.Mean,sd = 1)
+df <- data.frame(Y2,X2)
+summary(df)
+
+str(df)
+
+
+# Split data into training and test dataset
+df.training <- df[1:(n/2),]
+df.test <- df[(n/2 + 1):n,]
+df.test$Mean <- y2.Mean[(n/2 + 1):n]
+
+```
+
+**Define custom estimator function with logic regression priors**
+
+```{r}
+
+estimate.logic.lm = function(y, x, model, complex, mlpost_params)
+{
+  # Computation of marginal log-likelihood using Jeffreys prior
+  suppressWarnings({
+    mod <- fastglm(as.matrix(x[, model]), y, family = gaussian())
+  })
+  mloglik <- -(mod$aic + (log(length(y))-2) * (mod$rank))/2 
+  
+  # Computation of log of model prior
+  wj <- complex$width
+  lp <- sum(log(factorial(wj))) - sum(wj*log(4*mlpost_params$p) - log(4))
+  
+  # log posterior up to a constant
+  logpost <- mloglik + lp 
+  
+  if(logpost==-Inf)
+    logpost = -10000
+  
+  return(list(crit = logpost, coefs = mod$coefficients))
+}
+```
+
+**Run the GMJMCMC algorithm:**
+
+```{r}
+set.seed(5001)
+# We can easily run it without an "or" operator as "and" and "not" allow 
+# to compute "or" through de Morgan law.
+
+transforms <- c("not")
+probs <- gen.probs.gmjmcmc(transforms)
+probs$gen <- c(1,1,0,1) #No projections allowed
+
+params <- gen.params.gmjmcmc(p)
+params$feat$pop.max <- 50
+params$feat$L <- 15
+
+
+result <- fbms(formula = Y2~1+., data = df.training, probs = probs, params = params,  
+               method = "gmjmcmc", transforms = transforms, N = 500, P = 25,
+               family = "custom", loglik.pi = estimate.logic.lm,
+               model_prior = list(p = p))
+summary(result)
+mpm <- get.mpm.model(result, y = df.training$Y2, x = df.training[,-1], family = "custom", loglik.pi = estimate.logic.lm,params = list(p = 50))
+mpm$coefs
+mpm <- get.mpm.model(result, y = df.training$Y2, x = df.training[,-1])
+mpm$coefs
+mbest <- get.best.model(result)
+mbest$coefs
+
+
+pred <- predict(result, x =  df.test[,-1], link = function(x)(x))  
+pred_mpm <- predict(mpm, x =  df.test[,-1], link = function(x)(x))
+pred_best <- predict(mbest, x =  df.test[,-1], link = function(x)(x))
+
+
+#prediction errors
+sqrt(mean((pred$aggr$mean - df.test$Y2)^2))
+sqrt(mean((pred_mpm - df.test$Y2)^2))
+sqrt(mean((pred_best - df.test$Y2)^2))
+sqrt(mean((df.test$Mean - df.test$Y2)^2))
+
+#prediction errors to the true means
+sqrt(mean((pred$aggr$mean - df.test$Mean)^2))
+sqrt(mean((pred_best - df.test$Mean)^2))
+sqrt(mean((pred_mpm - df.test$Mean)^2))
+
+
+#plot the predictions
+plot(pred$aggr$mean, df.test$Y2)
+points(pred$aggr$mean,df.test$Mean,col = 2)
+points(pred_best,df.test$Mean,col = 3)
+points(pred_mpm,df.test$Mean,col = 4)
+
+```
+
+### Full Bayesian Generalized Nonlinear Model predictive Example with Bernoulli outcomes: Spam Data
+
+**Dataset**: $n = 3600$, test sample: $n_t = 1000$, $p = 58$
+
+```{r}
+library(kernlab)
+data("spam")
+df <- spam[,c(58,1:57)]
+
+#number of observations and covariates
+
+n <- dim(df)[1] 
+p <- dim(df)[2] - 1   
+
+colnames(df) <-  c("y", paste0("x",1:p))
+df$y = as.numeric(df$y == "spam")
+
+to3 <- function(x) x^3
+transforms <- c("sigmoid","sin_deg","exp_dbl","p0","troot","to3")
+probs <- gen.probs.gmjmcmc(transforms)
+probs$gen <- c(1,1,1,1) 
+
+params <- gen.params.gmjmcmc(p)
+params$feat$check.col <- F
+
+####################################################
+#
+# single thread analysis
+#
+####################################################
+
+
+set.seed(6001)
+# Perform analysis with logistic.loglik
+result <- fbms(formula = y~1+.,data = df, method = "gmjmcmc", 
+               family = "binomial", beta_prior = list(type = "Jeffreys-BIC"),
+               transforms = transforms, probs = probs, params = params)
+
+summary(result)
+
+
+#######################
+#
+# Prediction accuracy
+# IMPORTANT: specify correct link function for predict
+#
+
+# Model averaging
+pred <- predict(result, x =  df[,-1], link = function(x)(1/(1+exp(-x))))  
+print(mean(round(pred$aggr$mean)==df$y))
+
+# Best model
+bm <- get.best.model(result = result)
+preds <-  predict(object = bm, df[,-1],link = function(x)(1/(1+exp(-x))))
+print(mean(round(preds)==df$y))
+
+# Median Probability Model
+mpm <- get.mpm.model(result = result,family = "binomial",y = df$y,x=df[,-1])
+preds <-  predict(mpm, df[,-1],link = function(x)(1/(1+exp(-x))))
+print(mean(round(preds)==df$y))
+
+```
+
+### Third Kepler's Law recovery
+
+**Dataset**: $n = 939$ exoplanets\
+**Variables**: semimajoraxis, mass, radius, period, eccentricity, hoststar_mass, hoststar_radius, hoststar_metallicity, hoststar_temperature, binaryflag
+
+**Kepler's Third Law**:\
+$$
+{a \approx K_2 \left(P^2 M_h\right)^{\frac{1}{3}}}
+$$
+
+```{r}
+# Load and split exoplanet data
+data <- FBMS::exoplanet
+transforms <- c("sigmoid", "sin_deg", "exp_dbl", "p0", "troot", "p3")
+
+# Run parallel GMJMCMC
+result_parallel <- fbms(formula = semimajoraxis ~ 1 + ., 
+                       data = data, 
+                       method = "gmjmcmc.parallel", transforms = transforms,
+                       runs = 20, cores = 10, P = 25)
+
+# Summarize GMJMCMC results
+summary(result_parallel)
+```
+
+**Convergence plots**
+
+```{r}
+diagn_plot(result_parallel)
+```
+
+## Further Possibilities
+
+-   **Velocity improvements**:
+    -   Extensions to stochastic variational Bayes.
+-   **Missing Data**:
+    -   Beta support for automatic imputations.
+-   **Cox Regression**:
+    -   Supports Gaussian, Poisson, Gamma, Bernoulli likelihoods.\
+    -   Not restricted to GLM.
+-   **Model Priors**:
+    -   Specify in `loglik.pi` function.\
+    -   Different dependence on feature complexity.
+
+------------------------------------------------------------------------
+
+## The R Package
+
+**FBMS**:\
+- Flexible Bayesian Model Selection.\
+- New CRAN version coming soon.\
+- Manuscript nearly finished.
+
+**Attributes**:\
+- Single-thread and parallel versions.\
+- Linear and logistic regression with Jeffreys prior.\
+- User-defined models and priors.\
+- `fbms` function as general wrapper.\
+- Future: Additional algorithms.
