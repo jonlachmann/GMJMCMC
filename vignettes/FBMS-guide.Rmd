@@ -12,6 +12,8 @@ The `FBMS` package provides functions for Flexible Bayesian Model Selection and 
 
 ```{r}
 library(FBMS)
+runs <- 1 #specify 20 on your machine
+cores <- 1 #specify 10 on your machine
 ```
 
 ## Bayesian Model Selection and Averaging
@@ -97,7 +99,7 @@ $$
 **All priors available**
 
 | Prior (Alias) | $a$ | $b$ | $\rho$ | $s$ | $v$ | $k$ | Families |
-|----|----|----|----|----|----|----|----|
+|---------|---------|---------|---------|---------|---------|---------|---------|
 | **Default:** |  |  |  |  |  |  |  |
 | `g-prior` | $g$ (default: $\max(n, p^2)$) |  |  |  |  |  | GLM |
 | **tCCH-Related Priors:** |  |  |  |  |  |  |  |
@@ -320,7 +322,7 @@ result_parallel <- fbms(formula = y ~ 1 + ., data = df,
                        method = "gmjmcmc.parallel", 
                        transforms = transforms, 
                        beta_prior = list(type = "Jeffreys-BIC"), 
-                       probs = probs, params = params, P = 25, runs = 5, cores = 5)
+                       probs = probs, params = params, P = 25, runs = runs, cores = cores)
 
 summary(result_parallel)
 ```
@@ -378,7 +380,7 @@ params$feat$pop.max = 10
 
 result2a <- fbms(formula = z ~ 1+., data = df, transforms = transforms,
                  probs = probs, params = params, P=25, N = 100,
-                 method = "gmjmcmc.parallel", runs = 4, cores = 4,
+                 method = "gmjmcmc.parallel", runs = runs, cores = cores,
                  family = "custom", loglik.pi = mixed.model.loglik.lme4,
                  model_prior = list(r = 1/dim(df)[1]), 
                  extra_params = list(dr = droplevels(Zambia$dr)))
@@ -591,7 +593,9 @@ transforms <- c("sigmoid", "sin_deg", "exp_dbl", "p0", "troot", "p3")
 result_parallel <- fbms(formula = semimajoraxis ~ 1 + ., 
                        data = data, 
                        method = "gmjmcmc.parallel", transforms = transforms,
-                       runs = 20, cores = 10, P = 25)
+                       runs = runs, cores = cores, P = 50)
+#note that with runs = 1, convergence is not liekely here, change runs and cores to improve.
+#default are 1 to have quickly compilable vignettes
 
 # Summarize GMJMCMC results
 summary(result_parallel)
