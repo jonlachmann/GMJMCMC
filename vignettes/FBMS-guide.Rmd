@@ -14,6 +14,23 @@ The `FBMS` package provides functions for Flexible Bayesian Model Selection and 
 library(FBMS)
 runs <- 1 #specify 20 on your machine
 cores <- 1 #specify 10 on your machine
+
+knitr::opts_chunk$set(
+  message = TRUE,  # suppress package startup and other messages
+  warning = FALSE,  # suppress warnings
+  echo    = TRUE,   # still show code unless you turn it off per chunk
+  results = "hide" 
+)
+
+#for careful printing of only what I want
+printn <- function(x) {
+  # Capture the *exact* console print output as a character vector
+  txt <- capture.output(print(x))
+  
+  # Combine lines with newline, send as a message to be shown in output
+  # Using message to show even if results="hide"
+  message(paste(txt, collapse = "\n"))
+}
 ```
 
 ## Bayesian Model Selection and Averaging
@@ -41,7 +58,7 @@ $$ - **Predictors (features)**: $F_j(\boldsymbol{x}_i, \boldsymbol{\alpha}_j)$, 
 ### Features
 
 **Resulting Feature Space**:\
-Vast, depending on allowed nonlinear functions $\mathcal{G}$. Includes:\
+Vast, depending on allowed nonlinear functions ${G}$. Includes:\
 - $g(x) = \text{sigmoid}(x)$ implies Neural networks\
 - $g(x) = \text{I}(x \geq 1)$ implies Decision trees\
 - $g(x) = \max(0, x-t)$ implies Adaptive regression splines\
@@ -68,7 +85,7 @@ Vast, depending on allowed nonlinear functions $\mathcal{G}$. Includes:\
 | p3      | $x^3$                     | p0p2    | $p0(x) \cdot x^2$        |
 |         |                           | p0p3    | $p0(x) \cdot x^3$        |
 
-Custom functions can be added to $\mathcal{G}$.
+Custom functions can be added to ${G}$.
 
 ### Model Priors
 
@@ -86,14 +103,14 @@ $$ - $c(F_j(\mathbf{x}))$: Complexity measure\
 $$
 \begin{aligned}
 P(\beta_0, \phi | M) &\propto \phi^{-1} \\
-P(\boldsymbol{\beta} | g) &\sim N_{|M|}(\boldsymbol{0}, g \cdot \phi \mathcal{J}_n(\boldsymbol{\beta})^{-1}) \\
+P(\boldsymbol{\beta} | g) &\sim N_{|M|}(\boldsymbol{0}, g \cdot \phi {J}_n(\boldsymbol{\beta})^{-1}) \\
 P\left(\frac{1}{1+g}\right) &\sim tCCH\left(\frac{a}{2}, \frac{b}{2}, \rho, \frac{s}{2}, v, \kappa\right)
 \end{aligned}
 $$ - Robust-g prior: $a=1, b=2, \rho=1.5, s=0, v=\frac{n+1}{|M|+1}, \kappa=1$
 
 **Jeffreys prior**:\
 $$
-P(\phi | M) = \phi^{-1}, \quad P(\beta_0, \boldsymbol{\beta} | M) = |\mathcal{J}_n(\beta_0, \boldsymbol{\beta})|^{\frac{1}{2}}
+P(\phi | M) = \phi^{-1}, \quad P(\beta_0, \boldsymbol{\beta} | M) = |{J}_n(\beta_0, \boldsymbol{\beta})|^{\frac{1}{2}}
 $$
 
 **All priors available**
@@ -107,13 +124,13 @@ $$
 | `hyper-g` | 1 | 2 | 0 | 0 | 1 | 1 | GLM |
 | `uniform` | 2 | 2 | 0 | 0 | 1 | 1 | GLM |
 | `Jeffreys` | 0 | 2 | 0 | 0 | 1 | 1 | GLM |
-| `beta.prime` | $\frac{1}{2}$ | $n - p_{\M} - 1.5$ | 0 | 0 | 1 | 1 | GLM |
+| `beta.prime` | $\frac{1}{2}$ | $n - p_{M} - 1.5$ | 0 | 0 | 1 | 1 | GLM |
 | `benchmark` | 0.02 | $0.02 \max(n, p^2)$ | 0 | 0 | 1 | 1 | GLM |
 | `TG` | $2a$ | 2 | 0 | $2s$ | 1 | 1 | GLM |
 | `ZS-adapted` | 1 | 2 | 0 | $n + 3$ | 1 | 1 | GLM |
-| `robust` | 1 | 2 | 1.5 | 0 | $\frac{n+1}{p_{\M} + 1}$ | 1 | GLM |
+| `robust` | 1 | 2 | 1.5 | 0 | $\frac{n+1}{p_{M} + 1}$ | 1 | GLM |
 | `hyper-g-n` | 1 | 2 | 1.5 | 0 | 1 | $\frac{1}{n}$ | GLM |
-| `intrinsic` | 1 | 1 | 1 | 0 | $\frac{n + p_{\M} + 1}{p_{\M} + 1}$ | $\frac{n + p_{\M} + 1}{n}$ | GLM |
+| `intrinsic` | 1 | 1 | 1 | 0 | $\frac{n + p_{M} + 1}{p_{M} + 1}$ | $\frac{n + p_{M} + 1}{n}$ | GLM |
 | `tCCH` | $a$ | $b$ | $\rho$ | $s$ | $v$ | $k$ | GLM |
 | **Other Priors:** |  |  |  |  |  |  |  |
 | `EB-local` | $a$ |  |  |  |  |  | GLM |
@@ -126,7 +143,7 @@ $$
 | `BIC` | None |  |  |  |  |  | GLM |
 | `Jeffreys-BIC` | Var |  |  |  |  |  | GLM |
 
-*Parameter priors available in the `fbms.mlik.master` estimator function with hyperparameters and applicability.* $p_{\M}$ is the number of predictors excluding the intercept. G stands for only "gaussian" family, GLM includes additionally the "binomial", "poisson", and "gamma" families. Hyperparameters $a, b, \rho, s, v, k$ are as defined for tCCH priors; others use specific parameters as noted. Parameters in italics (e.g., $a, s, g$) denote user-specified values.
+*Parameter priors available in the FBMS package with hyperparameters and applicability.* $p_{M}$ is the number of predictors excluding the intercept. G stands for only "gaussian" family, GLM includes additionally the "binomial", "poisson", and "gamma" families. Hyperparameters $a, b, \rho, s, v, k$ are as defined for tCCH priors; others use specific parameters as noted. Parameters in italics (e.g., $a, s, g$) denote user-specified values.
 
 ## Inference Algorithms
 
@@ -163,7 +180,7 @@ $$
 
 **Problem**: Large model space $\Omega$ for BGNLM/Logic Regressions.\
 **GMJMCMC Solution**: [@hubin2020logic; @hubin2020flexible]\
-- Embeds MJMCMC in a genetic algorithm with populations $\mathcal{S}_1, \mathcal{S}_2, \dots, \mathcal{S}_{T_{max}}$.\
+- Embeds MJMCMC in a genetic algorithm with populations ${S}_1, {S}_2, \dots, {S}_{T_{max}}$.\
 - Uses multiplication, modification, projection, mutation operators.
 
 **RGMJMCMC Solution**: [@hubin2021reversible]\
@@ -209,7 +226,7 @@ $$
 \boldsymbol{\beta} = (0, 0, 0, 0.21, 0, 0, 1.07, 0, 0.82, 0, 0, 1.95, 0, 0, 1.15, 0, 0, 0, 0, 0)
 $$ **Data**:\
 $$
-X \sim \mathcal{MVN}(0, \textbf{I}_{20}), \quad y = X^T \boldsymbol{\beta} + \varepsilon, \quad \varepsilon \sim {N(0, 1)}
+X \sim {MVN}(0, \textbf{I}_{20}), \quad y = X^T \boldsymbol{\beta} + \varepsilon, \quad \varepsilon \sim {N(0, 1)}
 $$
 
 Generate the data
@@ -243,14 +260,14 @@ X<-scale(X)/sqrt(n)
 df <- as.data.frame(cbind(y, X))
 colnames(df) <- c("Y", paste0("X", seq_len(ncol(df) - 1)))
 
-correct.model
-beta.k
+printn(correct.model)
+printn(beta.k)
 ```
 
 run MJMCMC with a g-prior with
 
 ```{r}
-result.lin <- fbms(formula = Y ~ 1 + ., data = df, beta_prior = list(type = "g-prior", g = 100), method = "mjmcmc", N = 5000)
+result.lin <- fbms(formula = Y ~ 1 + ., data = df, beta_prior = list(type = "g-prior", g = 1000), method = "mjmcmc", N = 5000)
 ```
 
 ### Plotting the Output
@@ -263,7 +280,7 @@ plot(result.lin)
 
 ```{r}
 #effects allows to specify quantiles for posterior modes of the effects across the space of models that we want to see
-summary(result.lin,effects = c(0.5,0.025,0.975))
+printn(summary(result.lin,effects = c(0.5,0.025,0.975)))
 ```
 
 ### Bayesian Fractional Polynomials
@@ -273,26 +290,29 @@ summary(result.lin,effects = c(0.5,0.025,0.975))
 - $\mathbf{F}_0 = \{x\}$\
 - $\mathbf{F}_1 = \{x^{-2}, x^{-1}, x^{-0.5}, \log x, x^{0.5}, x^{2}, x^{3}\}$\
 - $\mathbf{F}_2 = \{x^{-2}\log x, x^{-1}\log x, x^{-0.5}\log x, \log x \log x, x^{0.5}\log x, x\log x, x^{2}\log x, x^{3}\log x\}$\
-- $\mathcal{K}$: Indexes of $\mathbf{F}_0 \cup \mathbf{F}_1 \cup \mathbf{F}_2$\
+- ${K}$: Indexes of $\mathbf{F}_0 \cup \mathbf{F}_1 \cup \mathbf{F}_2$\
 - $\rho_k(x)$: Polynomial term from $\{\mathbf{F}_0 \cup \mathbf{F}_1 \cup \mathbf{F}_2\}_k$
 
 $$
 \begin{aligned}
 Y_i | \mu_i, \phi &\sim \mathfrak{f}(y|\mu_i,\phi), \quad i = 1, \dots, n \\
-\mathsf{h}(\mu_i) &= \beta_0 + \sum_{j=1}^{p} \sum_{k \in \mathcal{K}} \gamma_{jk} \beta_{jk} \rho_k(x_{ij})
+\mathsf{h}(\mu_i) &= \beta_0 + \sum_{j=1}^{p} \sum_{k \in {K}} \gamma_{jk} \beta_{jk} \rho_k(x_{ij})
 \end{aligned}
-$$ - Total models: $2^{p \times |\mathcal{K}|}$
+$$ - Total models: $2^{p \times |{K}|}$
 
 ### Example
 
 **True Model**:\
 $$
-y = {x_1^{0.5} + x_1 + x_3^{-0.5} + x_3^{-0.5} * \log(x_3) + x_{4a} + x_5^{-1} + \log(x_6) + x_8 + x_{10} + \epsilon}, \quad \epsilon \sim {N(0, 1)}
+y = {x_1^{0.5} + x_1 + x_3^{-0.5} + x_3^{-0.5} * \log(x_3) + x_{4} + x_5^{-1} + \log(x_6) + x_8 + x_{10} + \epsilon}, \quad \epsilon \sim {N(0, 1)}
 $$ **Dimensions**: \$n = 250, p = 12 \$\$
 
 **Prepare the parameters**
 
 ```{r}
+
+df$Y <- p05(df$X1) + df$X1 + pm05(df$X3) + p0pm05(df$X3) + df$X4 + pm1(df$X5) + p0(df$X6) + df$X8 + df$X10 + rnorm(dim(df)[1])
+
 transforms <- c("p0", "p2", "p3", "p05", "pm05", "pm1", "pm2", "p0p0",
                 "p0p05", "p0p1", "p0p2", "p0p3", "p0p05", "p0pm05", "p0pm1", "p0pm2") # FPs allowed
 probs <- gen.probs.gmjmcmc(transforms)
@@ -301,20 +321,20 @@ params <- gen.params.gmjmcmc(ncol(df) - 1)
 params$feat$D <- 1 #max depths of features of 1 allowed
 ```
 
-Run the GMJMCMC algorithm
+**Run the GMJMCMC algorithm**
 
 ```{r}
 # Run parallel GMJMCMC
-result <- fbms(formula = y ~ 1 + ., data = df, 
+result <- fbms(formula = Y ~ 1 + ., data = df, 
                        method = "gmjmcmc", 
                        transforms = transforms, 
                        beta_prior = list(type = "Jeffreys-BIC"), 
                        probs = probs, params = params, P = 25)
 
-summary(result)
+printn(summary(result))
 ```
 
-And the parallel GMJMCMC
+**And the parallel GMJMCMC**
 
 ```{r}
 # Run parallel GMJMCMC
@@ -324,7 +344,7 @@ result_parallel <- fbms(formula = y ~ 1 + ., data = df,
                        beta_prior = list(type = "Jeffreys-BIC"), 
                        probs = probs, params = params, P = 25, runs = runs, cores = cores)
 
-summary(result_parallel)
+printn(summary(result_parallel))
 ```
 
 ### Mixed effects FPs with interactions
@@ -385,7 +405,7 @@ result2a <- fbms(formula = z ~ 1+., data = df, transforms = transforms,
                  model_prior = list(r = 1/dim(df)[1]), 
                  extra_params = list(dr = droplevels(Zambia$dr)))
   
-summary(result2a,tol = 0.05,labels=names(df)[-1])   
+printn(summary(result2a,tol = 0.05,labels=names(df)[-1]))
 ```
 
 ### Bayesian Logic Regression
@@ -419,9 +439,6 @@ y2.Mean = 1+7*(X2$V4*X2$V17*X2$V30*X2$V10) + 9*(X2$V7*X2$V20*X2$V12)+ 3.5*(X2$V9
 
 Y2 <- rnorm(n = n,mean = y2.Mean,sd = 1)
 df <- data.frame(Y2,X2)
-summary(df)
-
-str(df)
 
 
 # Split data into training and test dataset
@@ -477,7 +494,7 @@ result <- fbms(formula = Y2~1+., data = df.training, probs = probs, params = par
                method = "gmjmcmc", transforms = transforms, N = 500, P = 25,
                family = "custom", loglik.pi = estimate.logic.lm,
                model_prior = list(p = p))
-summary(result)
+printn(summary(result))
 mpm <- get.mpm.model(result, y = df.training$Y2, x = df.training[,-1], family = "custom", loglik.pi = estimate.logic.lm,params = list(p = 50))
 mpm$coefs
 mpm <- get.mpm.model(result, y = df.training$Y2, x = df.training[,-1])
@@ -492,15 +509,15 @@ pred_best <- predict(mbest, x =  df.test[,-1], link = function(x)(x))
 
 
 #prediction errors
-sqrt(mean((pred$aggr$mean - df.test$Y2)^2))
-sqrt(mean((pred_mpm - df.test$Y2)^2))
-sqrt(mean((pred_best - df.test$Y2)^2))
-sqrt(mean((df.test$Mean - df.test$Y2)^2))
+printn(sqrt(mean((pred$aggr$mean - df.test$Y2)^2)))
+printn(sqrt(mean((pred_mpm - df.test$Y2)^2)))
+printn(sqrt(mean((pred_best - df.test$Y2)^2)))
+printn(sqrt(mean((df.test$Mean - df.test$Y2)^2)))
 
 #prediction errors to the true means
-sqrt(mean((pred$aggr$mean - df.test$Mean)^2))
-sqrt(mean((pred_best - df.test$Mean)^2))
-sqrt(mean((pred_mpm - df.test$Mean)^2))
+printn(sqrt(mean((pred$aggr$mean - df.test$Mean)^2)))
+printn(sqrt(mean((pred_best - df.test$Mean)^2)))
+printn(sqrt(mean((pred_mpm - df.test$Mean)^2)))
 
 
 #plot the predictions
@@ -549,7 +566,7 @@ result <- fbms(formula = y~1+.,data = df, method = "gmjmcmc",
                family = "binomial", beta_prior = list(type = "Jeffreys-BIC"),
                transforms = transforms, probs = probs, params = params)
 
-summary(result)
+printn(summary(result))
 
 
 #######################
@@ -560,17 +577,17 @@ summary(result)
 
 # Model averaging
 pred <- predict(result, x =  df[,-1], link = function(x)(1/(1+exp(-x))))  
-print(mean(round(pred$aggr$mean)==df$y))
+printn(mean(round(pred$aggr$mean)==df$y))
 
 # Best model
 bm <- get.best.model(result = result)
 preds <-  predict(object = bm, df[,-1],link = function(x)(1/(1+exp(-x))))
-print(mean(round(preds)==df$y))
+printn(mean(round(preds)==df$y))
 
 # Median Probability Model
 mpm <- get.mpm.model(result = result,family = "binomial",y = df$y,x=df[,-1])
 preds <-  predict(mpm, df[,-1],link = function(x)(1/(1+exp(-x))))
-print(mean(round(preds)==df$y))
+printn(mean(round(preds)==df$y))
 
 ```
 
@@ -594,11 +611,11 @@ result_parallel <- fbms(formula = semimajoraxis ~ 1 + .,
                        data = data, 
                        method = "gmjmcmc.parallel", transforms = transforms,
                        runs = runs, cores = cores, P = 50)
-#note that with runs = 1, convergence is not liekely here, change runs and cores to improve.
+#note that with runs = 1, convergence is not likely here, change runs and cores to improve.
 #default are 1 to have quickly compilable vignettes
 
 # Summarize GMJMCMC results
-summary(result_parallel)
+printn(summary(result_parallel))
 ```
 
 **Convergence plots**
