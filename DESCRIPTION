@@ -30,7 +30,9 @@ Suggests:
     testthat,
     knitr,
     rmarkdown,
-    markdown
+    markdown,
+    lme4,
+    kernlab
 RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr
