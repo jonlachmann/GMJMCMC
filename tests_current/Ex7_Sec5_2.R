@@ -33,7 +33,7 @@ str(df)
 # Split data into training and test dataset
 df.training <- df[1:(n/2),]
 df.test <- df[(n/2 + 1):n,]
-df.test$Mean <- y2.mean[(n/2 + 1):n]
+df.test$Mean <- y2.Mean[(n/2 + 1):n]
 
 
 

@@ -93,7 +93,7 @@ result1 <- fbms(formula = cens ~ 1 + .,data = df.train[,-1], params = params, P 
                 extra_params = list(time = time))
 
 
-summary(result1,labels = names(df.train)[-(1:2)], tol = 0.01)
+summary(result1,labels = names(df.train)[-(1:2)])
 
 # 2) Parallel version only linear terms
 
