@@ -31,7 +31,7 @@ mjmcmc(
 
 \item{loglik.pi}{A function specifying the marginal log-posterior of the model up to a constant, including the logarithm of the model prior:
 \eqn{\log p(M|Y) = \text{const} + \log p(Y|M) + \log p(M)}.
-Typically assumes a Gaussian model with Zellner's g prior with g = max(n,p^2) by default.}
+Typically assumes a Gaussian model with Zellner's g prior with \eqn{g = max(n,p^2) by default}.}
 
 \item{mlpost_params}{All parameters for the estimator function loglik.pi}
 
