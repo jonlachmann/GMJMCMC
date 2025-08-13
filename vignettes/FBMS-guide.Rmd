@@ -305,7 +305,7 @@ $$ - Total models: $2^{p \times |{K}|}$
 **True Model**:\
 $$
 y = {x_1^{0.5} + x_1 + x_3^{-0.5} + x_3^{-0.5} * \log(x_3) + x_{4} + x_5^{-1} + \log(x_6) + x_8 + x_{10} + \epsilon}, \quad \epsilon \sim {N(0, 1)}
-$$ **Dimensions**: \$n = 250, p = 12 \$\$
+$$ **Dimensions**: $n = 250, p = 12$ also covariates from the previous example on linear model.
 
 **Prepare the parameters**
 
@@ -638,17 +638,3 @@ diagn_plot(result_parallel)
     -   Different dependence on feature complexity.
 
 ------------------------------------------------------------------------
-
-## The R Package
-
-**FBMS**:\
-- Flexible Bayesian Model Selection.\
-- New CRAN version coming soon.\
-- Manuscript nearly finished.
-
-**Attributes**:\
-- Single-thread and parallel versions.\
-- Linear and logistic regression with Jeffreys prior.\
-- User-defined models and priors.\
-- `fbms` function as general wrapper.\
-- Future: Additional algorithms.

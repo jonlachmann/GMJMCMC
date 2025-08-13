@@ -25,7 +25,7 @@ library(RTMB)
 library(INLA)
 
 #install.packages("cAIC4") 
-#library(cAIC4)
+library(cAIC4)
 
 data(Zambia, package = "cAIC4")
 df <- as.data.frame(sapply(Zambia[1:5],scale))
