@@ -8,12 +8,10 @@ vignette: >
   %\VignetteDepends{fastglm, FBMS}
 ---
 
-The `FBMS` package provides functions for Flexible Bayesian Model Selection and Model Averaging.
+Load technical markdown settings and a custom function for printing only what is needed through **printn()** function.
 
-```{r}
-library(FBMS)
-runs <- 1 #specify 20 on your machine
-cores <- 1 #specify 10 on your machine
+```{r include=FALSE}
+
 
 knitr::opts_chunk$set(
   message = TRUE,  # suppress package startup and other messages
@@ -22,7 +20,7 @@ knitr::opts_chunk$set(
   results = "hide" 
 )
 
-#for careful printing of only what I want
+#for careful printing of only what I explicitly ask for
 printn <- function(x) {
   # Capture the *exact* console print output as a character vector
   txt <- capture.output(print(x))
@@ -31,6 +29,16 @@ printn <- function(x) {
   # Using message to show even if results="hide"
   message(paste(txt, collapse = "\n"))
 }
+```
+
+The `FBMS` package provides functions for Flexible Bayesian Model Selection and Model Averaging.
+
+```{r}
+library(FBMS)
+# Parameters for parallel runs which you might choose specifically for your machine
+runs <- 1  #use e.g. 8 on your machine
+cores <- 1 #use e.g. 8 on your machine
+
 ```
 
 ## Bayesian Model Selection and Averaging
@@ -116,7 +124,7 @@ $$
 **All priors available**
 
 | Prior (Alias) | $a$ | $b$ | $\rho$ | $s$ | $v$ | $k$ | Families |
-|---------|---------|---------|---------|---------|---------|---------|---------|
+|----|----|----|----|----|----|----|----|
 | **Default:** |  |  |  |  |  |  |  |
 | `g-prior` | $g$ (default: $\max(n, p^2)$) |  |  |  |  |  | GLM |
 | **tCCH-Related Priors:** |  |  |  |  |  |  |  |
@@ -197,6 +205,41 @@ $$
     $$
     \widehat{P}(\Delta|D) = \sum_{M \in \Omega^*} P(\Delta|M,D) \widehat{P}(M|D)
     $$
+
+### Example of BGNLM: third Kepler's Law recovery
+
+**Dataset**: $n = 939$ exoplanets\
+**Variables**: semimajoraxis, mass, radius, period, eccentricity, hoststar_mass, hoststar_radius, hoststar_metallicity, hoststar_temperature, binaryflag
+
+**Kepler's Third Law**:\
+$$
+{a \approx K_2 \left(P^2 M_h\right)^{\frac{1}{3}}}
+$$
+
+```{r}
+# Load and split exoplanet data
+data <- FBMS::exoplanet
+transforms <- c("sigmoid", "sin_deg", "exp_dbl", "p0", "troot", "p3")
+
+# Run parallel GMJMCMC
+result_parallel <- fbms(formula = semimajoraxis ~ 1 + ., 
+                       data = data, 
+                       method = "gmjmcmc.parallel", transforms = transforms,
+                       runs = runs, cores = cores, P = 50)
+#note that with runs = 1, convergence is not likely here, change runs and cores to improve.
+#default are 1 to have quickly compilable vignettes
+
+# Summarize GMJMCMC results
+printn(summary(result_parallel))
+```
+
+**Convergence plots**
+
+```{r}
+diagn_plot(result_parallel)
+```
+
+## 
 
 ### Bayesian Linear Models
 
@@ -589,39 +632,6 @@ mpm <- get.mpm.model(result = result,family = "binomial",y = df$y,x=df[,-1])
 preds <-  predict(mpm, df[,-1],link = function(x)(1/(1+exp(-x))))
 printn(mean(round(preds)==df$y))
 
-```
-
-### Third Kepler's Law recovery
-
-**Dataset**: $n = 939$ exoplanets\
-**Variables**: semimajoraxis, mass, radius, period, eccentricity, hoststar_mass, hoststar_radius, hoststar_metallicity, hoststar_temperature, binaryflag
-
-**Kepler's Third Law**:\
-$$
-{a \approx K_2 \left(P^2 M_h\right)^{\frac{1}{3}}}
-$$
-
-```{r}
-# Load and split exoplanet data
-data <- FBMS::exoplanet
-transforms <- c("sigmoid", "sin_deg", "exp_dbl", "p0", "troot", "p3")
-
-# Run parallel GMJMCMC
-result_parallel <- fbms(formula = semimajoraxis ~ 1 + ., 
-                       data = data, 
-                       method = "gmjmcmc.parallel", transforms = transforms,
-                       runs = runs, cores = cores, P = 50)
-#note that with runs = 1, convergence is not likely here, change runs and cores to improve.
-#default are 1 to have quickly compilable vignettes
-
-# Summarize GMJMCMC results
-printn(summary(result_parallel))
-```
-
-**Convergence plots**
-
-```{r}
-diagn_plot(result_parallel)
 ```
 
 ## Further Possibilities
