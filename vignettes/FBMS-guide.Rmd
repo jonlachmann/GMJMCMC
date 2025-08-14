@@ -790,4 +790,4 @@ printn(mean(round(preds_mpm) == df$y))
 -   Hubin, A., Frommlet, F., & Storvik, G. (2020). *Flexible Bayesian Model Averaging for Generalized Nonlinear Models.*\
 -   Hubin, A., et al. (2020). *Bayesian Logic Regression via GMJMCMC.*\
 -   Hubin, A., et al. (2021). *Reversible GMJMCMC.*\
--   Lachmann, A., et al. (2022). *Subsampling for tall data in GMJMCMC.*
+-   Lachmann, J., et al. (2022). *Subsampling for tall data in GMJMCMC.*
