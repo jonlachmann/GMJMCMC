@@ -5,6 +5,8 @@
 [![codecov](https://codecov.io/gh/jonlachmann/GMJMCMC/branch/data-inputs/graph/badge.svg)](https://codecov.io/gh/jonlachmann/GMJMCMC)
 [![License: GPL](https://img.shields.io/badge/license-GPL-blue.svg)](https://cran.r-project.org/web/licenses/GPL)
 
+# This is the old repository, use the new at https://github.com/jonlachmann/FBMS/
+
 # FBMS - Flexible Bayesian Model Selection
 
 The `FBMS` package provides functions to estimate Bayesian Generalized nonlinear models (BGNLMs) through a Genetically Modified Mode Jumping MCMC algorithm.
