@@ -145,7 +145,14 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
     }
   }
   if(uk == 10)
-   warning("Constant features detected, try providing the data argument in the call. If the warning appears still, a constant feature is present. It should not be dangerous for the results, but be aware. Possible check the data or nonlinearities chosen.")
+    warning(
+      "Constant features detected in merge_results().\n",
+      " - If not already, provide the 'data' argument in the function call.\n",
+      " - If the warning persists, one or more features in your dataset are constant (no variation).\n",
+      "This should not affect results critically, but please:\n",
+      "   • check your input data, or\n",
+      "   • reconsider the chosen nonlinearities/features."
+    )
   # Calculate the correlation to find equivalent features
   cors <- cor(mock.data.precalc)
   
