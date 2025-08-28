@@ -286,6 +286,8 @@ gen.mlpost.params.lm <- function (beta_prior, user_params, p, n) {
   } else if (beta_prior == "uniform") {
     return(list(type = "uniform"))
   } else{
+    if(!is.null(user_params$g))
+      user_params$a <- user_params$g
     if (!is.null(user_params$a)) {
       alpha <- user_params$a 
     } else {
