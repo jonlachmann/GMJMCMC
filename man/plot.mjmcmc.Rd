@@ -14,7 +14,18 @@ merged results from merge.results}
 
 \item{...}{Not used.}
 }
+\value{
+No return value, just creates a plot
+}
 \description{
 Function to plot the results, works both for results from gmjmcmc and
 merged results from merge.results
+}
+\examples{
+result <- mjmcmc(
+y = matrix(rnorm(100), 100),
+x = matrix(rnorm(600), 100),
+loglik.pi = gaussian.loglik)
+plot(result)
+
 }

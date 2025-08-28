@@ -15,15 +15,21 @@
 # With neigh.min=neigh.max, we get a fixed neighborhood size (Type 2 and 4)
 # With probs left out, we get a swap instead of a random change (Type 3 and 4)
 # Indices tells the sampler which indices it is allowed to sample from
-model.proposal.1_4 <- function (model.size, neigh.min, neigh.max, indices, probs=NULL, prob=F) {
+model.proposal.1_4 <- function (model.size, neigh.min, neigh.max, indices, probs=NULL, prob=FALSE) {
   # If no probs, set all to 1 as we are doing a swap
+  if(model.size < 1)
+    model.size <- 1
   if (is.null(probs)) probs <- rep(1,model.size)
+  if(length(indices) == 0)
+    indices <- 1:model.size
   # Set neighborhood size, random or fixed
   if (neigh.max == neigh.min) neigh.size <- neigh.min
   else neigh.size <- sample.int(n = neigh.max - neigh.min, size = 1) + neigh.min - 1
   # Select the negihborhood by sampling from the p covariates
-  neighborhood <- sample2((1:model.size)[indices], size = neigh.size, prob = probs[indices])
-
+  if(length(indices)>0 & model.size > length(indices))
+    neighborhood <- sample2((1:model.size)[indices], size = neigh.size, prob = probs[indices] + 0.000001)
+  else
+    neighborhood <- 1
   # Sample which variables to change based on the probs vector
   swaps <- as.logical(rbinom(neigh.size, 1, probs[neighborhood]))
   swaps <- ind.to.log(neighborhood[swaps], model.size)
@@ -44,7 +50,7 @@ model.proposal.1_4.prob <- function (swaps, probs, neigh.size, neigh.min, neigh.
 }
 
 # Uniform addition and deletion of a covariate (Type 5 and 6)
-model.proposal.5_6 <- function (model, addition=T, indices, probs=NULL, prob=F) {
+model.proposal.5_6 <- function (model, addition=TRUE, indices, probs=NULL, prob=FALSE) {
   # If no probs, set all to 1
   if (is.null(probs)) probs <- rep(1,length(model))
 
@@ -74,7 +80,7 @@ model.proposal.5_6.prob <- function (model, addition) {
 }
 
 # Function to generate a proposed model given a current one
-gen.proposal <- function (model, params, type, indices=NULL, probs=NULL, prob=F) {
+gen.proposal <- function (model, params, type, indices=NULL, probs=NULL, prob=FALSE) {
   # If no indices are selected, allow all
   if (is.null(indices)) indices <- rep(T, length(model))
   if (type < 5) {
@@ -89,10 +95,10 @@ gen.proposal <- function (model, params, type, indices=NULL, probs=NULL, prob=F)
     proposal <- model.proposal.1_4(length(model), params$neigh.min, params$neigh.max, indices, probs, prob)
   } else if (type == 5) {
     # Generate a proposal of type 5 (addition of a covariate)
-    proposal <- model.proposal.5_6(model, addition=T, indices, probs, prob)
+    proposal <- model.proposal.5_6(model, addition=TRUE, indices, probs, prob)
   } else if (type == 6) {
     # Generate a proposal of type 6 (subtraction of a covariate)
-    proposal <- model.proposal.5_6(model, addition=F, indices, probs, prob)
+    proposal <- model.proposal.5_6(model, addition=FALSE, indices, probs, prob)
   }
   return(proposal)
 }
@@ -111,10 +117,10 @@ prob.proposal <- function (proposal, current, type, params, probs=NULL) {
     prob <- model.proposal.1_4.prob(swaps, probs, params$neigh.size, params$neigh.min, params$neigh.max)
   } else if (type == 5) {
     # Generate a proposal of type 5 (addition of a covariate)
-    prob <- model.proposal.5_6.prob(current, addition=T)
+    prob <- model.proposal.5_6.prob(current, addition=TRUE)
   } else if (type == 6) {
     # Generate a proposal of type 6 (subtraction of a covariate)
-    prob <- model.proposal.5_6.prob(current, addition=F)
+    prob <- model.proposal.5_6.prob(current, addition=FALSE)
   }
   return(prob)
 }

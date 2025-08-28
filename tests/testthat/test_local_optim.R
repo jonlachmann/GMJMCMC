@@ -17,7 +17,7 @@ test_that("Testing Greedy algorithm", {
   # Optimize empty model but dont allow all indices, should set all to true except disallowed
   optmod <- greedy.optim(
     c(F, F, F, F, F, F, F, F, F, F),
-    NULL,
+    list(fixed = 0),
     loglik.tester,
     c(F, F, T, T, T, T, T, T, T, T),
     NULL,

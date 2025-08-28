@@ -4,12 +4,22 @@
 \alias{print.feature}
 \title{Print method for "feature" class}
 \usage{
-\method{print}{feature}(x, dataset = FALSE, alphas = FALSE, labels = FALSE, round = FALSE, ...)
+\method{print}{feature}(
+  x,
+  dataset = FALSE,
+  fixed = 0,
+  alphas = FALSE,
+  labels = FALSE,
+  round = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{An object of class "feature"}
 
 \item{dataset}{Set the regular covariates as columns in a dataset}
+
+\item{fixed}{How many of the first columns in dataset are fixed and do not contribute to variable selection}
 
 \item{alphas}{Print a "?" instead of actual alphas to prepare the output for alpha estimation}
 
@@ -19,6 +29,17 @@
 
 \item{...}{Not used.}
 }
+\value{
+String representation of a feature
+}
 \description{
 Print method for "feature" class
+}
+\examples{
+result <- gmjmcmc(x = matrix(rnorm(600), 100),
+y = matrix(rnorm(100), 100), 
+P = 2, 
+transforms = c("p0", "exp_dbl"))
+print(result$populations[[1]][1])
+
 }

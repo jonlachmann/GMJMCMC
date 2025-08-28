@@ -15,6 +15,19 @@ model.string(model, features, link = "I", round = 2)
 
 \item{round}{Rounding error for the features in the printed format}
 }
+\value{
+A character representation of a model
+}
 \description{
 Function to generate a function string for a model consisting of features
+}
+\examples{
+result <- gmjmcmc(y = matrix(rnorm(100), 100),
+x = matrix(rnorm(600), 100), 
+P = 2, transforms =  c("p0", "exp_dbl"))
+summary(result)
+plot(result)
+model.string(c(TRUE, FALSE, TRUE, FALSE, TRUE), result$populations[[1]])
+model.string(result$models[[1]][1][[1]]$model, result$populations[[1]])
+
 }

@@ -13,6 +13,18 @@
 
 \item{...}{Not used.}
 }
+\value{
+No return value, just creates a plot
+}
 \description{
 Plot a mjmcmc_parallel run
+}
+\examples{
+result <- mjmcmc.parallel(runs = 1, 
+cores = 1, 
+y = matrix(rnorm(100), 100),
+x = matrix(rnorm(600), 100), 
+loglik.pi = gaussian.loglik)
+plot(result)
+
 }

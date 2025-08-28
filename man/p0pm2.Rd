@@ -15,3 +15,7 @@ p0(x)\emph{sign(x)}(abs(x)+.Machine$double.eps)^(-2)
 \description{
 p0pm2 polynomial term
 }
+\examples{
+p0pm2(2)
+
+}

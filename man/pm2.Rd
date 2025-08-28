@@ -15,3 +15,7 @@ sign(x)*(abs(x)+.Machine$double.eps)^(-2)
 \description{
 pm2 polynomial term
 }
+\examples{
+pm2(2)
+
+}

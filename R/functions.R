@@ -18,7 +18,7 @@ replace.infinite.data.frame <- function(df, replacewith = c(.Machine$double.xmin
 }
 
 # Print a progress bar while iterating over a population
-print.progressbar <- function (progress, size=40) {
+print_progressbar <- function (progress, size=40) {
   cat("\r", "|")
   for (p in 1:size-1) {
     if (progress >= p) cat("=")
@@ -29,7 +29,7 @@ print.progressbar <- function (progress, size=40) {
 }
 
 # Print a distribution as a horizontal histogram
-print.dist <- function(probs, labels, threshold, size=30) {
+print_dist <- function(probs, labels, threshold, size=30) {
   threshold <- round((1 - threshold) * size)
   for (i in seq_along(probs)) {
     for (p in 1:size - 1) {
@@ -43,7 +43,7 @@ print.dist <- function(probs, labels, threshold, size=30) {
 }
 
 # A more intuitive sample function which does not change behaviour when length(x) == 1.
-sample2 <- function(x, size, replace = F, prob = NULL) {
+sample2 <- function(x, size, replace = FALSE, prob = NULL) {
   if (length(x) == 1) return(x)
   base::sample(x, size = size, replace = replace, prob = prob)
 }

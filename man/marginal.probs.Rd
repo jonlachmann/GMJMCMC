@@ -9,6 +9,17 @@ marginal.probs(models)
 \arguments{
 \item{models}{The list of models to use.}
 }
+\value{
+A numeric vector of marginal model probabilities based on relative frequencies of model visits in MCMC.
+}
 \description{
 Function for calculating marginal inclusion probabilities of features given a list of models
+}
+\examples{
+result <- gmjmcmc(x = matrix(rnorm(600), 100),
+y = matrix(rnorm(100), 100), 
+P = 2, 
+transforms = c("p0", "exp_dbl"))
+marginal.probs(result$models[[1]])
+
 }

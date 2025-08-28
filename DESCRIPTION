@@ -1,20 +1,27 @@
-Package: GMJMCMC
+Package: FBMS
 Type: Package
-Title: Genetically Modified Mode Jumping MCMC
-Version: 1.0
-Date: 2023-06-30
+Title: Flexible Bayesian Model Selection and Model Averaging
+Version: 1.1
+Date: 2025-02-26
 Encoding: UTF-8
-Author: Jon Lachamnn
-Maintainer: Jon Lachmann <jon@lachmann.nu>
-Description: Implements the GMJMCMC and MJMCMC algorithms used to fit Bayesian Generalized Non-Linear Models (BGNLM).
+Language: en-US
+Authors@R: c(
+    person("Jon", "Lachmann", email = "jon@lachmann.nu", role = c("cre", "aut")),
+    person("Aliaksandr", "Hubin", email = "aliaksah@math.uio.no", role = "aut")
+    )
+Description: Implements the Mode Jumping Markov Chain Monte Carlo algorithm described in <doi:10.1016/j.csda.2018.05.020> and its Genetically Modified counterpart described in <doi:10.1613/jair.1.13047> as well as the sub-sampling versions described in <doi:10.1016/j.ijar.2022.08.018> for flexible Bayesian model selection and model averaging.
 License: GPL-2
 Depends:
     R (>= 3.5.0),
     fastglm,
     GenSA,
     parallel,
+    methods,
     stats,
-    graphics
+    graphics,
+    r2r,
+    BAS,
+    tolerance
 Imports:
     Rcpp
 LinkingTo:
@@ -23,7 +30,12 @@ Suggests:
     testthat,
     knitr,
     rmarkdown,
-    markdown
-RoxygenNote: 7.2.3
+    markdown,
+    lme4,
+    kernlab,
+    mvtnorm,
+    cAIC4
+RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr
+LazyData: true

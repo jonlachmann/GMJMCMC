@@ -2,13 +2,66 @@
 % Please edit documentation in R/arguments.R
 \name{gen.probs.gmjmcmc}
 \alias{gen.probs.gmjmcmc}
-\title{Generate a probability list for GMJMCMC}
+\title{Generate a probability list for GMJMCMC (Genetically Modified MJMCMC)}
 \usage{
 gen.probs.gmjmcmc(transforms)
 }
 \arguments{
 \item{transforms}{A list of the transformations used (to get the count).}
 }
+\value{
+A named list with eight elements:
+\describe{
+\item{\code{large}}{The probability of a large jump kernel in the MJMCMC algorithm.
+With this probability, a large jump proposal will be made; otherwise, a local
+Metropolis-Hastings proposal will be used. One needs to consider good mixing
+around and between modes when specifying this parameter.}
+
+\item{\code{large.kern}}{A numeric vector of length 4 specifying the probabilities
+for different types of large jump kernels.
+The four components correspond to:
+\enumerate{
+\item Random change with random neighborhood size
+\item Random change with fixed neighborhood size
+\item Swap with random neighborhood size
+\item Swap with fixed neighborhood size
+}
+These probabilities will be automatically normalized if they do not sum to 1.}
+
+\item{\code{localopt.kern}}{A numeric vector of length 2 specifying the probabilities
+for different local optimization methods during large jumps. The first value represents
+the probability of using simulated annealing, while the second corresponds to the
+greedy optimizer. These probabilities will be normalized if needed.}
+
+\item{\code{random.kern}}{A numeric vector of length 2 specifying the probabilities
+of first two randomization kernels applied after local optimization. These correspond
+to the same kernel types as in \code{large.kern} but are used for local proposals
+where type and 2 only are allowed.}
+
+\item{\code{mh}}{A numeric vector specifying the probabilities of different standard Metropolis-Hastings kernels, where the first four as the same as for other kernels, while fifths and sixes components are uniform addition/deletion of a covariate.}
+
+\item{\code{filter}}{A numeric value controlling the filtering of features
+with low posterior probabilities in the current population. Features with
+posterior probabilities below this threshold will be removed with a probability
+proportional to \eqn{1 - P(\text{feature} \mid \text{population})}.}
+
+\item{\code{gen}}{A numeric vector of length 4 specifying the probabilities of different
+feature generation operators. These determine how new nonlinear features are introduced.
+The first entry gives the probability for an interaction, followed by modification,
+nonlinear projection, and a mutation operator, which reintroduces discarded features.
+If these probabilities do not sum to 1, they are automatically normalized.}
+
+\item{\code{trans}}{A numeric vector of length equal to the number of elements in \code{transforms},
+specifying the probabilities of selecting each nonlinear transformation from \eqn{\mathcal{G}}.
+By default, a uniform distribution is assigned, but this can be modified by providing a specific
+\code{transforms} argument.}
+}
+}
 \description{
-Generate a probability list for GMJMCMC
+Generate a probability list for GMJMCMC (Genetically Modified MJMCMC)
+}
+\examples{
+gen.probs.gmjmcmc(c("p0", "exp_dbl"))
+
+
 }

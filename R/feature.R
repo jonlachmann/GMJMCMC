@@ -22,6 +22,7 @@
 #' @param features A list of features to include
 #' @param trans.priors A vector of prior inclusion penalties for the different transformations.
 #' @param alphas A numeric vector denoting the alphas to use
+#' @noRd
 create.feature <- function (transform, features, trans.priors, alphas=NULL) {
   # Given no alphas, assume no intercept and unit coefficients
   if (is.null(alphas)) alphas <- c(0, rep(1, length(features)))
@@ -62,6 +63,7 @@ create.feature <- function (transform, features, trans.priors, alphas=NULL) {
 #' @param feature The feature to be updated
 #' @param alphas The alphas that will be used
 #' @param recurse If we are recursing, to note the number of alphas used
+#' @noRd
 update.alphas <- function (feature, alphas, recurse=FALSE) {
   feat <- feature[[length(feature)]]
   alpha <- 0
@@ -95,13 +97,23 @@ update.alphas <- function (feature, alphas, recurse=FALSE) {
 #'
 #' @param x An object of class "feature"
 #' @param dataset Set the regular covariates as columns in a dataset
+#' @param fixed How many of the first columns in dataset are fixed and do not contribute to variable selection
 #' @param alphas Print a "?" instead of actual alphas to prepare the output for alpha estimation
 #' @param labels Should the covariates be named, or just referred to as their place in the data.frame.
 #' @param round Should numbers be rounded when printing? Default is FALSE, otherwise it can be set to the number of decimal places.
 #' @param ... Not used.
-#'
+#' 
+#' @return String representation of a feature
+#' 
+#' @examples
+#' result <- gmjmcmc(x = matrix(rnorm(600), 100),
+#' y = matrix(rnorm(100), 100), 
+#' P = 2, 
+#' transforms = c("p0", "exp_dbl"))
+#' print(result$populations[[1]][1])
+#' 
 #' @export
-print.feature <- function (x, dataset = FALSE, alphas = FALSE, labels = FALSE, round = FALSE, ...) {
+print.feature <- function (x, dataset = FALSE, fixed = 0, alphas = FALSE, labels = FALSE, round = FALSE, ...) {
   fString <- ""
   feat <- x[[length(x)]]
   # This is a more complex feature
@@ -111,7 +123,7 @@ print.feature <- function (x, dataset = FALSE, alphas = FALSE, labels = FALSE, r
     # Assume that we are not doing multiplication
     op <- "+"
     # Add the outer transform is there is one
-    if (feat[1,1] > 0) fString <- paste0(fString, transforms[[feat[1,1]]], "(")
+    if (feat[1, 1] > 0) fString <- paste0(fString, transforms[[feat[1, 1]]], "(")
     # If g = 0, we are doing multiplication
     else {
       op <- "*"
@@ -119,33 +131,33 @@ print.feature <- function (x, dataset = FALSE, alphas = FALSE, labels = FALSE, r
     }
     # If we are printing rounded features for neat output, round all alphas
     if (round) {
-      feat[,3] <- round(feat[,3], round)
+      feat[, 3] <- round(feat[, 3], round)
     }
     for (j in seq_len(nrow(feat))) {
       # No plus or multiplication sign on the last one
       if (j == nrow(feat)) op <- ""
       # If this is an intercept just add it in
-      if (j == 1 && feat[j,3] != 0) {
-        if (!alphas) fString <- paste0(fString, feat[j,3], op)
+      if (j == 1 && feat[j, 3] != 0) {
+        if (!alphas) fString <- paste0(fString, feat[j, 3], op)
         else fString <- paste0(fString, "?", op)
       }
       # Otherwise this is a feature or covariate, do a recursive conversion
       if (j != 1) {
         # Process alphas, which are only present if there is more than one term in the feature
         # this implies that the feature is not a multiplication (i.e. only one _term_).
-        if ((nrow(feat) > 2 || feat[1,3] != 0) && feat[1,1] > 0) {
+        if ((nrow(feat) > 2 || feat[1, 3] != 0) && feat[1, 1] > 0) {
           if (alphas) fString <- paste0(fString, "?*")
           else fString <- paste0(fString, feat[j,3], "*")
         }
-        fString <- paste0(fString, print.feature(x[[feat[j, 2]]], dataset, alphas, labels, round), op)
+        fString <- paste0(fString, print.feature(x[[feat[j, 2]]], dataset, fixed, alphas, labels, round), op)
       }
     }
     fString <- paste0(fString, ")")
   }
   # This is a plain covariate
   else if (is.numeric(feat)) {
-    if (dataset) fString <- paste0("data[,", feat+2, "]")
-    else if (labels[1] != F) fString <- labels[feat]
+    if (dataset) fString <- paste0("data$x[,", fixed + feat, "]")
+    else if (labels[1] != FALSE) fString <- labels[feat]
     else fString <- paste0("x", feat)
   } else stop("Invalid feature structure")
   return(fString)

@@ -1,16 +1,24 @@
 # Title     : GMJMCMC Support functions
-# Objective : Support functions for GMJMCMC algorithm
+# Objective : Support functions for GMJMCMC (Genetically Modified MJMCMC) algorithm
 # Created by: jonlachmann
 # Created on: 2021-02-11
 
-#' Set the transformations option for GMJMCMC,
+#' Set the transformations option for GMJMCMC (Genetically Modified MJMCMC),
 #' this is also done when running the algorithm, but this function allows for it to be done manually.
 #'
 #' @param transforms The vector of non-linear transformations
 #'
+#' @return No return value, just sets the gmjmcmc-transformations option
+#'
+#' @examples
+#' set.transforms(c("p0","p1"))
+#' 
+#'
 #' @export set.transforms
 set.transforms <- function (transforms) {
-  options("gmjmcmc-transformations"=transforms)
+  old_transforms <- getOption("gmjmcmc-transformations")
+  options("gmjmcmc-transformations" = transforms)
+  return(old_transforms)
 }
 
 # Function to verify inputs and help the user find if they did anything wrong
@@ -32,6 +40,16 @@ verify.inputs <- function (data, loglik.pi, transforms, T, N, N.final, probs, pa
 
 #' Function for calculating marginal inclusion probabilities of features given a list of models
 #' @param models The list of models to use.
+#'
+#' @return A numeric vector of marginal model probabilities based on relative frequencies of model visits in MCMC.
+#'
+#' @examples
+#' result <- gmjmcmc(x = matrix(rnorm(600), 100),
+#' y = matrix(rnorm(100), 100), 
+#' P = 2, 
+#' transforms = c("p0", "exp_dbl"))
+#' marginal.probs(result$models[[1]])
+#'
 #' @export
 marginal.probs <- function (models) {
   mod.count <- length(models)
@@ -46,13 +64,18 @@ marginal.probs <- function (models) {
 #' Function for calculating feature importance through renormalized model estimates
 #' @param models The models to use.
 #' @param type Select which probabilities are of interest, features or models
+#' 
+#' @noRd
 marginal.probs.renorm <- function (models, type = "features") {
   models <- lapply(models, function (x) x[c("model", "crit")])
   model.size <- length(models[[1]]$model)
   models.matrix <- matrix(unlist(models), ncol = model.size + 1, byrow = TRUE)
   duplicates <- duplicated(models.matrix[, 1:(model.size)], dim = 1, fromLast = TRUE)
   models.matrix <- models.matrix[!duplicates, ]
-  max_mlik <- max(models.matrix[, (model.size + 1)])
+  if(!is.matrix(models.matrix))
+    models.matrix <- t(as.matrix(models.matrix))
+  
+  max_mlik <- max(models.matrix[,(model.size + 1)])
   crit.sum <- sum(exp(models.matrix[, (model.size + 1)] - max_mlik))
   if (type == "features" || type == "both") {
     probs.f <- matrix(NA,1, model.size)
@@ -76,29 +99,37 @@ marginal.probs.renorm <- function (models, type = "features") {
 
 # Function for precalculating features for a new feature population
 precalc.features <- function (data, features) {
-  precalc <- matrix(NA, nrow(data), length(features) + 2)
-  precalc[, 1:2] <- data[, 1:2]
+  precalc <- matrix(NA, nrow(data$x), length(features))
   for (f in seq_along(features)) {
-    feature_string <- print.feature(features[[f]], dataset = TRUE)
-    precalc[, (f + 2)] <- eval(parse(text = feature_string))
+    feature_string <- print.feature(features[[f]], dataset = TRUE, fixed = data$fixed)
+    precalc[, f] <- eval(parse(text = feature_string))
   }
   # Replace any -Inf and Inf values caused by under- or overflow
   precalc <- replace.infinite.data.frame(precalc)
-  return(precalc)
+  data$x <- cbind(data$x[, seq_len(data$fixed)], precalc)
+  return(data)
 }
 
 # TODO: Compare to previous mliks here instead, also add a flag to do that in full likelihood estimation scenarios.
 # Function to call the model function
-loglik.pre <- function (loglik.pi, model, complex, data, params = NULL) {
+loglik.pre <- function (loglik.pi, model, complex, data, params = NULL, visited.models, sub) {
+  if (!is.null(visited.models) && has_key(visited.models, model)) {
+    if (!sub) {
+      return(visited.models[[model]])
+    } else {
+      params$coefs <- visited.models[[model]]$coefs
+      params$crit <- visited.models[[model]]$crit
+    }
+  }
   # Get the complexity measures for just this model
   complex <- list(width = complex$width[model], oc = complex$oc[model], depth = complex$depth[model])
   # Call the model estimator with the data and the model, note that we add the intercept to every model
-  model.res <- loglik.pi(data[, 1], data[, -1], c(T, model), complex, params)
+  model.res <- loglik.pi(data$y, data$x, c(rep(TRUE, data$fixed), model), complex, params)
   # Check that the critical value is acceptable
   if (!is.numeric(model.res$crit) || is.nan(model.res$crit)) model.res$crit <- -.Machine$double.xmax
   # Alpha cannot be calculated if the current and proposed models have crit which are -Inf or Inf
   if (is.infinite(model.res$crit)) {
-    if (model.res$crit > 0)  model.res$crit <- .Machine$double.xmax
+    if (model.res$crit > 0) model.res$crit <- .Machine$double.xmax
     else model.res$crit <- -.Machine$double.xmax
   }
   return(model.res)
@@ -107,34 +138,43 @@ loglik.pre <- function (loglik.pi, model, complex, data, params = NULL) {
 # Function to check the data
 # Checks that there is an intercept in the data, adds it if missing
 # Coerces the data to be of type matrix
-check.data <- function (data) {
-  if (!is.matrix(data)) {
-    data <- as.matrix(data)
-    cat("Data coerced to matrix type.\n")
+check.data <- function (x, y, fixed, verbose) {
+  if (!is.matrix(x)) {
+    x <- as.matrix(x)
+    #if (verbose) cat("Data (x) coerced to matrix type.\n")
   }
-  if (sum(data[, 2] == 1) != nrow(data)) {
-    data <- cbind(data[, 1], 1, data[, -1])
-    cat("Intercept added to data.\n")
+  if (!is.matrix(y)) {
+    y <- as.matrix(y)
+    #if (verbose) cat("Data (y) coerced to matrix type.\n")
   }
-  return(data)
-}
+  if (nrow(x) != nrow(y)) {
+    stop("x and y must have the same number of rows")
+  }
 
-# Function to get the dimensions of a dataset, adding an intercept if necessary
-data.dims <- function (data) {
-  dims <- dim(data)
-  if (sum(data[,2] == 1) != nrow(data)) {
-    dims[2] <- dims[2] + 1
+  # Ensure that the first F0.size * 2 lines do not contain zero variance variables
+  if ((ncol(x) - fixed) * 2 < nrow(x)) {
+    vars <- diag(var(x[seq_len((ncol(x) - fixed) * 2), ]))
+    for (i in which(vars == 0)[-seq_len(fixed)]) {
+      j <- which(x[, i] != x[1, i])[1]
+      if (is.na(j)) {
+        stop(paste0("column with index ", i, " is constant and only the intercept may be constant, please remove it and try again."))
+      }
+      x <- rbind(x[j, , drop = FALSE], x[-j, , drop = FALSE])
+      y <- rbind(y[j, , drop = FALSE], y[-j, , drop = FALSE])
+    }
   }
-  return(dims)
+
+  return(list(x = x, y = y, fixed = fixed))
 }
 
 # Function to extract column names if they are well formed
-get.labels <- function (data) {
-  labels <- colnames(data)[-(1:2)]
-  if (is.null(labels)) return(F)
+get.labels <- function (data, verbose) {
+  labels <- colnames(data$x)
+  if (is.null(labels)) return(FALSE)
   if (sum(is.na(labels)) != 0) {
-    cat("NA labels present, using x#\n")
-    return(F)
+    if (verbose) cat("NA labels present, using x#\n")
+    return(FALSE)
   }
+  if (data$fixed > 0) labels <- labels[-seq_len(data$fixed)]
   return(labels)
 }

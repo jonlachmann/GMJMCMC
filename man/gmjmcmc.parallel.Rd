@@ -2,42 +2,63 @@
 % Please edit documentation in R/parallel.R
 \name{gmjmcmc.parallel}
 \alias{gmjmcmc.parallel}
-\title{Run multiple gmjmcmc runs in parallel returning a list of all results.}
+\title{Run multiple gmjmcmc (Genetically Modified MJMCMC) runs in parallel returning a list of all results.}
 \usage{
 gmjmcmc.parallel(
-  runs,
-  cores = getOption("mc.cores", 2L),
-  merge.options = list(populations = "best", complex.measure = 2, tol = 1e-07),
-  data,
-  loglik.pi = gaussian.loglik,
-  loglik.alpha = gaussian.loglik.alpha(),
+  x,
+  y,
+  loglik.pi = NULL,
+  mlpost_params = list(family = "gaussian", beta_prior = list(type = "g-prior")),
+  loglik.alpha = gaussian.loglik.alpha,
   transforms,
+  runs = 2,
+  cores = getOption("mc.cores", 2L),
+  verbose = FALSE,
+  merge.options = list(populations = "best", complex.measure = 2, tol = 1e-07),
   ...
 )
 }
 \arguments{
+\item{x}{matrix containing the design matrix with data to use in the algorithm}
+
+\item{y}{response variable}
+
+\item{loglik.pi}{The (log) density to explore}
+
+\item{mlpost_params}{parameters for the estimator function loglik.pi}
+
+\item{loglik.alpha}{The likelihood function to use for alpha calculation}
+
+\item{transforms}{A Character vector including the names of the non-linear functions to be used by the modification}
+
 \item{runs}{The number of runs to run}
 
 \item{cores}{The number of cores to run on}
 
-\item{merge.options}{A list of options to pass to the \code{\link[=merge_results]{merge_results()}} function run after the}
+\item{verbose}{A logical denoting if messages should be printed}
 
-\item{data}{A matrix containing the data to use in the algorithm,
-first column should be the dependent variable, second should be the intercept
-and the rest of the columns should be the independent variables.}
+\item{merge.options}{A list of options to pass to the \code{\link[=merge_results]{merge_results()}} function run after the run}
 
-\item{loglik.pi}{The (log) density to explore}
-
-\item{loglik.alpha}{The likelihood function to use for alpha calculation}
-
-\item{transforms}{A Character vector including the names of the non-linear functions to be used by the modification
-and the projection operator.}
-
-\item{...}{Further params passed to mjmcmc.}
+\item{...}{Further parameters passed to mjmcmc.}
 }
 \value{
 Results from multiple gmjmcmc runs
 }
 \description{
-Run multiple gmjmcmc runs in parallel returning a list of all results.
+Run multiple gmjmcmc (Genetically Modified MJMCMC) runs in parallel returning a list of all results.
+}
+\examples{
+result <- gmjmcmc.parallel(
+  runs = 1,
+  cores = 1,
+  loglik.pi = NULL,
+  y = matrix(rnorm(100), 100),
+  x = matrix(rnorm(600), 100),
+  transforms = c("p0", "exp_dbl")
+)
+
+summary(result)
+
+plot(result)
+
 }

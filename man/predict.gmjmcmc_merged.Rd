@@ -2,9 +2,18 @@
 % Please edit documentation in R/predict.R
 \name{predict.gmjmcmc_merged}
 \alias{predict.gmjmcmc_merged}
-\title{Predict using a BGNLM model.}
+\title{Predict using a merged gmjmcmc result object.}
 \usage{
-\method{predict}{gmjmcmc_merged}(object, x, link = function(x) x, quantiles = c(0.025, 0.5, 0.975), ...)
+\method{predict}{gmjmcmc_merged}(
+  object,
+  x,
+  link = function(x) x,
+  quantiles = c(0.025, 0.5, 0.975),
+  pop = NULL,
+  tol = 1e-07,
+  x_train = NULL,
+  ...
+)
 }
 \arguments{
 \item{object}{The model to use.}
@@ -13,10 +22,33 @@
 
 \item{link}{The link function to use}
 
-\item{quantiles}{The quantiles to calculate credible intervals for the posterior moddes (in model space).}
+\item{quantiles}{The quantiles to calculate credible intervals for the posterior modes (in model space).}
+
+\item{pop}{The population to plot, defaults to last}
+
+\item{tol}{The tolerance to use for the correlation when finding equivalent features, default is 0.0000001}
+
+\item{x_train}{Training design matrix to be provided when imputations are to be made from them}
 
 \item{...}{Not used.}
 }
+\value{
+A list containing aggregated predictions and per model predictions.
+\item{aggr}{Aggregated predictions with mean and quantiles.}
+\item{preds}{A list of lists containing individual predictions per model per population in object.}
+}
 \description{
-Predict using a BGNLM model.
+Predict using a merged gmjmcmc result object.
+}
+\examples{
+result <- gmjmcmc.parallel(
+ runs = 1,
+ cores = 1,
+ x = matrix(rnorm(600), 100),
+ y = matrix(rnorm(100), 100),
+ P = 2,
+ transforms = c("p0", "exp_dbl")
+)
+preds <- predict(result, matrix(rnorm(600), 100))
+
 }

@@ -15,3 +15,7 @@ sign(x)*(abs(x)+.Machine$double.eps)^(-1)
 \description{
 pm1 polynomial term
 }
+\examples{
+pm1(2)
+
+}

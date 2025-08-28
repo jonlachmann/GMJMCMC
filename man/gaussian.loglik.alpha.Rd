@@ -14,10 +14,18 @@ gaussian.loglik.alpha(a, data, mu_func)
 \item{data}{The data to be used for calculation}
 
 \item{mu_func}{The function linking the mean to the covariates,
-as a string with the alphas as a\link{i}.}
+as a string with the alphas as a[i].}
+}
+\value{
+A numeric with the log likelihood.
 }
 \description{
 Log likelihood function for gaussian regression for alpha calculation
 This function is just the bare likelihood function
 Note that it only gives a proportional value and is equivalent to least squares
+}
+\examples{
+\dontrun{
+gaussian.loglik.alpha(my_alpha,my_data,my_mu)
+}
 }

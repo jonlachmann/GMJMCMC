@@ -15,3 +15,7 @@ log(abs(x) + .Machine$double.eps)
 \description{
 p0 polynomial term
 }
+\examples{
+p0(2)
+
+}

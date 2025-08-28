@@ -5,19 +5,17 @@
 \title{negative ReLu function}
 \usage{
 nrelu(x)
-
-nrelu(x)
 }
 \arguments{
 \item{x}{The vector of values}
 }
 \value{
-max(x,0)
-
 max(-x,0)
 }
 \description{
 negative ReLu function
+}
+\examples{
+nrelu(2)
 
-negative ReLu function
 }

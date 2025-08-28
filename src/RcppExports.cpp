@@ -12,7 +12,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 // set_alphas
 List set_alphas(std::string formula);
-RcppExport SEXP _GMJMCMC_set_alphas(SEXP formulaSEXP) {
+RcppExport SEXP _FBMS_set_alphas(SEXP formulaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -23,7 +23,7 @@ END_RCPP
 }
 // vec_in_mat
 int vec_in_mat(NumericMatrix& mat, NumericVector& vec, int firstCol, int lastCol);
-RcppExport SEXP _GMJMCMC_vec_in_mat(SEXP matSEXP, SEXP vecSEXP, SEXP firstColSEXP, SEXP lastColSEXP) {
+RcppExport SEXP _FBMS_vec_in_mat(SEXP matSEXP, SEXP vecSEXP, SEXP firstColSEXP, SEXP lastColSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -37,12 +37,12 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_GMJMCMC_set_alphas", (DL_FUNC) &_GMJMCMC_set_alphas, 1},
-    {"_GMJMCMC_vec_in_mat", (DL_FUNC) &_GMJMCMC_vec_in_mat, 4},
+    {"_FBMS_set_alphas", (DL_FUNC) &_FBMS_set_alphas, 1},
+    {"_FBMS_vec_in_mat", (DL_FUNC) &_FBMS_vec_in_mat, 4},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_GMJMCMC(DllInfo *dll) {
+RcppExport void R_init_FBMS(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

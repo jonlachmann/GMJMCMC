@@ -15,3 +15,7 @@ x^(3)
 \description{
 p3 polynomial term
 }
+\examples{
+p3(2)
+
+}

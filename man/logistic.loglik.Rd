@@ -2,11 +2,11 @@
 % Please edit documentation in R/likelihoods.R
 \name{logistic.loglik}
 \alias{logistic.loglik}
-\title{Log likelihood function for logistic regression with a prior p(m)=sum(total_width)
+\title{Log likelihood function for logistic regression with a Jeffreys parameter prior and BIC approximations of the posterior
 This function is created as an example of how to create an estimator that is used
 to calculate the marginal likelihood of a model.}
 \usage{
-logistic.loglik(y, x, model, complex, params = list(r = 1))
+logistic.loglik(y, x, model, complex, mlpost_params = list(r = exp(-0.5)))
 }
 \arguments{
 \item{y}{A vector containing the dependent variable}
@@ -17,10 +17,18 @@ logistic.loglik(y, x, model, complex, params = list(r = 1))
 
 \item{complex}{A list of complexity measures for the features}
 
-\item{params}{A list of parameters for the log likelihood, supplied by the user}
+\item{mlpost_params}{A list of parameters for the log likelihood, supplied by the user}
+}
+\value{
+A list with the log marginal likelihood combined with the log prior (crit) and the posterior mode of the coefficients (coefs).
 }
 \description{
-Log likelihood function for logistic regression with a prior p(m)=sum(total_width)
+Log likelihood function for logistic regression with a Jeffreys parameter prior and BIC approximations of the posterior
 This function is created as an example of how to create an estimator that is used
 to calculate the marginal likelihood of a model.
+}
+\examples{
+logistic.loglik(as.integer(rnorm(100) > 0), matrix(rnorm(100)), TRUE, list(oc = 1))
+
+
 }

@@ -3,7 +3,7 @@
 \name{merge_results}
 \alias{merge_results}
 \title{Merge a list of multiple results from many runs
-This function will weight the features based on the best mlik in that population
+This function will weight the features based on the best marginal posterior in that population
 and merge the results together, simplifying by merging equivalent features (having high correlation).}
 \usage{
 merge_results(
@@ -15,20 +15,50 @@ merge_results(
 )
 }
 \arguments{
-\item{results}{A list containing multiple results from GMJMCMC.}
+\item{results}{A list containing multiple results from GMJMCMC (Genetically Modified MJMCMC).}
 
 \item{populations}{Which populations should be merged from the results, can be "all", "last" (default) or "best".}
 
 \item{complex.measure}{The complex measure to use when finding the simplest equivalent feature,
 1=total width, 2=operation count and 3=depth.}
 
-\item{tol}{The tolerance to use for the correlation when finding equivalent features, default is 0.}
+\item{tol}{The tolerance to use for the correlation when finding equivalent features, default is 0.0000001}
 
 \item{data}{Data to use when comparing features, default is NULL meaning that mock data will be generated,
 if data is supplied it should be of the same form as is required by gmjmcmc, i.e. with both x, y and an intercept.}
 }
+\value{
+An object of class "gmjmcmc_merged" containing the following elements:
+\item{features}{The features where equivalent features are represented in their simplest form.}
+\item{marg.probs}{Importance of features.}
+\item{counts}{Counts of how many versions that were present of each feature.}
+\item{results}{Results as they were passed to the function.}
+\item{pop.best}{The population in the results which contained the model with the highest log marginal posterior.}
+\item{thread.best}{The thread in the results which contained the model with the highest log marginal posterior.}
+\item{crit.best}{The highest log marginal posterior for any model in the results.}
+\item{reported}{The highest log marginal likelihood for the reported populations as defined in the populations argument.}
+\item{rep.pop}{The index of the population which contains reported.}
+\item{best.log.posteriors}{A matrix where the first column contains the population indices and the second column contains the model with the highest log marginal posterior within that population.}
+\item{rep.thread}{The index of the thread which contains reported.}
+}
 \description{
 Merge a list of multiple results from many runs
-This function will weight the features based on the best mlik in that population
+This function will weight the features based on the best marginal posterior in that population
 and merge the results together, simplifying by merging equivalent features (having high correlation).
+}
+\examples{
+result <- gmjmcmc.parallel(
+ runs = 1,
+ cores = 1,
+ y = matrix(rnorm(100), 100),x = matrix(rnorm(600), 100),
+ P = 2,
+ transforms = c("p0", "exp_dbl")
+)
+
+summary(result)
+
+plot(result)
+
+merge_results(result$results)
+
 }

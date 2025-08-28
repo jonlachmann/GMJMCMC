@@ -4,18 +4,28 @@
 \alias{mjmcmc.parallel}
 \title{Run multiple mjmcmc runs in parallel, merging the results before returning.}
 \usage{
-mjmcmc.parallel(runs, cores = getOption("mc.cores", 2L), ...)
+mjmcmc.parallel(runs = 2, cores = getOption("mc.cores", 2L), ...)
 }
 \arguments{
 \item{runs}{The number of runs to run}
 
 \item{cores}{The number of cores to run on}
 
-\item{...}{Further params passed to mjmcmc.}
+\item{...}{Further parameters passed to mjmcmc.}
 }
 \value{
 Merged results from multiple mjmcmc runs
 }
 \description{
 Run multiple mjmcmc runs in parallel, merging the results before returning.
+}
+\examples{
+result <- mjmcmc.parallel(runs = 1, 
+cores = 1, 
+loglik.pi = FBMS::gaussian.loglik,
+y = matrix(rnorm(100), 100),
+x = matrix(rnorm(600), 100))
+summary(result)
+plot(result)
+
 }
