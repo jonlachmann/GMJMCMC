@@ -8,7 +8,7 @@ vignette: >
   %\VignetteDepends{fastglm, FBMS}
 ---
 
-This vignette introduces the **FBMS** package and shows how to perform **Flexible Bayesian Model Selection (BMS)** and **Bayesian Model Averaging (BMA)** for linear, generalized, nonlinear, fractional–polynomial, mixed–effect, and logic–regression models. More details are provided in the paper currently available on arxiv: (to add) more explicit examples accompanying the paper can be found on github <https://github.com/jonlachmann/GMJMCMC/tree/data-inputs/tests_current>
+This vignette introduces the **FBMS** package and shows how to perform **Flexible Bayesian Model Selection (BMS)** and **Bayesian Model Averaging (BMA)** for linear, generalized, nonlinear, fractional–polynomial, mixed–effect, and logic–regression models. More details are provided in the paper: "FBMS: An R Package for Flexible Bayesian Model Selection and Model Averaging" available on arxiv: more explicit examples accompanying the paper can be found on github <https://github.com/jonlachmann/GMJMCMC/tree/data-inputs/tests_current>
 
 ------------------------------------------------------------------------
 
@@ -174,7 +174,7 @@ $$
 | Prior (Alias) | $a$ | $b$ | $\rho$ | $s$ | $v$ | $k$ | Families |
 |---------|---------|---------|---------|---------|---------|---------|---------|
 | **Default:** |  |  |  |  |  |  |  |
-| `g-prior` | $\alpha$ (default: $\max(n, p^2)$) |  |  |  |  |  | GLM |
+| `g-prior` | $g$ (default: $\max(n, p^2)$) |  |  |  |  |  | GLM |
 | **tCCH-Related Priors:** |  |  |  |  |  |  |  |
 | `CH` | $a$ | $b$ | 0 | $s$ | 1 | 1 | GLM |
 | `uniform` | 2 | 2 | 0 | 0 | 1 | 1 | GLM |
