@@ -50,7 +50,7 @@ params$feat$pop.max <- 50    # Maximum population size for the GMJMCMC search
 if (run.parallel) {
   set.seed(123)
     result_parallel1 = fbms(data=df, transforms=transforms,
-                            beta_prior = list(type="g-prior", alpha=max(n,p^2)),
+                            beta_prior = list(type="g-prior", g=max(n,p^2)),
                             probs=probs,params=params,
                             method="gmjmcmc.parallel",
                             P=50,N=1000,runs=10,cores=10)
@@ -58,7 +58,7 @@ if (run.parallel) {
 
   set.seed(1234)
      result_parallel2=fbms(data=df, transforms=transforms,
-                           beta_prior = list(type="g-prior", alpha=max(n,p^2)),
+                           beta_prior = list(type="g-prior", g=max(n,p^2)),
                            probs=probs,params=params,
                            method="gmjmcmc.parallel",
                            P=50,N=1000,runs=10,cores=10)
@@ -66,7 +66,7 @@ if (run.parallel) {
   
   set.seed(123456)
      result_parallel3=fbms(data=df, transforms=transforms,
-                           beta_prior = list(type="g-prior", alpha=max(n,p^2)),
+                           beta_prior = list(type="g-prior", g=max(n,p^2)),
                            probs=probs,params=params,
                            method="gmjmcmc.parallel",
                            P=50,N=1000,runs=10,cores=10)
