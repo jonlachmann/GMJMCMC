@@ -150,8 +150,8 @@ merge_results <- function (results, populations = NULL, complex.measure = NULL, 
       " - If not already, provide the 'data' argument in the function call.\n",
       " - If the warning persists, one or more features in your dataset are constant (no variation).\n",
       "This should not affect results critically, but please:\n",
-      "   • check your input data, or\n",
-      "   • reconsider the chosen nonlinearities/features."
+      "   * check your input data, or\n",
+      "   * reconsider the chosen nonlinearities/features."
     )
   # Calculate the correlation to find equivalent features
   cors <- cor(mock.data.precalc)
