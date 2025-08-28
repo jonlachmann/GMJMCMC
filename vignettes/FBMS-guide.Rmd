@@ -1,5 +1,5 @@
 ---
-title: "FBMS - Flexible Bayesian Model Selection and Model Averaging"
+title: "FBMS-Flexible Bayesian Model Selection and Model Averaging"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{FBMS - Flexible Bayesian Model Selection and Model Averaging}
@@ -177,7 +177,6 @@ $$
 | `g-prior` | $\alpha$ (default: $\max(n, p^2)$) |  |  |  |  |  | GLM |
 | **tCCH-Related Priors:** |  |  |  |  |  |  |  |
 | `CH` | $a$ | $b$ | 0 | $s$ | 1 | 1 | GLM |
-| `hyper-g` | 1 | 2 | 0 | 0 | 1 | 1 | GLM |
 | `uniform` | 2 | 2 | 0 | 0 | 1 | 1 | GLM |
 | `Jeffreys` | 0 | 2 | 0 | 0 | 1 | 1 | GLM |
 | `beta.prime` | $1/2$ | $n - p_M - 1.5$ | 0 | 0 | 1 | 1 | GLM |
@@ -194,6 +193,7 @@ $$
 | `JZS` | $a$ |  |  |  |  |  | G |
 | `ZS-null` | $a$ |  |  |  |  |  | G |
 | `ZS-full` | $a$ |  |  |  |  |  | G |
+| `hyper-g` | $a$ |  |  |  |  |  | GLM |
 | `hyper-g-laplace` | $a$ |  |  |  |  |  | G |
 | `AIC` | None |  |  |  |  |  | GLM |
 | `BIC` | None |  |  |  |  |  | GLM |
